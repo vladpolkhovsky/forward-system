@@ -1,0 +1,39 @@
+version: '3.3'
+services:
+  telegram-bot:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    env_file:
+      - .env
+    ports:
+      - "8080:8081"
+    profiles:
+      - production
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  postgres-db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: local
+      POSTGRES_USER: localDB
+      POSTGRES_PASSWORD: localPS
+    volumes:
+      - ./local-db-data:/var/lib/postgresql/data/pgdata
+      - ./db_init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    profiles:
+      - dependency
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8082:8080
+    profiles:
+      - dependency

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div th:if="${param.userUpdated}" class="alert alert-primary" role="alert">
+        Пользователь обновлён.
+    </div>
+    <div class="row">
+        <h3 th:text="${menuName}"></h3>
+    </div>
+</div>
+<div class="container">
+    <ul class="list-group">
+        <li class="list-group-item" th:each="user, userStat : ${userList}">
+            <a th:href="|/update-user/| + ${user.id()}" th:text="${user.fio()} + | (| + ${user.username()} + |)|"></a>
+        </li>
+    </ul>
+</div>
+</body>

@@ -1,0 +1,15 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+
+<div class="container" th:fragment="header-div">
+    <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
+        <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
+            <li><a th:href="@{/main}" class="nav-link px-2 link-primary">Главное меню</a></li>
+            <li><a th:href="@{/messanger}" class="nav-link px-2">Мессенджер</a></li>
+        </ul>
+        <div class="col-md-3 text-end">
+            <!--/*@thymesVar id="userShort" type="by.forward.forward_system.core.dto.ui.UserShortUiDto"*/-->
+            <a th:href="@{/info}" class="btn" th:text="${userShort.fio()} + | (| + ${userShort.username()} + |)|"></a>
+            <a th:href="@{/logout}" class="btn btn-primary">Выйти</a>
+        </div>
+    </header>
+</div>

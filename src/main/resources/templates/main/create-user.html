@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div th:if="${param.userCreated}" class="alert alert-primary" role="alert">
+        Пользователь создан.
+    </div>
+    <div class="row">
+        <h3 th:text="${menuName}"></h3>
+    </div>
+</div>
+<!--/*@thymesVar id="user" type="by.forward.forward_system.core.dto.ui.UserUiDto"*/-->
+<div class="container mt-3">
+    <form class="container g-3 border" th:action="${actionUrl}" th:object="${user}" method="post">
+        <div class="row">
+            <div class="col-8 ">
+                <input type="text" th:field="*{id}" th:value="${user?.id()}" hidden>
+                <div class="mb-3 mt-3 row">
+                    <label for="username" class="col-sm-2 col-form-label">Имя пользователя</label>
+                    <div class="col-sm-10">
+                        <input required id="username" type="text" class="form-control" th:field="*{username}" th:value="${user?.username()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="fio" class="col-sm-2 col-form-label">ФИО</label>
+                    <div class="col-sm-10">
+                        <input required type="text" class="form-control" id="fio" th:field="*{fio}" th:value="${user?.fio()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="password" class="col-sm-2 col-form-label">Пароль</label>
+                    <div class="col-sm-10">
+                        <input type="password"
+                               class="form-control"
+                               id="password"
+                               th:field="*{password}"
+                               th:required="${passwordRequired}"
+                               th:placeholder="${passwordRequired == true}? 'Введите пароль' : 'Оставьте пустым, если не хотите менять пароль'">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="contact" class="col-sm-2 col-form-label">Контакты (телефон)</label>
+                    <div class="col-sm-10">
+                        <input required type="text" class="form-control" id="contact" th:field="*{contact}" th:value="${user?.contact()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="contactTelegram" class="col-sm-2 col-form-label">Контакты (Телеграмм)</label>
+                    <div class="col-sm-10">
+                        <input required type="text" class="form-control" id="contactTelegram" th:field="*{contactTelegram}" th:value="${user?.contactTelegram()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="email" class="col-sm-2 col-form-label">Почта</label>
+                    <div class="col-sm-10">
+                        <input required type="email" class="form-control" id="email" th:field="*{email}" th:value="${user?.email()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="payment" class="col-sm-2 col-form-label">Реквизиты оплаты</label>
+                    <div class="col-sm-10">
+                        <input required type="text" class="form-control" id="payment" th:field="*{payment}" th:value="${user?.payment()}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="other" class="col-sm-2 col-form-label">Дополнительная информация</label>
+                    <div class="col-sm-10">
+                    <textarea type="text" class="form-control" id="other" rows="5"
+                              th:field="*{other}" th:value="${user?.other()}"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4">
+                <h4 class="mt-3 mb-3">Роли</h4>
+                <div class="form-check mt-3 mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="isOwner"
+                           th:field="*{isOwner}" th:checked="${user?.isOwner()}">
+                    <label class="form-check-label" for="isOwner">
+                        Владелец
+                    </label>
+                </div>
+                <div class="form-check mt-3 mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="isAdmin"
+                           th:field="*{isAdmin}" th:checked="${user?.isAdmin()}">
+                    <label class="form-check-label" for="isAdmin">
+                        Администратор
+                    </label>
+                </div>
+                <div class="form-check mt-3 mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="isManager"
+                           th:field="*{isManager}" th:checked="${user?.isManager()}">
+                    <label class="form-check-label" for="isManager">
+                        Менеджер
+                    </label>
+                </div>
+                <div class="form-check mt-3 mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="isHr"
+                           th:field="*{isHr}" th:checked="${user?.isHr()}">
+                    <label class="form-check-label" for="isHr">
+                        HR
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn btn-primary mb-3">Применить</button>
+        </div>
+    </form>
+</div>
+</body>
