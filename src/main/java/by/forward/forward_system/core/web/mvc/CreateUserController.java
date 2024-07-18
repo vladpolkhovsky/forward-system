@@ -20,23 +20,9 @@ public class CreateUserController {
 
     @GetMapping("/create-user")
     public String createUser(Model model) {
-
         model.addAttribute("menuName", "Создать пользователя");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("user", new UserUiDto(null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null));
+        model.addAttribute("user", new UserUiDto());
         model.addAttribute("actionUrl", "/create-user");
         model.addAttribute("passwordRequired", true);
 
@@ -44,9 +30,9 @@ public class CreateUserController {
     }
 
     @GetMapping("/update-user")
-    public String updateUserSelector(Model model) {
+    public String updateUser(Model model) {
 
-        model.addAttribute("menuName", "Выберите пользователя для обновления");
+        model.addAttribute("menuName", "Выберите пользователя для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("userList", userUiService.getAllUsers());
 
@@ -54,9 +40,9 @@ public class CreateUserController {
     }
 
     @GetMapping("/update-user/{id}")
-    public String createUser(Model model, @PathVariable Long id) {
+    public String updateUser(Model model, @PathVariable Long id) {
 
-        model.addAttribute("menuName", "Обновление пользователя");
+        model.addAttribute("menuName", "Изменение пользователя");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("user", userUiService.getUser(id));
         model.addAttribute("passwordRequired", false);

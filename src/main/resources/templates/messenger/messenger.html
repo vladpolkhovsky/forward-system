@@ -1,0 +1,377 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Мессенджер</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container mt-3">
+    <div class="row">
+        <div class="col-4 overflow-scroll" style="height: 720px; max-height: 720px;">
+            <ul class="list-group list-group" id="chat-list-box">
+                <!--                <li id="chat-10" class="list-group-item d-flex justify-content-between align-items-start"-->
+                <!--                    onclick="loadChat(1)">-->
+                <!--                    <div class="ms-2 me-auto">-->
+                <!--                        <div class="fw-bold"><small>Текст</small></div>-->
+                <!--                    </div>-->
+                <!--                    <span class="badge text-bg-primary rounded-pill" id="new-msg-chat-10">14</span>-->
+                <!--                </li>-->
+            </ul>
+        </div>
+        <div class="col-8">
+            <h5><strong id="chat-header">Назваение чата</strong></h5>
+            <ul id="chat-messages" class="list-group overflow-scroll" style="height: 680px; max-height: 680px;">
+                <!--                <li class="list-group-item d-flex justify-content-between align-items-start">-->
+                <!--                    <div class="ms-2 me-auto">-->
+                <!--                        <div class="fw-bold"><small>User</small></div>-->
+                <!--                        <p class="m-0 mb-1">message</p>-->
+                <!--                        <p class="m-0 mb-2"><a href="1">attachment</a></p>-->
+                <!--                        <p><a class="btn btn-primary me-2" href="">Option</a></p>-->
+                <!--                    </div>-->
+                <!--                </li>-->
+            </ul>
+            <div class="row">
+                <div class="col-7">
+                    <textarea id="msg-text-area" class="form-control-plaintext border border-5"
+                              placeholder="Ваше сообщение"
+                              rows="3"></textarea>
+                </div>
+                <div class="col-5">
+                    <div class="row">
+                        <input id="msg-file" type="file" class="form-control mt-2">
+                    </div>
+                    <div class="row mt-1">
+                        <button type="button" class="btn btn-primary" onclick="sendMessage()">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const textArea = document.getElementById("msg-text-area");
+    const file = document.getElementById("msg-file");
+    const messageBox = document.getElementById("chat-messages");
+    const chatHeader = document.getElementById("chat-header");
+    const chatBox = document.getElementById("chat-list-box");
+    const userId = [[${userId}]];
+
+    const stompClient = new StompJs.Client({
+        brokerURL: '/ws'
+    });
+
+    const chatTable = {};
+    const chatNewMessages = {};
+    const usersTable = {};
+    const orderTable = {};
+    const messagesTable = {};
+
+    const context = {
+        userId: userId
+    }
+
+    function drawDate(date) {
+        if (date.length > 7) {
+            return date.substring(0, 10) + ' ' + date.substring(11, 16);
+        }
+        let h = (date[3] < 10 ? "0" : "") + date[3];
+        let m = (date[4] < 10 ? "0" : "") + date[4];
+        return `${date[2]}.${date[1]}.${date[0]} ${h}:${m}`;
+    }
+
+    function loadChat(chatId) {
+        context.chatId = chatId;
+        chatNewMessages[chatId] = 0;
+        chatHeader.innerText = chatTable[chatId].chatName;
+        messageBox.innerHTML = '';
+        drawChatNewMessageCount(chatId);
+        for (let message of messagesTable[chatId]) {
+            drawNewMessageInList(message);
+        }
+        sendMessageViewed();
+    }
+
+    function drawNewChatInList(chatJson) {
+        let chatListItemHtml =
+            `<li id="chat-${chatJson.id}" class="list-group-item d-flex justify-content-between align-items-start" onclick="loadChat(${chatJson.id})">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold"><small>${chatJson.chatName}</small></div>
+                    <p class="m-0"><small>${drawDate(chatJson.lastMessageTime)}</small></p>
+                </div>
+                <span class="badge text-bg-primary rounded-pill" id="new-msg-chat-${chatJson.id}"></span>
+            </li>`;
+        let div = document.createElement('div');
+        div.innerHTML = chatListItemHtml;
+        chatBox.append(div);
+    }
+
+    function calcUserNameAndRole(message) {
+        if (message.isSystemMessage) {
+            return "Система";
+        } else {
+            let user = usersTable[message.fromUserId];
+            let role = '';
+            if (chatTable[context.chatId].orderId !== null) {
+                let order = orderTable[chatTable[context.chatId].orderId];
+                for (const participant of order.participants) {
+                    if (participant.userId === message.fromUserId) {
+                        role += participant.participantsTypeRus + '. ';
+                    }
+                }
+            }
+            if (role.length > 0) {
+                return `${role}${user.fio} (${user.username}).`
+            } else {
+                return `${user.fio} (${user.username}).`
+            }
+        }
+    }
+
+    function loadAttachments(message) {
+        if (message.attachments.length !== 0) {
+            let attachments = '';
+            for (const attachment of message.attachments) {
+                attachments += `<a class="" target="_blank" href="/load-file/${attachment.attachmentId}">${attachment.attachmentName}</a>`
+            }
+            return attachments;
+        } else {
+            return '';
+        }
+    }
+
+    function loadOptions(message) {
+        if (message.options.length !== 0) {
+            let options = '';
+            for (const option of message.options) {
+                options += `<a class="btn btn-primary" href="${option.content}">${option.optionName}</a>`
+            }
+            return options;
+        } else {
+            return '';
+        }
+    }
+
+    function drawNewMessageInList(message) {
+        let newMessageHtml =
+            `<li class="list-group-item d-flex justify-content-between align-items-start">
+                <div class="ms-2 me-auto">
+                    <div class="fw-bold"><small>${calcUserNameAndRole(message)}</small></div>
+                    <pre class="m-0 mb-1">${message.content}</pre>
+                    <p class="m-0 mb-1">${loadAttachments(message)}</p>
+                    <p class="m-0 mb-1">${loadOptions(message)}</p>
+                    <p class="m-0"><small>${drawDate(message.createdAt)}</small></p>
+                </div>
+            </li>`;
+        let div = document.createElement('div');
+        div.innerHTML = newMessageHtml;
+        messageBox.append(div);
+        messageBox.scroll(0, messageBox.scrollHeight);
+    }
+
+    function drawChatNewMessageCount(chatId) {
+        let elementById = document.getElementById('new-msg-chat-' + chatId);
+        elementById.innerText = chatNewMessages[chatId];
+    }
+
+    function incChatNewMessageCount(chatId) {
+        chatNewMessages[chatId]++;
+    }
+
+    function processWsMessage(message) {
+        if (chatTable[message.chatId] === undefined) {
+            return;
+        }
+        if (context.chatId !== message.chatId) {
+            incChatNewMessageCount(message.chatId);
+            drawChatNewMessageCount(message.chatId);
+        } else {
+            chatTable[message.chatId].messages.push(message);
+            drawNewMessageInList(message);
+            sendMessageViewed()
+        }
+    }
+
+    function processWsNewChat(message) {
+        alert("Вас добавили в новый чат. Обновите страницу!");
+    }
+
+    function processChatNewMsgCount(chatJson) {
+        for (let message of chatJson.messages) {
+            for (let messageToUser of message.messageToUser) {
+                if (messageToUser.userId === context.userId && !messageToUser.isViewed) {
+                    incChatNewMessageCount(chatJson.id);
+                }
+            }
+        }
+        drawChatNewMessageCount(chatJson.id);
+    }
+
+    function processInitChatJson(chatListJson) {
+        for (const chatJsonElement of chatListJson) {
+            console.log(chatJsonElement);
+            chatNewMessages[chatJsonElement.id] = 0;
+            chatTable[chatJsonElement.id] = chatJsonElement;
+            messagesTable[chatJsonElement.id] = chatJsonElement.messages;
+            drawNewChatInList(chatJsonElement);
+            processChatNewMsgCount(chatJsonElement)
+        }
+    }
+
+    function processInitUserJson(chatUserJson) {
+        for (const chatUserJsonElement of chatUserJson) {
+            usersTable[chatUserJsonElement.id] = chatUserJsonElement;
+        }
+    }
+
+    function processInitOrderJson(chatOrderJson) {
+        for (const chatOrderJsonElement of chatOrderJson) {
+            orderTable[chatOrderJsonElement.id] = chatOrderJsonElement;
+        }
+    }
+
+    function processWsNotification(notification) {
+        if (notification.type === "message") {
+            processWsMessage(notification.value);
+        }
+        if (notification.type === "new-chat") {
+            processWsNewChat(notification.value);
+        }
+    }
+
+    // processInitChatJson(chatJson);
+    // processInitOrderJson(orderJson);
+    // processInitUserJson(userJson);
+
+    stompClient.onConnect = (frame) => {
+        console.log('Connected: ' + frame);
+        stompClient.subscribe(`/user/${context.userId}/queue/messages`, (notification) => {
+            processWsNotification(JSON.parse(notification.body))
+        });
+        // stompClient.publish({
+        //     destination: "/app/chat",
+        //     headers: {priority: 9},
+        //     body: JSON.stringify({
+        //         userId: 1
+        //     })
+        // });
+    };
+
+    stompClient.onWebSocketError = (error) => {
+        console.error('Error with websocket', error);
+    };
+
+    stompClient.onStompError = (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+    };
+
+    stompClient.activate();
+
+    function sendMessageViewed() {
+        httpRequest('POST', `/api/messenger/message-viewed/${context.chatId}/${context.userId}`, null, null);
+    }
+
+    function httpRequest(method, requestUrl, body, callback) {
+        let xhr = new XMLHttpRequest();
+        xhr.open(method, requestUrl, false);
+
+        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+        xhr.onload = function () {
+            console.log(xhr.status)
+            if (xhr.status === 200) {
+                if (callback) {
+                    callback(xhr.response);
+                }
+            } else {
+                alert(`Ошибка '${requestUrl}' ${xhr.status} : ${xhr.statusText}`);
+            }
+        }
+
+        xhr.onerror = function () {
+            alert("Запрос не удался");
+        };
+
+        xhr.send(body);
+    }
+
+    httpRequest('GET', `/api/messenger/${context.userId}/chats`, null, (resp) => {
+        processInitChatJson(JSON.parse(resp))
+    });
+
+    httpRequest('GET', `/api/messenger/${context.userId}/orders`, null, (resp) => {
+        processInitOrderJson(JSON.parse(resp))
+    });
+
+    httpRequest('GET', `/api/messenger/users`, null, (resp) => {
+        processInitUserJson(JSON.parse(resp))
+    });
+
+    function sendMessage() {
+        let attachments = [];
+        if (context.fileLoaded === true) {
+            attachments.push({
+                fileAttachmentId: context.fileAttachmentId
+            });
+        }
+        if (textArea.value.length > 0 || context.fileLoaded) {
+            stompClient.publish({
+                destination: "/app/chat",
+                body: JSON.stringify({
+                    userId: context.userId,
+                    chatId: context.chatId,
+                    message: textArea.value,
+                    attachments: attachments
+                })
+            });
+            file.value = '';
+            textArea.value = '';
+            context.fileLoaded = false;
+            context.fileBase64 = null;
+            context.fileName = null;
+            context.fileAttachmentId = null;
+        }
+    }
+
+
+    function handleFileSelect(evt) {
+        console.log(evt)
+        let f = evt.target.files[0];
+        let reader = new FileReader();
+        alert("Згрузка файла. Не отправляйте сообщение пока файл не загрузится!")
+        reader.onload = (function (theFile) {
+            return function (e) {
+                let binaryData = e.target.result;
+                let base64String = window.btoa(binaryData);
+
+                context.fileBase64 = base64String;
+                context.fileName = theFile.name;
+                context.fileLoaded = false;
+
+                httpRequest('POST', "/api/messenger/file-save", JSON.stringify({
+                    fileName: context.fileName,
+                    base64content: context.fileBase64
+                }), (body) => {
+                    context.fileAttachmentId = parseInt(body)
+                    alert('Файл успешно загружен!');
+                })
+
+                context.fileLoaded = true;
+            };
+        })(f);
+        reader.readAsBinaryString(f);
+    }
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        file.addEventListener('change', handleFileSelect, false);
+    } else {
+        alert('Данный браузер не поддерживает загрузку файлов!');
+    }
+</script>
+</div>
+</body>
+</html>

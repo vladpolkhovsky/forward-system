@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @EnableWebSecurity
 @Configuration
-public class SecurityConfig  {
+public class SecurityConfig {
 
 //    @Bean
 //    public InMemoryUserDetailsManager inMemoryUserDetailsManager() {
@@ -25,7 +25,8 @@ public class SecurityConfig  {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-            .authorizeHttpRequests(t -> t.anyRequest().authenticated())
+            .authorizeHttpRequests(t -> t.requestMatchers("/ws").permitAll()
+                .anyRequest().authenticated())
             .formLogin(t -> t.loginPage("/login").defaultSuccessUrl("/main").permitAll());
         return http.build();
     }

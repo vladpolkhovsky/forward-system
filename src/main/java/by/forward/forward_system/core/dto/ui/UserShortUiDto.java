@@ -1,6 +1,16 @@
 package by.forward.forward_system.core.dto.ui;
 
-public record UserShortUiDto(Long id,
-                             String username,
-                             String fio) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserShortUiDto {
+    private Long id;
+    private String username;
+    private String fio;
 }

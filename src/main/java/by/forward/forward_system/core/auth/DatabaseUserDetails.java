@@ -8,11 +8,11 @@ import java.util.Collection;
 
 public class DatabaseUserDetails implements UserDetails {
 
-    private Collection<? extends GrantedAuthority> authorities;
+    private final Collection<? extends GrantedAuthority> authorities;
 
-    private String username;
+    private final String username;
 
-    private String password;
+    private final String password;
 
     public DatabaseUserDetails(UserEntity user) {
         this.authorities = user.getAuthorities();

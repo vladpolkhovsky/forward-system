@@ -1,19 +1,27 @@
 package by.forward.forward_system.core.dto.ui;
 
-public record UserUiDto(Long id,
-                        String username,
-                        String password,
-                        String fio,
-                        String contact,
-                        String contactTelegram,
-                        String email,
-                        String payment,
-                        String other,
-                        Boolean isAdmin,
-                        Boolean isManager,
-                        Boolean isAuthor,
-                        Boolean isHr,
-                        Boolean isOwner
-                        ) {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserUiDto {
+    private Long id;
+    private String username;
+    private String password;
+    private String fio;
+    private String contact;
+    private String contactTelegram;
+    private String email;
+    private String payment;
+    private String other;
+    private Boolean isAdmin;
+    private Boolean isManager;
+    private Boolean isAuthor;
+    private Boolean isHr;
+    private Boolean isOwner;
 }

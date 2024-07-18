@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.messenger.UserDto;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import lombok.AllArgsConstructor;
@@ -7,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +30,7 @@ public class UserService {
     }
 
     public UserEntity save(UserEntity user) {
+        user.setCreatedAt(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         return userRepository.save(user);
     }
@@ -50,6 +54,22 @@ public class UserService {
     }
 
     public List<UserEntity> getAllUsers() {
-        return userRepository.findAll();
+        return userRepository.findByRolesNotContains(Authority.AUTHOR.getAuthority());
+    }
+
+    public List<UserEntity> findUsersWithRole(String role) {
+        return userRepository.findByRolesContains(role);
+    }
+
+    public List<UserDto> getAllUsersConverted() {
+        return userRepository.findAll().stream().map(this::convertUserToDto).toList();
+    }
+
+    public UserDto convertUserToDto(UserEntity userEntity) {
+        UserDto userDto = new UserDto();
+        userDto.setId(userEntity.getId());
+        userDto.setFio(userEntity.getFio());
+        userDto.setUsername(userEntity.getUsername());
+        return userDto;
     }
 }

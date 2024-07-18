@@ -15,6 +15,7 @@ docker/local-db-data
 .springBeans
 .sts4-cache
 bin/
+files/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 

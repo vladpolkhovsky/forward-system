@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 @AllArgsConstructor
-public class MainMenuController {
+public class
+MainMenuController {
 
     private final UserUiService userUiService;
 

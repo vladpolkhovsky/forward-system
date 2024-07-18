@@ -1,11 +1,12 @@
 package by.forward.forward_system.core.services.ui;
 
+import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.dto.ui.UserShortUiDto;
 import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.core.UserService;
+import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,8 +22,9 @@ public class UserUiService {
 
     private final UserService userService;
 
-    public UserShortUiDto getCurrentUser() {
+    private final ChatService chatService;
 
+    public UserShortUiDto getCurrentUser() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
 
@@ -34,6 +36,10 @@ public class UserUiService {
             userEntity.getUsername(),
             userEntity.getFio()
         );
+    }
+
+    public Long getCurrentUserId() {
+        return getCurrentUser().getId();
     }
 
     public List<UserUiDto> getAllUsers() {
@@ -50,18 +56,33 @@ public class UserUiService {
 
     public UserUiDto createUser(UserUiDto userUiDto) {
         UserEntity user = toEntity(userUiDto);
-
         UserEntity save = userService.save(user);
+
+        if (userUiDto.getIsAdmin()) {
+            List<ChatDto> adminTalkChats = chatService.getAdminTalkChats();
+            List<Long> chatIds = adminTalkChats.stream()
+                .map(ChatDto::getId)
+                .toList();
+            chatService.addUserToChats(
+                chatIds,
+                save.getId()
+            );
+        }
 
         return toDto(save);
     }
 
     public UserUiDto updateUser(Long id, UserUiDto userUiDto) {
         UserEntity user = toEntity(userUiDto);
-
         UserEntity save = userService.update(id, user);
-
         return toDto(save);
+    }
+
+    public List<UserUiDto> findOnlyRole(Authority authority) {
+        return userService.findUsersWithRole(authority.getAuthority())
+            .stream()
+            .map(this::toDto)
+            .toList();
     }
 
     private UserUiDto toDto(UserEntity userEntity) {
@@ -86,23 +107,35 @@ public class UserUiService {
     private UserEntity toEntity(UserUiDto userUiDto) {
         UserEntity userEntity = new UserEntity();
 
-        userEntity.setId(userUiDto.id());
-        userEntity.setUsername(userUiDto.username());
-        userEntity.setPassword(userUiDto.password());
-        userEntity.setFio(userUiDto.fio());
-        userEntity.setContact(userUiDto.contact());
-        userEntity.setEmail(userUiDto.email());
-        userEntity.setOther(userUiDto.other());
-        userEntity.setContactTelegram(userEntity.getContactTelegram());
-        userEntity.setPayment(userEntity.getPayment());
+        userEntity.setId(userUiDto.getId());
+        userEntity.setUsername(userUiDto.getUsername());
+        userEntity.setPassword(userUiDto.getPassword());
+        userEntity.setFio(userUiDto.getFio());
+        userEntity.setContact(userUiDto.getContact());
+        userEntity.setEmail(userUiDto.getEmail());
+        userEntity.setOther(userUiDto.getOther());
+        userEntity.setContactTelegram(userUiDto.getContactTelegram());
+        userEntity.setPayment(userUiDto.getPayment());
         userEntity.setRoles("");
 
-        if (userUiDto.isAuthor() != null && userUiDto.isAuthor()) {
+        if (userUiDto.getIsAuthor() != null && userUiDto.getIsAuthor()) {
             userEntity.addRole(Authority.AUTHOR);
         }
 
-        if (userUiDto.isAdmin() != null && userUiDto.isAdmin()) {
+        if (userUiDto.getIsAdmin() != null && userUiDto.getIsAdmin()) {
             userEntity.addRole(Authority.ADMIN);
+        }
+
+        if (userUiDto.getIsManager() != null && userUiDto.getIsManager()) {
+            userEntity.addRole(Authority.MANAGER);
+        }
+
+        if (userUiDto.getIsHr() != null && userUiDto.getIsHr()) {
+            userEntity.addRole(Authority.HR);
+        }
+
+        if (userUiDto.getIsOwner() != null && userUiDto.getIsOwner()) {
+            userEntity.addRole(Authority.OWNER);
         }
 
         return userEntity;

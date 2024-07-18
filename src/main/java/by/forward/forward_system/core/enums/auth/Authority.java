@@ -21,14 +21,14 @@ public enum Authority implements GrantedAuthority {
         this.authorityName = authorityName;
     }
 
-    @Override
-    public String getAuthority() {
-        return authorityName;
-    }
-
     public static Authority byName(String name) {
         Optional<Authority> any = Arrays.stream(Authority.values()).filter(t -> t.authorityName.equalsIgnoreCase(name)).findAny();
         return any.orElse(null);
+    }
+
+    @Override
+    public String getAuthority() {
+        return authorityName;
     }
 
 }

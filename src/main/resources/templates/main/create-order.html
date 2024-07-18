@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div class="row">
+        <h3 th:text="${menuName}"></h3>
+    </div>
+</div>
+<!--/*@thymesVar id="order" type="by.forward.forward_system.core.dto.ui.OrderUiDto"*/-->
+<div class="container mt-3">
+    <form class="container g-3 border" th:action="${actionUrl}" th:object="${order}" method="post">
+        <div class="row">
+            <div class="col-12">
+                <input type="text" th:field="*{id}" hidden>
+                <div class="mb-3 mt-3 row">
+                    <label for="name" class="col-sm-2 col-form-label">Название заказа</label>
+                    <div class="col-sm-10">
+                        <input required id="name" type="text" class="form-control" th:field="*{name}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="techName" class="col-sm-2 col-form-label">Номер ТЗ</label>
+                    <div class="col-sm-10">
+                        <input required id="techName" type="number" class="form-control" th:field="*{techNumber}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="workType" class="col-sm-2 col-form-label">Тип работы</label>
+                    <div class="col-sm-10">
+                        <input required id="workType" type="text" class="form-control" th:field="*{workType}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Дисциплина</label>
+                    <div class="col-sm-10">
+                        <input required id="discipline" type="text" class="form-control" th:field="*{discipline}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Тема</label>
+                    <div class="col-sm-10">
+                        <input required id="subject" type="text" class="form-control" th:field="*{subject}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Оригинальность</label>
+                    <div class="col-sm-10">
+                        <input required id="originality" type="number" class="form-control" th:field="*{originality}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Система проверки</label>
+                    <div class="col-sm-10">
+                        <input required id="verificationSystem" type="text" class="form-control"
+                               th:field="*{verificationSystem}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
+                    <div class="col-sm-10">
+                        <input required id="intermediateDeadline" type="date" class="form-control"
+                               name="intermediateDeadline"
+                               th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd')}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Окончательный срок сдачи</label>
+                    <div class="col-sm-10">
+                        <input required id="deadline" type="date" class="form-control"
+                               name="deadline"
+                               th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd')}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="discipline" class="col-sm-2 col-form-label">Дополнительные требования и
+                        пожелания</label>
+                    <div class="col-sm-10">
+                        <textarea required id="other" class="form-control" th:field="*{other}" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="takingCost" class="col-sm-2 col-form-label">Стоимость взятия</label>
+                    <div class="col-sm-10">
+                        <input required id="takingCost" type="number" class="form-control" th:field="*{takingCost}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="authorCost" class="col-sm-2 col-form-label">Стоимость для автора</label>
+                    <div class="col-sm-10">
+                        <input required id="authorCost" type="number" class="form-control" th:field="*{authorCost}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn btn-primary mb-3">Продолжить</button>
+        </div>
+    </form>
+</div>
+</body>

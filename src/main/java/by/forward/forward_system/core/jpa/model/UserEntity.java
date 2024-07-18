@@ -4,10 +4,9 @@ import by.forward.forward_system.core.enums.auth.Authority;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.security.core.GrantedAuthority;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +19,7 @@ import java.util.Optional;
 public class UserEntity {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -42,7 +41,7 @@ public class UserEntity {
     @Column(name = "payment", nullable = false, length = 255)
     private String payment;
 
-    @Column(name = "contactTelegram", nullable = false, length = 512)
+    @Column(name = "contact_telegram", nullable = false, length = 512)
     private String contactTelegram;
 
     @Column(name = "email", nullable = false, length = 512)
@@ -50,6 +49,9 @@ public class UserEntity {
 
     @Column(name = "other", length = 2048)
     private String other;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     public void addRole(Authority grantedAuthority) {
         List<Authority> authorities = getAuthorities();

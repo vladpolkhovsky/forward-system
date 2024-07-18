@@ -1,0 +1,30 @@
+package by.forward.forward_system.core.dto.messenger;
+
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Getter
+@Setter
+public class OrderDto {
+    private Long id;
+    private String name;
+    private Integer techNumber;
+    private String orderStatus;
+    private String orderStatusRus;
+    private String workType;
+    private String discipline;
+    private String subject;
+    private String verificationSystem;
+    private Integer originality;
+    private LocalDateTime intermediateDeadline;
+    private LocalDateTime deadline;
+    private String other;
+    private Integer authorCost;
+    private Integer takingCost;
+    private LocalDateTime createdAt;
+    private List<OrderAttachmentDto> attachments;
+    private List<OrderParticipantDto> participants;
+}
