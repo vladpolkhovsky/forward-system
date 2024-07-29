@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS forward_system.users
 (
     id               bigint primary key,
     username         varchar(100) unique not null,
-    fio              varchar(255)        not null,
+    firstname        varchar(255)        not null,
+    lastname         varchar(255)        not null,
+    surname          varchar(255)        not null,
     roles            varchar(512)        not null,
     contact          varchar(512)        not null,
     contact_telegram varchar(512)        not null,
@@ -16,7 +18,7 @@ CREATE TABLE IF NOT EXISTS forward_system.users
 );
 
 insert into forward_system.users
-values (0, 'admin', 'Админов Админ', 'OWNER,ADMIN,MANAGER,HR', '+375291390442', '+375291390442', 'vpl@mail.ru', '123',
+values (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+375291390442', '+375291390442', 'vpl@mail.ru', '123',
         '321', '$2a$10$V5PwvJ4Q0GkdGVeLITkjh.FxzzgnwAMJ8FYi1L42Bb4b4QymzmyPC',
         now());
 
@@ -64,17 +66,17 @@ create table if not exists forward_system.orders
 
 create table if not exists forward_system.update_order_request
 (
-    id          bigint primary key,
-    order_id    bigint       not null references forward_system.orders (id),
-    update_request_from_user_id bigint not null references forward_system.users (id),
-    catcher_ids varchar(1024),
-    authors_ids varchar(1024),
-    hosts_ids   varchar(1024),
-    experts_ids varchar(1024),
-    new_status  varchar(255) not null references forward_system.order_statuses (name),
-    is_viewed   boolean,
-    is_accepted boolean,
-    created_at  timestamp
+    id                          bigint primary key,
+    order_id                    bigint       not null references forward_system.orders (id),
+    update_request_from_user_id bigint       not null references forward_system.users (id),
+    catcher_ids                 varchar(1024),
+    authors_ids                 varchar(1024),
+    hosts_ids                   varchar(1024),
+    experts_ids                 varchar(1024),
+    new_status                  varchar(255) not null references forward_system.order_statuses (name),
+    is_viewed                   boolean,
+    is_accepted                 boolean,
+    created_at                  timestamp
 );
 
 create table if not exists forward_system.order_participants_type
@@ -119,17 +121,17 @@ create table if not exists forward_system.chat_type
     name varchar(255) primary key
 );
 
-insert into forward_system.chat_type values
-    ('REQUEST_ORDER_CHAT'),
-    ('ORDER_CHAT'),
-    ('OTHER_CHAT');
+insert into forward_system.chat_type
+values ('REQUEST_ORDER_CHAT'),
+       ('ORDER_CHAT'),
+       ('OTHER_CHAT');
 
 create table if not exists forward_system.chats
 (
     id                bigint primary key,
     chat_name         varchar(1024) not null,
     order_id          bigint references forward_system.orders (id),
-    type         varchar(255) not null references forward_system.chat_type(name),
+    type              varchar(255)  not null references forward_system.chat_type (name),
     last_message_date timestamp     not null
 );
 
@@ -187,3 +189,16 @@ create table if not exists forward_system.chat_message_attachments
     message_id    bigint not null references forward_system.chat_messages (id),
     attachment_id bigint not null references forward_system.attachments (id)
 );
+
+create table if not exists forward_system.reviews
+(
+    id             bigint primary key,
+    order_id       bigint    not null references forward_system.orders (id),
+    attachment_id  bigint    not null references forward_system.attachments (id),
+    review_message varchar(16384),
+    review_verdict varchar(16384),
+    is_reviewed    boolean   not null,
+    reviewed_by    bigint references forward_system.users (id),
+    review_date    timestamp,
+    created_at     timestamp not null
+)

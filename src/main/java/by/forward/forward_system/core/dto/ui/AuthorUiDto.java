@@ -14,6 +14,9 @@ public class AuthorUiDto {
     private String username;
     private String password;
     private String fio;
+    private String firstname;
+    private String lastname;
+    private String surname;
     private String contact;
     private String contactTelegram;
     private String email;

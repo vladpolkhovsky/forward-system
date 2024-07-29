@@ -12,6 +12,7 @@ import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.ChatNames;
@@ -35,6 +36,7 @@ public class OrderService {
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final ChatService chatService;
     private final ChatTypeRepository chatTypeRepository;
+    private final ReviewRepository reviewRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -170,6 +172,10 @@ public class OrderService {
         orderParticipantEntity.setParticipantsType(orderParticipantsTypeEntity);
         orderParticipantEntity.setOrder(orderEntity);
 
+        if (orderParticipantsTypeEntity.getType().equals(ParticipantType.MAIN_AUTHOR)) {
+            orderParticipantEntity.setFee(orderEntity.getAuthorCost());
+        }
+
         orderParticipantRepository.save(orderParticipantEntity);
         orderEntity.getOrderParticipants().add(orderParticipantEntity);
     }
@@ -182,6 +188,15 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("OrderStatus not found with name " + to.getName()));
             orderEntity.setOrderStatus(orderStatusEntity);
         }
+        orderRepository.save(orderEntity);
+    }
+
+    public void changeStatus(Long orderId, OrderStatus to) {
+        OrderEntity orderEntity = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+        OrderStatusEntity orderStatusEntity = orderStatusRepository.findById(to.getName())
+            .orElseThrow(() -> new RuntimeException("OrderStatus not found with name " + to.getName()));
+        orderEntity.setOrderStatus(orderStatusEntity);
         orderRepository.save(orderEntity);
     }
 
@@ -349,5 +364,70 @@ public class OrderService {
         );
 
         changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
+    }
+
+    public List<ChatAttachmentProjection> getOrderMainChatAttachments(Long orderId) {
+        return orderRepository.findChatAttachmentsByOrderId(orderId);
+    }
+
+    public UserEntity findExpert(Long orderId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (orderParticipant.getParticipantsType().getType().equals(ParticipantType.EXPERT)) {
+                return orderParticipant.getUser();
+            }
+        }
+        throw new RuntimeException("Expert not found");
+    }
+
+    public void addMainAuthorToOrder(Long orderId, Long authorId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        UserEntity userEntity = userRepository.findById(authorId).orElseThrow(() -> new RuntimeException("User not found"));
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (orderParticipant.getUser().getId().equals(authorId)) {
+                return;
+            }
+        }
+
+        OrderParticipantsTypeEntity orderParticipantsTypeEntity = orderParticipantsTypeRepository.findById(ParticipantType.MAIN_AUTHOR.getName())
+            .orElseThrow(() -> new RuntimeException("Main Author not found"));
+
+        OrderParticipantEntity orderParticipant = new OrderParticipantEntity();
+        orderParticipant.setOrder(orderEntity);
+        orderParticipant.setUser(userEntity);
+        orderParticipant.setFee(0);
+        orderParticipant.setParticipantsType(orderParticipantsTypeEntity);
+
+        orderParticipant = orderParticipantRepository.save(orderParticipant);
+        orderEntity.getOrderParticipants().add(orderParticipant);
+
+        orderEntity = orderRepository.save(orderEntity);
+
+        ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Message type not found"));
+        for (ChatEntity chat : orderEntity.getChats()) {
+            if (chat.getChatType().getType().equals(ChatType.ORDER_CHAT)) {
+                chatService.addUserToChats(Collections.singletonList(chat.getId()), authorId);
+                messageService.sendMessage(
+                    null,
+                    chat,
+                    "В чат добавлен пользователь %s".formatted(userEntity.getFio()),
+                    true,
+                    messageType,
+                    Collections.emptyList(),
+                    Collections.emptyList()
+                );
+            }
+        }
+    }
+
+    public void applyFee(Long orderId, Map<Long, Integer> authorIdToFee) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (authorIdToFee.containsKey(orderParticipant.getUser().getId())) {
+                orderParticipant.setFee(authorIdToFee.get(orderParticipant.getUser().getId()));
+                orderParticipantRepository.save(orderParticipant);
+            }
+        }
     }
 }

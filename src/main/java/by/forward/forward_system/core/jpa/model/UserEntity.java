@@ -29,8 +29,14 @@ public class UserEntity {
     @Column(name = "password", nullable = false, length = 100)
     private String password;
 
-    @Column(name = "fio", nullable = false, length = 255)
-    private String fio;
+    @Column(name = "firstname", nullable = false, length = 255)
+    private String firstname;
+
+    @Column(name = "lastname", nullable = false, length = 255)
+    private String lastname;
+
+    @Column(name = "surname", nullable = false, length = 255)
+    private String surname;
 
     @Column(name = "roles", nullable = false, length = 512)
     private String roles;
@@ -78,4 +84,13 @@ public class UserEntity {
         return String.join(",", authorities.stream().map(Authority::getAuthority).toList());
     }
 
+    public String getFio() {
+        return getFirstname() + " " +
+            getLastname().substring(0, 1) + ". " +
+            getSurname().substring(0, 1) + ".";
+    }
+
+    public String getFioFull() {
+        return getFirstname() + " " + getLastname() + " " + getSurname();
+    }
 }

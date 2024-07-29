@@ -7,7 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.MediaType;
+import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @Controller
@@ -29,11 +31,16 @@ public class FilesController {
         AttachmentEntity attachmentEntity = attachmentRepository.findById(fileId).orElseThrow(() -> new RuntimeException("File not found"));
 
         Resource resource = new FileSystemResource(Path.of(attachmentEntity.getFilepath()));
-        //DOCX media type
-        httpServletResponse.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
 
+        String mimeType = Files.probeContentType(resource.getFile().toPath());
         String filename = resource.getFilename().substring(resource.getFilename().indexOf(' ') + 1);
-        httpServletResponse.setHeader("Content-Disposition", "attachment; filename=" + filename);
+
+        ContentDisposition attachment = ContentDisposition.builder("attachment")
+            .filename(filename, StandardCharsets.UTF_8)
+            .build();
+
+        httpServletResponse.setContentType(mimeType);
+        httpServletResponse.setHeader("Content-Disposition", attachment.toString());
 
         InputStream inputStream = resource.getInputStream();
         OutputStream outputStream = httpServletResponse.getOutputStream();

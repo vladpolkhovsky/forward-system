@@ -13,6 +13,9 @@ public class UserUiDto {
     private Long id;
     private String username;
     private String password;
+    private String firstname;
+    private String lastname;
+    private String surname;
     private String fio;
     private String contact;
     private String contactTelegram;

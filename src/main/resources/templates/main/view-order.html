@@ -108,7 +108,11 @@
             <ul class="list-group">
                 <li class="list-group-item d-flex justify-content-between align-items-center"
                     th:each="participant, stat : ${participants}">
-                    <p class="mb-0" th:text="${participant.getFio()} + |(| + ${participant.getUserName()} + |)|"></p>
+                    <p class="mb-0">
+                        <span th:text="${participant.getFio()} + | (| + ${participant.getUserName()} + |) |"></span>
+                        <mark class="mb-0" th:if="${participant.getHasFee()}" th:text="| Доля: | + ${participant.getFee()}"></mark>
+                    </p>
+
                     <span class="badge text-bg-primary rounded-pill"
                           th:text="${participant.getParticipantTypeRus()}"></span>
                 </li>

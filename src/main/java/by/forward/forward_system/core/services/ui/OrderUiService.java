@@ -1,5 +1,8 @@
 package by.forward.forward_system.core.services.ui;
 
+import by.forward.forward_system.core.dto.messenger.OrderDto;
+import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
+import by.forward.forward_system.core.dto.ui.AuthorWithFeeDto;
 import by.forward.forward_system.core.dto.ui.OrderParticipantUiDto;
 import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
@@ -10,6 +13,7 @@ import by.forward.forward_system.core.jpa.model.AuthorEntity;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
 import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UserService;
@@ -163,6 +167,7 @@ public class OrderUiService {
             orderParticipantDto.setParticipantType(orderParticipant.getParticipantsType().getType().getName());
             orderParticipantDto.setParticipantTypeRus(orderParticipant.getParticipantsType().getType().getRusName());
             orderParticipantDto.setFee(orderParticipant.getFee());
+            orderParticipantDto.setHasFee(orderParticipant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR));
             participantUiDtos.add(orderParticipantDto);
         }
         return participantUiDtos;
@@ -211,6 +216,27 @@ public class OrderUiService {
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
         orderEntity.setCreatedAt(orderUiDto.getCreatedAt());
         return orderEntity;
+    }
+
+    public List<ChatAttachmentProjection> getOrderMainChatAttachments(Long orderId) {
+        return orderService.getOrderMainChatAttachments(orderId);
+    }
+
+    public List<AuthorWithFeeDto> getOrderAuthorsWithFee(Long orderId) {
+        OrderEntity order = orderService.getById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+        List<AuthorWithFeeDto> authorWithFeeDtos = new ArrayList<>();
+        for (OrderParticipantEntity participant : order.getOrderParticipants()) {
+            if (!participant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR)) {
+                continue;
+            }
+            authorWithFeeDtos.add(new AuthorWithFeeDto(
+                participant.getUser().getId(),
+                participant.getUser().getFio(),
+                participant.getUser().getUsername(),
+                participant.getFee()
+            ));
+        }
+        return authorWithFeeDtos;
     }
 
 }

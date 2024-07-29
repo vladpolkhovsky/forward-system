@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class ManagerMenuComponent implements MenuComponent {
+public class OrderActionMenuComponent implements MenuComponent {
 
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
@@ -21,11 +21,14 @@ public class ManagerMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Создать заказ", "/create-order"),
-            new MenuEntry.MenuItem("Изменить заказ", "/update-order"),
-            new MenuEntry.MenuItem("Прсмотреть заказы", "/view-order")
+            new MenuEntry.MenuItem("Отправить заказ в работу", "/order-to-in-progress"),
+            new MenuEntry.MenuItem("Отправить заказ на проверку", "/review-order"),
+            new MenuEntry.MenuItem("Изменить запрос на проверку", "/edit-review-order"),
+            new MenuEntry.MenuItem("Посмотреть ответы экспертов", "/review-order-answers"),
+            new MenuEntry.MenuItem("Добавить автора в заказ", "/add-author-to-order"),
+            new MenuEntry.MenuItem("Изменение долей в заказе", "/change-fee-in-order")
         );
-        return new MenuEntry("Меню заказов", list);
+        return new MenuEntry("Меню продвижения заказов", list);
     }
 
 }

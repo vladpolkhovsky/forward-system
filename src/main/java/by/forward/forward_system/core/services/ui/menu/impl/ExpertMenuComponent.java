@@ -11,21 +11,18 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class ManagerMenuComponent implements MenuComponent {
+public class ExpertMenuComponent implements MenuComponent {
 
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
-        return authorities.contains(Authority.OWNER) || authorities.contains(Authority.ADMIN) || authorities.contains(Authority.MANAGER);
+        return authorities.contains(Authority.OWNER) || authorities.contains(Authority.AUTHOR);
     }
 
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Создать заказ", "/create-order"),
-            new MenuEntry.MenuItem("Изменить заказ", "/update-order"),
-            new MenuEntry.MenuItem("Прсмотреть заказы", "/view-order")
+            new MenuEntry.MenuItem("Просмотреть запросы на проверку", "/expert-review-requests")
         );
-        return new MenuEntry("Меню заказов", list);
+        return new MenuEntry("Меню Эксперта", list);
     }
-
 }

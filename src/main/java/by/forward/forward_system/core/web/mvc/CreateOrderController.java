@@ -1,9 +1,7 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
-import by.forward.forward_system.core.dto.ui.OrderParticipantUiDto;
-import by.forward.forward_system.core.dto.ui.OrderUiDto;
-import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
+import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
@@ -18,7 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @AllArgsConstructor
@@ -149,6 +149,72 @@ public class CreateOrderController {
         updateRequestOrderService.save(updateOrderRequestDto);
         orderService.changeStatus(orderId, OrderStatus.DISTRIBUTION, OrderStatus.ADMIN_REVIEW);
         return new RedirectView("/order-to-in-progress");
+    }
+
+    @GetMapping(value = "/add-author-to-order")
+    public String addAuthorToOrder(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.IN_PROGRESS.getName(),
+            OrderStatus.REVIEW.getName(),
+            OrderStatus.FINALIZATION.getName()
+        ));
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите заказ в которого хотите добавить автора");
+        model.addAttribute("ordersList", allOrdersInStatus);
+        return "main/add-author-to-order-selector";
+    }
+
+    @GetMapping(value = "/add-author-to-order/{orderId}")
+    public String addAuthorToOrder(Model model, @PathVariable Long orderId) {
+        List<UserSelectionUiDto> allAuthors = orderUiService.getAllAuthors();
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите атвора, которого хотите добавить в заказ");
+        model.addAttribute("authors", allAuthors);
+        return "main/add-author-to-order";
+    }
+
+    @PostMapping(value = "/add-author-to-order/{orderId}")
+    public RedirectView addAuthorToOrder(Model model, @PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        Long authorId = Long.parseLong(body.getFirst("author"));
+        orderService.addMainAuthorToOrder(orderId, authorId);
+        return new RedirectView("/change-fee-in-order");
+    }
+
+    @GetMapping(value = "/change-fee-in-order")
+    public String changeFeeInOrder(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.IN_PROGRESS.getName(),
+            OrderStatus.REVIEW.getName(),
+            OrderStatus.FINALIZATION.getName()
+        ));
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите заказ в котором хотите изменить доли авторов");
+        model.addAttribute("ordersList", allOrdersInStatus);
+        return "main/change-fee-in-order-selector";
+    }
+
+    @GetMapping(value = "/change-fee-in-order/{orderId}")
+    public String changeFeeInOrder(Model model, @PathVariable Long orderId) {
+        List<AuthorWithFeeDto> authorWithFeeDtos = orderUiService.getOrderAuthorsWithFee(orderId);
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Укажите доли авторов");
+        model.addAttribute("authors", authorWithFeeDtos);
+        model.addAttribute("order", orderUiService.getOrder(orderId));
+        model.addAttribute("orderId", orderId);
+        return "main/change-fee-in-order";
+    }
+
+
+    @PostMapping(value = "/change-fee-in-order/{orderId}")
+    public RedirectView changeFeeInOrder(Model model, @PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        Map<Long, Integer> authorIdToFee = new HashMap<>();
+        for (Map.Entry<String, List<String>> idToFee : body.entrySet()) {
+            Long userId = Long.parseLong(idToFee.getKey().split("-")[1]);
+            Integer fee = Integer.parseInt(idToFee.getValue().get(0));
+            authorIdToFee.put(userId, fee);
+        }
+        orderService.applyFee(orderId, authorIdToFee);
+        return new RedirectView("/main");
     }
 
 }

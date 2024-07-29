@@ -60,6 +60,9 @@ public class AuthorUiService {
             authorEntity.getUser().getUsername(),
             authorEntity.getUser().getPassword(),
             authorEntity.getUser().getFio(),
+            authorEntity.getUser().getFirstname(),
+            authorEntity.getUser().getLastname(),
+            authorEntity.getUser().getSurname(),
             authorEntity.getUser().getContact(),
             authorEntity.getUser().getContactTelegram(),
             authorEntity.getUser().getEmail(),
@@ -87,7 +90,9 @@ public class AuthorUiService {
         userEntity.setId(authorUiDto.getId());
         userEntity.setUsername(authorUiDto.getUsername());
         userEntity.setPassword(authorUiDto.getPassword());
-        userEntity.setFio(authorUiDto.getFio());
+        userEntity.setLastname(authorUiDto.getLastname());
+        userEntity.setFirstname(authorUiDto.getFirstname());
+        userEntity.setSurname(authorUiDto.getSurname());
         userEntity.setContact(authorUiDto.getContact());
         userEntity.setEmail(authorUiDto.getEmail());
         userEntity.setOther(authorUiDto.getOther());

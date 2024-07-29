@@ -16,7 +16,7 @@ public class OrderParticipantEntity {
     private Long id;
 
     @Column(name = "fee")
-    private Double fee;
+    private Integer fee;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)

@@ -43,7 +43,9 @@ public class UserService {
             userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        userEntity.setFio(user.getFio());
+        userEntity.setFirstname(user.getFirstname());
+        userEntity.setLastname(user.getLastname());
+        userEntity.setSurname(user.getSurname());
         userEntity.setUsername(user.getUsername());
         userEntity.setContact(user.getContact());
         userEntity.setEmail(user.getEmail());

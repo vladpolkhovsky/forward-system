@@ -34,7 +34,7 @@ public class UserUiService {
         return new UserShortUiDto(
             userEntity.getId(),
             userEntity.getUsername(),
-            userEntity.getFio()
+            userEntity.getFioFull()
         );
     }
 
@@ -90,6 +90,9 @@ public class UserUiService {
             userEntity.getId(),
             userEntity.getUsername(),
             userEntity.getPassword(),
+            userEntity.getFirstname(),
+            userEntity.getLastname(),
+            userEntity.getSurname(),
             userEntity.getFio(),
             userEntity.getContact(),
             userEntity.getContactTelegram(),
@@ -110,7 +113,9 @@ public class UserUiService {
         userEntity.setId(userUiDto.getId());
         userEntity.setUsername(userUiDto.getUsername());
         userEntity.setPassword(userUiDto.getPassword());
-        userEntity.setFio(userUiDto.getFio());
+        userEntity.setLastname(userUiDto.getLastname());
+        userEntity.setFirstname(userUiDto.getFirstname());
+        userEntity.setSurname(userUiDto.getSurname());
         userEntity.setContact(userUiDto.getContact());
         userEntity.setEmail(userUiDto.getEmail());
         userEntity.setOther(userUiDto.getOther());
