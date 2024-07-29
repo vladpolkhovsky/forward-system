@@ -16,4 +16,4 @@ EXPOSE 8081/tcp
 
 RUN echo Run the forward-system
 
-CMD ["java", "-jar", "./build/libs/telegram-bot-0.0.1.jar"]
+CMD ["java", "-jar", "./build/libs/forward-system-0.0.1.jar"]
