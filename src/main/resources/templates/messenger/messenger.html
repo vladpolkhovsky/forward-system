@@ -22,7 +22,7 @@
             </ul>
         </div>
         <div class="col-8">
-            <h5><strong id="chat-header">Назваение чата</strong></h5>
+            <h5><strong id="chat-header">Название чата</strong></h5>
             <ul id="chat-messages" class="list-group overflow-scroll" style="height: 680px; max-height: 680px;">
                 <!--                <li class="list-group-item d-flex justify-content-between align-items-start">-->
                 <!--                    <div class="ms-2 me-auto">-->
@@ -157,13 +157,13 @@
 
     function drawNewMessageInList(message) {
         let newMessageHtml =
-            `<li class="list-group-item d-flex justify-content-between align-items-start">
+            `<li class="list-group-item mt-2">
                 <div class="ms-2 me-auto">
                     <div class="fw-bold"><small>${calcUserNameAndRole(message)}</small></div>
                     <pre class="m-0 mb-1">${message.content}</pre>
                     <p class="m-0 mb-1">${loadAttachments(message)}</p>
                     <p class="m-0 mb-1">${loadOptions(message)}</p>
-                    <p class="m-0"><small>${drawDate(message.createdAt)}</small></p>
+                    <p class="m-0 text-end"><small>${drawDate(message.createdAt)}</small></p>
                 </div>
             </li>`;
         let div = document.createElement('div');

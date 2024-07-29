@@ -383,6 +383,7 @@ public class OrderService {
     public void addMainAuthorToOrder(Long orderId, Long authorId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(authorId).orElseThrow(() -> new RuntimeException("User not found"));
+
         for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
             if (orderParticipant.getUser().getId().equals(authorId)) {
                 return;
