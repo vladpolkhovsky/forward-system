@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.dto.ui;
 
+import by.forward.forward_system.core.dto.messenger.MessageAttachmentDto;
+import by.forward.forward_system.core.dto.rest.AttachmentDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,7 +15,10 @@ public class ReviewDto {
     private Long attachmentId;
     private String reviewMessage;
     private String reviewVerdict;
+    private Integer reviewVerdictMark;
+    private Long reviewFileId;
     private Boolean isReviewed;
+    private Boolean isAccepted;
     private Long reviewedByUserId;
     private LocalDateTime reviewDate;
     private LocalDateTime createdAt;

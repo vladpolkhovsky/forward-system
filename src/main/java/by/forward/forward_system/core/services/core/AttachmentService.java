@@ -44,6 +44,18 @@ public class AttachmentService {
     }
 
     @SneakyThrows
+    public AttachmentEntity saveAttachment(String filename, byte[] content) {
+        filename = filename;
+        String filepath = UUID.randomUUID().toString() + " " + filename;
+        Path filePath = Path.of(filesDerictoryPath.toAbsolutePath().toString(), filepath);
+        Files.write(filePath, content);
+        AttachmentEntity attachmentEntity = new AttachmentEntity();
+        attachmentEntity.setFilename(filename);
+        attachmentEntity.setFilepath(filePath.toString());
+        return attachmentRepository.save(attachmentEntity);
+    }
+
+    @SneakyThrows
     private String saveWSAttachment(AttachmentDto attachment) {
         byte[] decode = Base64.getDecoder().decode(attachment.getBase64content());
         boolean exists = Files.exists(filesDerictoryPath);
@@ -55,6 +67,5 @@ public class AttachmentService {
         Files.write(filePath, decode);
         return filePath.toString();
     }
-
 
 }

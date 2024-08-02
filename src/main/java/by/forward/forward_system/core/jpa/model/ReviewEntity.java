@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -31,8 +30,18 @@ public class ReviewEntity {
     @Column(name = "review_verdict", length = 16384)
     private String reviewVerdict;
 
+    @Column(name = "review_mark", length = 16384)
+    private Integer reviewMark;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "review_file_id")
+    private AttachmentEntity reviewAttachment;
+
     @Column(name = "is_reviewed", nullable = false)
     private Boolean isReviewed = false;
+
+    @Column(name = "is_accepted", nullable = false)
+    private Boolean isAccepted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reviewed_by")

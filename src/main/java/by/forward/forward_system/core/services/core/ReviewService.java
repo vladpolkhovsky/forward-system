@@ -1,19 +1,18 @@
 package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.dto.ui.ReviewDto;
-import by.forward.forward_system.core.jpa.model.AttachmentEntity;
-import by.forward.forward_system.core.jpa.model.OrderEntity;
-import by.forward.forward_system.core.jpa.model.ReviewEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
-import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
-import by.forward.forward_system.core.jpa.repository.OrderRepository;
-import by.forward.forward_system.core.jpa.repository.ReviewRepository;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
+import by.forward.forward_system.core.services.messager.ChatService;
+import by.forward.forward_system.core.services.messager.MessageService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,6 +26,10 @@ public class ReviewService {
     private final AttachmentRepository attachmentRepository;
     private final ReviewRepository reviewRepository;
     private final OrderService orderService;
+    private final MessageService messageService;
+    private final ChatService chatService;
+    private final ChatRepository chatRepository;
+    private final ChatMessageTypeRepository chatMessageTypeRepository;
 
     public void saveNewReviewRequest(Long orderId, Long attachmentId, String messageText) {
         ReviewEntity reviewEntity = new ReviewEntity();
@@ -36,6 +39,7 @@ public class ReviewService {
         reviewEntity.setReviewedBy(getOrderExpert(orderId));
 
         reviewEntity.setIsReviewed(false);
+        reviewEntity.setIsAccepted(false);
         reviewEntity.setCreatedAt(LocalDateTime.now());
 
         reviewEntity.setReviewMessage(messageText);
@@ -68,6 +72,7 @@ public class ReviewService {
         reviewEntity.setReviewMessage(reviewDto.getReviewMessage());
         reviewEntity.setReviewVerdict(reviewDto.getReviewVerdict());
         reviewEntity.setIsReviewed(reviewDto.getIsReviewed());
+        reviewEntity.setIsAccepted(reviewDto.getIsAccepted());
         reviewEntity.setReviewedBy(userEntity);
         reviewEntity.setReviewDate(reviewDto.getReviewDate());
         reviewEntity.setCreatedAt(reviewDto.getCreatedAt());
@@ -83,49 +88,47 @@ public class ReviewService {
         reviewDto.setReviewMessage(reviewEntity.getReviewMessage());
         reviewDto.setReviewVerdict(reviewEntity.getReviewVerdict());
         reviewDto.setIsReviewed(reviewEntity.getIsReviewed());
+        reviewDto.setIsAccepted(reviewEntity.getIsAccepted());
         reviewDto.setReviewedByUserId(reviewEntity.getReviewedBy().getId());
         reviewDto.setReviewDate(reviewEntity.getReviewDate());
         reviewDto.setCreatedAt(reviewEntity.getCreatedAt());
+        reviewDto.setReviewVerdictMark(reviewEntity.getReviewMark());
+        if (reviewEntity.getReviewAttachment() != null) {
+            reviewDto.setReviewFileId(reviewEntity.getReviewAttachment().getId());
+        }
         return reviewDto;
     }
 
     public List<ReviewProjectionDto> getNotReviewed() {
         List<ReviewEntity> all = reviewRepository.findAll();
-        return all.stream()
+        List<ReviewEntity> list = all.stream()
             .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
             .filter(t -> !t.getIsReviewed())
-            .map(t -> {
-                ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
-                reviewProjectionDto.setReviewId(t.getId());
-                reviewProjectionDto.setOrderId(t.getOrder().getId());
-                reviewProjectionDto.setOrderTechNumber(t.getOrder().getTechNumber());
-                reviewProjectionDto.setOrderName(t.getOrder().getName());
-                reviewProjectionDto.setIsReviewed(false);
-                reviewProjectionDto.setReviewStatusName("Не проверено");
-                return reviewProjectionDto;
-            })
             .toList();
+        return getReviewProjectionDtos(list);
     }
 
     public List<ReviewProjectionDto> getAllReviews() {
         List<ReviewEntity> all = reviewRepository.findAll();
-        return all.stream()
-            .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
-            .map(t -> {
-                ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
-                reviewProjectionDto.setReviewId(t.getId());
-                reviewProjectionDto.setOrderId(t.getOrder().getId());
-                reviewProjectionDto.setOrderTechNumber(t.getOrder().getTechNumber());
-                reviewProjectionDto.setOrderName(t.getOrder().getName());
-                reviewProjectionDto.setIsReviewed(t.getIsReviewed());
-                reviewProjectionDto.setReviewStatusName(t.getIsReviewed() ? "Проверено" : "Не проверено");
-                return reviewProjectionDto;
-            })
-            .toList();
+        return getReviewProjectionDtos(all);
+    }
+
+    private String getStatusRus(ReviewEntity t) {
+        if (!t.getIsReviewed())
+            return "Не проверено";
+        if (t.getIsAccepted()) {
+            return "Проврено. Принято";
+        } else {
+            return "Проверено, но не принято";
+        }
     }
 
     public List<ReviewProjectionDto> getNotReviewedByUser(Long currentUserId) {
         List<ReviewEntity> all = reviewRepository.findAllByUserId(currentUserId);
+        return getReviewProjectionDtos(all);
+    }
+
+    private List<ReviewProjectionDto> getReviewProjectionDtos(List<ReviewEntity> all) {
         return all.stream()
             .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
             .map(t -> {
@@ -135,7 +138,7 @@ public class ReviewService {
                 reviewProjectionDto.setOrderTechNumber(t.getOrder().getTechNumber());
                 reviewProjectionDto.setOrderName(t.getOrder().getName());
                 reviewProjectionDto.setIsReviewed(t.getIsReviewed());
-                reviewProjectionDto.setReviewStatusName(t.getIsReviewed() ? "Проверено" : "Не проверено");
+                reviewProjectionDto.setReviewStatusName(getStatusRus(t));
                 return reviewProjectionDto;
             })
             .toList();
@@ -145,13 +148,47 @@ public class ReviewService {
         return toDto(reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("review not found")));
     }
 
-    public void saveVerdict(Long reviewId, String verdict) {
+    public void saveVerdict(Long reviewId, String verdict, Integer verdictMark, Long fileId) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
+        AttachmentEntity attachment = attachmentRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Attachment not found"));
 
         reviewEntity.setIsReviewed(true);
         reviewEntity.setReviewDate(LocalDateTime.now());
         reviewEntity.setReviewVerdict(verdict);
+        reviewEntity.setReviewMark(verdictMark);
+        reviewEntity.setReviewAttachment(attachment);
 
+        reviewRepository.save(reviewEntity);
+    }
+
+    public void acceptReview(Long orderId, Long reviewId, Boolean verdict, Boolean sendToChat) {
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
+        reviewEntity.setIsAccepted(true);
         reviewEntity = reviewRepository.save(reviewEntity);
+
+        if (verdict) {
+            orderService.changeStatus(orderId, OrderStatus.GUARANTEE);
+            return;
+        }
+
+        if (sendToChat) {
+            Long orderChatId = orderService.getOrderMainChat(orderId);
+            ChatEntity chatEntity = chatRepository.findById(orderChatId).orElseThrow(() -> new RuntimeException("Chat not found"));
+            ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("CMT not found"));
+
+            ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
+            attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
+
+            messageService.sendMessage(null,
+                chatEntity,
+                "Эксперт прислал рецензаю для доработки",
+                true,
+                chatMessageTypeEntity,
+                Collections.singletonList(attachmentEntity),
+                Collections.emptyList()
+            );
+        }
+
+        orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
     }
 }

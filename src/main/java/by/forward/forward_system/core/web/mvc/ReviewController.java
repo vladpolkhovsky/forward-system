@@ -3,22 +3,23 @@ package by.forward.forward_system.core.web.mvc;
 import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.ReviewDto;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.model.ReviewEntity;
 import by.forward.forward_system.core.jpa.repository.ReviewRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
+import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.ReviewService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Arrays;
@@ -34,6 +35,7 @@ public class ReviewController {
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
     private final OrderService orderService;
+    private final AttachmentService attachmentService;
 
     @GetMapping(value = "/review-order")
     public String reviewSelector(Model model) {
@@ -98,10 +100,17 @@ public class ReviewController {
         return "main/expert-review-order-answer";
     }
 
+    @SneakyThrows
     @PostMapping(value = "/expert-review-order-answer/{orderId}/{reviewId}")
-    public RedirectView expertAnswer(@PathVariable Long orderId, @PathVariable Long reviewId, @RequestBody MultiValueMap<String, String> body) {
-        String verdict = body.getFirst("verdict");
-        reviewService.saveVerdict(reviewId, verdict);
+    public RedirectView expertAnswer(@PathVariable Long orderId,
+                                     @PathVariable Long reviewId,
+                                     @RequestParam("verdict") String verdict,
+                                     @RequestParam("verdict-mark") Integer verdictMark,
+                                     @RequestParam("verdict-file") MultipartFile file) {
+
+        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());
+
+        reviewService.saveVerdict(reviewId, verdict, verdictMark, attachmentEntity.getId());
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
         return new RedirectView("/main");
     }
@@ -163,6 +172,15 @@ public class ReviewController {
 
         orderService.changeStatus(orderId, OrderStatus.REVIEW);
 
+        return new RedirectView("/main");
+    }
+
+    @GetMapping(value = "/review-order-answers-accept/{orderId}/{reviewId}")
+    public RedirectView reviewOrderAnswers(@PathVariable Long orderId,
+                                           @PathVariable Long reviewId,
+                                           @RequestParam(value = "verdict") Boolean verdict,
+                                           @RequestParam(value = "send-to-chat", defaultValue = "false") Boolean sendToChat) {
+        reviewService.acceptReview(orderId, reviewId, verdict, sendToChat);
         return new RedirectView("/main");
     }
 

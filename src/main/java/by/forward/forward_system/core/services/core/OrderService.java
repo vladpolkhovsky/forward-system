@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.dto.messenger.OrderAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
@@ -304,7 +305,7 @@ public class OrderService {
         ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
         chatService.createChat(
             Collections.singletonList(catcherEntity),
-            "Отказ от заказ №%s автором %s (%s)".formatted(orderEntity.getId(), userEntity.getFio(), userEntity.getUsername()),
+            "Отказ от заказ №%s автором %s (%s)".formatted(orderEntity.getTechNumber(), userEntity.getFio(), userEntity.getUsername()),
             orderEntity,
             "Автор %s (%s) не готов взять в работу заказ. Причина: %s".formatted(userEntity.getFio(), userEntity.getUsername(), decline.getDeclineText()),
             chatTypeEntity
@@ -368,6 +369,16 @@ public class OrderService {
 
     public List<ChatAttachmentProjection> getOrderMainChatAttachments(Long orderId) {
         return orderRepository.findChatAttachmentsByOrderId(orderId);
+    }
+
+    public Long getOrderMainChat(Long orderId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        for (ChatEntity chat : orderEntity.getChats()) {
+            if (chat.getChatType().getType().equals(ChatType.ORDER_CHAT)) {
+                return chat.getId();
+            }
+        }
+        return null;
     }
 
     public UserEntity findExpert(Long orderId) {

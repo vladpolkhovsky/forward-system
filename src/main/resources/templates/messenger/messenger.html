@@ -23,15 +23,22 @@
         </div>
         <div class="col-8">
             <h5><strong id="chat-header">Название чата</strong></h5>
+            <div id="orderInfo" hidden="">
+                <div class="row">
+                    <div class="col-5"><strong>Название:</strong> <span id="orderName">Терминология, основополагающие моменты и особенности занятости и безработицы</span>
+                    </div>
+                    <div class="col-4"><strong>Номер ТЗ:</strong> <span id="orderTechNumber">123</span></div>
+                    <div class="col-3"><span id="orderStatus"><a class="btn btn-primary">На распределении</a></span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <strong>Срок сдачи: </strong><span id="orderDeadline">02.08.2024</span>
+                    </div>
+                </div>
+            </div>
+            <hr/>
             <ul id="chat-messages" class="list-group overflow-scroll" style="height: 680px; max-height: 680px;">
-                <!--                <li class="list-group-item d-flex justify-content-between align-items-start">-->
-                <!--                    <div class="ms-2 me-auto">-->
-                <!--                        <div class="fw-bold"><small>User</small></div>-->
-                <!--                        <p class="m-0 mb-1">message</p>-->
-                <!--                        <p class="m-0 mb-2"><a href="1">attachment</a></p>-->
-                <!--                        <p><a class="btn btn-primary me-2" href="">Option</a></p>-->
-                <!--                    </div>-->
-                <!--                </li>-->
             </ul>
             <div class="row">
                 <div class="col-7">
@@ -58,7 +65,12 @@
     const messageBox = document.getElementById("chat-messages");
     const chatHeader = document.getElementById("chat-header");
     const chatBox = document.getElementById("chat-list-box");
-    const userId = [[${userId}]];
+    const orderInfoBox = document.getElementById("orderInfo");
+    const orderName = document.getElementById("orderName");
+    const orderTechNumber = document.getElementById("orderTechNumber");
+    const orderStatus = document.getElementById("orderStatus");
+    const orderDeadline = document.getElementById("orderDeadline");
+    const userId = 0;
 
     const stompClient = new StompJs.Client({
         brokerURL: '/ws'
@@ -76,11 +88,35 @@
 
     function drawDate(date) {
         if (date.length > 7) {
-            return date.substring(0, 10) + ' ' + date.substring(11, 16);
+            return date.substring(8, 10) + '-' + date.substring(5, 7) + ' ' + date.substring(11, 16);
         }
         let h = (date[3] < 10 ? "0" : "") + date[3];
         let m = (date[4] < 10 ? "0" : "") + date[4];
-        return `${date[2]}.${date[1]}.${date[0]} ${h}:${m}`;
+        let M = (date[1] < 10 ? "0" : "") + date[1];
+        let D = (date[2] < 10 ? "0" : "") + date[2];
+        return `${D}-${M} ${h}:${m}`;
+    }
+
+    function drawOrderStatus(orderStatus, orderStatusRus) {
+        let color = 'btn-secondary';
+        if (orderStatus === 'IN_PROGRESS') {
+            color = 'btn-primary';
+        }
+        if (orderStatus === 'REVIEW') {
+            color = 'btn-info';
+        }
+        if (orderStatus === 'FINALIZATION') {
+            color = 'btn-warning';
+        }
+        if (orderStatus === 'GUARANTEE' || orderStatus === 'CLOSED') {
+            color = 'btn-success';
+        }
+        return `<a class="btn ${color}">${orderStatusRus}</a>`;
+    }
+
+    function drawDateWide(dateArray) {
+        let format = (k) => (k < 10 ? "0" : "") + k;
+        return `${format(dateArray[2])}-${format(dateArray[1])}-${dateArray[0]}`
     }
 
     function loadChat(chatId) {
@@ -88,11 +124,20 @@
         chatNewMessages[chatId] = 0;
         chatHeader.innerText = chatTable[chatId].chatName;
         messageBox.innerHTML = '';
+        if (chatTable[chatId].orderId !== null) {
+            orderInfoBox.removeAttribute("hidden");
+            orderName.innerText = orderTable[chatTable[chatId].orderId].name;
+            orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
+            orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
+            orderDeadline.innerText = drawDateWide(orderTable[chatTable[chatId].orderId].intermediateDeadline);
+        } else {
+            orderInfoBox.setAttribute("hidden", "");
+        }
         drawChatNewMessageCount(chatId);
         for (let message of messagesTable[chatId]) {
             drawNewMessageInList(message);
         }
-        sendMessageViewed();
+        //sendMessageViewed();
     }
 
     function drawNewChatInList(chatJson) {
@@ -114,19 +159,19 @@
             return "Система";
         } else {
             let user = usersTable[message.fromUserId];
-            let role = '';
+            let role = [];
             if (chatTable[context.chatId].orderId !== null) {
                 let order = orderTable[chatTable[context.chatId].orderId];
                 for (const participant of order.participants) {
                     if (participant.userId === message.fromUserId) {
-                        role += participant.participantsTypeRus + '. ';
+                        role.push(participant.participantsTypeRus);
                     }
                 }
             }
             if (role.length > 0) {
-                return `${role}${user.fio} (${user.username}).`
+                return `${user.username} (${role.join(', ')})`;
             } else {
-                return `${user.fio} (${user.username}).`
+                return `${user.username}`
             }
         }
     }
@@ -156,11 +201,17 @@
     }
 
     function drawNewMessageInList(message) {
+        let textEndFlag = false;
+        if (message.fromUserId === context.userId) {
+            textEndFlag = true;
+        }
         let newMessageHtml =
             `<li class="list-group-item mt-2">
                 <div class="ms-2 me-auto">
-                    <div class="fw-bold"><small>${calcUserNameAndRole(message)}</small></div>
-                    <pre class="m-0 mb-1">${message.content}</pre>
+                    <div class="fw-bold ${textEndFlag ? 'text-end' : ''}"><small>${calcUserNameAndRole(message)}</small></div>
+                    <blockquote class="blockquote">
+                        <pre class="m-0 mb-1" style="white-space: pre-wrap">${message.content}</pre>
+                    </blockquote>
                     <p class="m-0 mb-1">${loadAttachments(message)}</p>
                     <p class="m-0 mb-1">${loadOptions(message)}</p>
                     <p class="m-0 text-end"><small>${drawDate(message.createdAt)}</small></p>

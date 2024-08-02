@@ -5,6 +5,7 @@ import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -34,6 +35,29 @@ public class FilesController {
 
         String mimeType = Files.probeContentType(resource.getFile().toPath());
         String filename = resource.getFilename().substring(resource.getFilename().indexOf(' ') + 1);
+
+        ContentDisposition attachment = ContentDisposition.builder("attachment")
+            .filename(filename, StandardCharsets.UTF_8)
+            .build();
+
+        httpServletResponse.setContentType(mimeType);
+        httpServletResponse.setHeader("Content-Disposition", attachment.toString());
+
+        InputStream inputStream = resource.getInputStream();
+        OutputStream outputStream = httpServletResponse.getOutputStream();
+
+        StreamUtils.copy(inputStream, outputStream);
+        inputStream.close();
+        outputStream.close();
+    }
+
+    @GetMapping(value = "/load-server-file/expert-form")
+    @SneakyThrows
+    public void loadExpertForm(HttpServletResponse httpServletResponse) {
+        Resource resource = new ClassPathResource("/static/expert-form/expert-form.xlsx");
+
+        String mimeType = Files.probeContentType(resource.getFile().toPath());
+        String filename = "Форма рецензии.xlsx";
 
         ContentDisposition attachment = ContentDisposition.builder("attachment")
             .filename(filename, StandardCharsets.UTF_8)
