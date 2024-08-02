@@ -11,6 +11,9 @@
 <div class="container mt-3">
     <div class="row">
         <div class="col-4 overflow-scroll" style="height: 720px; max-height: 720px;">
+            <div class="row">
+                <input id="search" type="text" placeholder="Поиск чата">
+            </div>
             <ul class="list-group list-group" id="chat-list-box">
                 <!--                <li id="chat-10" class="list-group-item d-flex justify-content-between align-items-start"-->
                 <!--                    onclick="loadChat(1)">-->
@@ -70,7 +73,8 @@
     const orderTechNumber = document.getElementById("orderTechNumber");
     const orderStatus = document.getElementById("orderStatus");
     const orderDeadline = document.getElementById("orderDeadline");
-    const userId = 0;
+    const searchBar = document.getElementById("search");
+    const userId = [[${userId}]];
 
     const stompClient = new StompJs.Client({
         brokerURL: '/ws'
@@ -137,7 +141,7 @@
         for (let message of messagesTable[chatId]) {
             drawNewMessageInList(message);
         }
-        //sendMessageViewed();
+        sendMessageViewed();
     }
 
     function drawNewChatInList(chatJson) {
@@ -422,6 +426,32 @@
     } else {
         alert('Данный браузер не поддерживает загрузку файлов!');
     }
+
+    function search(value) {
+        let fndChats = [];
+        for (const key of Object.keys(chatTable)) {
+            let fnd = chatTable[key].chatName.includes(value);
+            if (fnd) {
+                fndChats.push(chatTable[key]);
+            }
+        }
+        chatBox.innerHTML = '';
+        fndChats.sort((a, b) => {
+            for (let i = 0; i < a.lastMessageTime.length; i++) {
+                let res = a.lastMessageTime[i] - b.lastMessageTime[i]
+                if (res !== 0) {
+                    return -1 * res;
+                }
+            }
+            return 0;
+        })
+        for (let i = 0; i < fndChats.length; i++) {
+            drawNewChatInList(fndChats[i]);
+            processChatNewMsgCount(fndChats[i])
+        }
+    }
+
+    searchBar.addEventListener('change', (v) => {search(v.target.value)});
 </script>
 </div>
 </body>
