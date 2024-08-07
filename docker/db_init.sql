@@ -22,21 +22,6 @@ INSERT INTO forward_system.users (id, username, firstname, lastname, surname, ro
 VALUES (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+375291390442', '+375291390442',
         'vpl@mail.ru', '123', '321', '$2a$10$V5PwvJ4Q0GkdGVeLITkjh.FxzzgnwAMJ8FYi1L42Bb4b4QymzmyPC',
         '2024-07-31 13:50:46.688700');
-INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
-                                  other, payment, password, created_at)
-VALUES (-1, 'Polkhovskiy', 'Владислав', 'Полховский', 'Геннадьевич', 'AUTHOR', '+375291390442 (тг)',
-        '+375291390442 телеграм', 'vlad.polkhovsky@gmail.com', '123', 'Альфа банк',
-        '$2a$10$FoFr3GAhevTDqjskuaAYnuwWdTmg.KQ/rwue9ccOCMZMhiZ3z1GNq', '2024-07-31 16:52:22.475484');
-INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
-                                  other, payment, password, created_at)
-VALUES (-2, 'Darya', 'Дарья', 'Кухновец', 'Михайловна', 'AUTHOR', '+375291390442 (тг)', '+375291390442 телеграм',
-        'vlad.polkhovsky@gmail.com', '123', 'Альфа банк',
-        '$2a$10$E.Qn63JnXziYoq5T9IUiuO1jvpx.lkkjJRttp1b176CWMPLeYUn7W', '2024-07-31 16:52:56.702319');
-INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
-                                  other, payment, password, created_at)
-VALUES (-3, 'goncharov', 'Геннадий', 'Полховский', 'Николевич', 'MANAGER', '+375291390442 (тг)',
-        '+375291390442 телеграм', 'vlad.polkhovsky@gmail.com', '123', 'Альфа банк',
-        '$2a$10$/xRlfa/0a7e0MSH9yCQhoub3BaUc/MqPYurrxj2qd/9sK2ojejJbO', '2024-07-31 16:54:02.002848');
 
 CREATE TABLE IF NOT EXISTS forward_system.authors
 (
@@ -45,11 +30,6 @@ CREATE TABLE IF NOT EXISTS forward_system.authors
     quality    varchar(512)  not null,
     created_by bigint        not null references forward_system.users (id)
 );
-
-INSERT INTO forward_system.authors (id, subjects, quality, created_by)
-VALUES (-1, 'Высшая математика', 'Слабый', 0);
-INSERT INTO forward_system.authors (id, subjects, quality, created_by)
-VALUES (-2, 'Высшая математика', 'Слабый', 0);
 
 create table if not exists forward_system.order_statuses
 (
@@ -156,30 +136,12 @@ create table if not exists forward_system.chats
     last_message_date timestamp     not null
 );
 
-INSERT INTO forward_system.chats (id, chat_name, order_id, type, last_message_date)
-VALUES (0, 'Чат с Администрацией Polkhovskiy', null, 'OTHER_CHAT', '2024-07-31 16:52:22.602229');
-INSERT INTO forward_system.chats (id, chat_name, order_id, type, last_message_date)
-VALUES (-1, 'Чат с Администрацией Darya', null, 'OTHER_CHAT', '2024-07-31 16:52:56.797214');
-INSERT INTO forward_system.chats (id, chat_name, order_id, type, last_message_date)
-VALUES (-2, 'НОВЫЕ ЗАКАЗЫ для Polkhovskiy', null, 'OTHER_CHAT', '2024-07-31 16:54:14.331271');
-INSERT INTO forward_system.chats (id, chat_name, order_id, type, last_message_date)
-VALUES (-3, 'НОВЫЕ ЗАКАЗЫ для Darya', null, 'OTHER_CHAT', '2024-07-31 16:54:14.355404');
-
 create table if not exists forward_system.chat_members
 (
     id      bigint primary key,
     chat_id bigint not null references forward_system.chats (id),
     user_id bigint not null references forward_system.users (id)
 );
-
-insert into forward_system.chat_members (id, chat_id, user_id)
-values (0, 0, -1);
-insert into forward_system.chat_members (id, chat_id, user_id)
-values (-1, -1, -2);
-insert into forward_system.chat_members (id, chat_id, user_id)
-values (-2, -2, -1);
-insert into forward_system.chat_members (id, chat_id, user_id)
-values (-3, -3, -2);
 
 create table if not exists forward_system.chat_message_types
 (

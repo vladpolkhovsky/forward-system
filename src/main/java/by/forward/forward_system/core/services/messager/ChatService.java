@@ -2,8 +2,10 @@ package by.forward.forward_system.core.services.messager;
 
 import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,8 @@ public class ChatService {
 
     private final UserRepository userRepository;
 
+    private final UserService userService;
+
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
         ChatEntity chatEntity = new ChatEntity();
 
@@ -42,6 +46,12 @@ public class ChatService {
         chatEntity = chatRepository.save(chatEntity);
 
         for (UserEntity chatMember : chatMembers) {
+            ChatMemberEntity chatMemberEntity = chatMemberService.addMemberToChat(chatMember, chatEntity);
+            chatEntity.getChatMembers().add(chatMemberEntity);
+        }
+
+        List<UserEntity> admins = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
+        for (UserEntity chatMember : admins) {
             ChatMemberEntity chatMemberEntity = chatMemberService.addMemberToChat(chatMember, chatEntity);
             chatEntity.getChatMembers().add(chatMemberEntity);
         }
@@ -65,7 +75,7 @@ public class ChatService {
         ChatEntity save = chatRepository.save(chatEntity);
 
         websocketMassageService.notifyNewChatCreated(
-            chatMembers.stream().map(UserEntity::getId).toList(),
+            chatEntity.getChatMembers().stream().map(ChatMemberEntity::getUser).map(UserEntity::getId).toList(),
             save.getId()
         );
 
@@ -109,10 +119,14 @@ public class ChatService {
 
     public void addUserToChats(List<Long> chatIds, Long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
-        List<ChatEntity> adminTalkChats = chatRepository
+        List<ChatEntity> chats = chatRepository
             .findAllById(chatIds);
-        for (ChatEntity adminTalkChat : adminTalkChats) {
-            chatMemberService.addMemberToChat(userEntity, adminTalkChat);
+        for (ChatEntity chat : chats) {
+            chatMemberService.addMemberToChat(userEntity, chat);
         }
+    }
+
+    public List<ChatDto> getAllChats() {
+        return chatRepository.findAll().stream().map(this::getChat).toList();
     }
 }

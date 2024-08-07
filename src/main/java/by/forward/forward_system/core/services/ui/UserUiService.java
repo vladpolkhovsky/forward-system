@@ -59,7 +59,7 @@ public class UserUiService {
         UserEntity save = userService.save(user);
 
         if (userUiDto.getIsAdmin()) {
-            List<ChatDto> adminTalkChats = chatService.getAdminTalkChats();
+            List<ChatDto> adminTalkChats = chatService.getAllChats();
             List<Long> chatIds = adminTalkChats.stream()
                 .map(ChatDto::getId)
                 .toList();

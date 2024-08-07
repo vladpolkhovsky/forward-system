@@ -13,4 +13,5 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query(nativeQuery = true, value = "select * from forward_system.reviews where reviewed_by = ?1 and not is_reviewed")
     List<ReviewEntity> findAllByUserId(Long currentUserId);
 
+    Integer countAllByIsAcceptedIsFalse();
 }

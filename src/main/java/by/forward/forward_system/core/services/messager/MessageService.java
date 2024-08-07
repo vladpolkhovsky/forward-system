@@ -6,6 +6,7 @@ import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
+import by.forward.forward_system.core.services.ui.UserUiService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

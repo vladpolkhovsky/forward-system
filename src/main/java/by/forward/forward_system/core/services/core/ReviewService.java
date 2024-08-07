@@ -191,4 +191,8 @@ public class ReviewService {
 
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
     }
+
+    public Integer getNotAcceptedCount() {
+        return reviewRepository.countAllByIsAcceptedIsFalse();
+    }
 }

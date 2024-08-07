@@ -33,6 +33,10 @@ public class UpdateRequestOrderService {
         this.userRepository = userRepository;
     }
 
+    public Integer countUpdateRequests() {
+        return updateOrderRequestRepository.countAllByIsViewedFalse();
+    }
+
     public UpdateOrderRequestDto create(MultiValueMap<String, String> multiValueMap,
                                         Long orderId,
                                         Integer orderTechNumber,

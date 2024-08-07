@@ -123,24 +123,32 @@
         return `${format(dateArray[2])}-${format(dateArray[1])}-${dateArray[0]}`
     }
 
+    function drawOrderInfo(chatId) {
+        orderInfoBox.removeAttribute("hidden");
+        orderName.innerText = orderTable[chatTable[chatId].orderId].name;
+        orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
+        orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
+        orderDeadline.innerText = drawDateWide(orderTable[chatTable[chatId].orderId].intermediateDeadline);
+    }
+
     function loadChat(chatId) {
         context.chatId = chatId;
         chatNewMessages[chatId] = 0;
         chatHeader.innerText = chatTable[chatId].chatName;
         messageBox.innerHTML = '';
+
         if (chatTable[chatId].orderId !== null) {
-            orderInfoBox.removeAttribute("hidden");
-            orderName.innerText = orderTable[chatTable[chatId].orderId].name;
-            orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
-            orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
-            orderDeadline.innerText = drawDateWide(orderTable[chatTable[chatId].orderId].intermediateDeadline);
+            drawOrderInfo(chatId);
         } else {
             orderInfoBox.setAttribute("hidden", "");
         }
+
         drawChatNewMessageCount(chatId);
+
         for (let message of messagesTable[chatId]) {
             drawNewMessageInList(message);
         }
+
         sendMessageViewed();
     }
 
@@ -265,6 +273,17 @@
         drawChatNewMessageCount(chatJson.id);
     }
 
+    function searchForChatId() {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        if (urlParams.has("chatId")) {
+            const chatId = parseInt(urlParams.get("chatId"));
+            const chatName = chatTable[chatId].chatName;
+            searchBar.value = chatName;
+            search(searchBar.value)
+        }
+    }
+
     function processInitChatJson(chatListJson) {
         for (const chatJsonElement of chatListJson) {
             console.log(chatJsonElement);
@@ -274,6 +293,7 @@
             drawNewChatInList(chatJsonElement);
             processChatNewMsgCount(chatJsonElement)
         }
+        searchForChatId()
     }
 
     function processInitUserJson(chatUserJson) {

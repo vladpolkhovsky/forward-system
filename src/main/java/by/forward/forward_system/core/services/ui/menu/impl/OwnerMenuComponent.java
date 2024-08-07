@@ -22,8 +22,8 @@ public class OwnerMenuComponent implements MenuComponent {
     public MenuEntry getMenuEntry() {
 
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Создать пользователя", "/create-user"),
-            new MenuEntry.MenuItem("Изменить пользователя", "/update-user")
+            new MenuEntry.MenuItem("Создать пользователя", "/create-user", false, null),
+            new MenuEntry.MenuItem("Изменить пользователя", "/update-user", false, null)
         );
 
         return new MenuEntry("Меню владельца", list);

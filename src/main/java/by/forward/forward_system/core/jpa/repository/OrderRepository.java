@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.repository;
 
+import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,4 +30,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         "where c.type = 'ORDER_CHAT' and c.order_id = :orderId " +
         "order by cm.created_at")
     List<ChatAttachmentProjection> findChatAttachmentsByOrderId(Long orderId);
+
+    @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status != :orderStatus")
+    Integer countAllByOrderStatusIsNot(String orderStatus);
 }

@@ -107,9 +107,12 @@ public class CreateOrderController {
     @GetMapping(value = "/view-order/{orderId}")
     public String viewOrder(Model model, @PathVariable Long orderId) {
         OrderDto order = orderService.getOrder(orderId);
+        Long orderMainChatId = orderService.getOrderMainChat(orderId);
         List<OrderParticipantUiDto> participants = orderUiService.getAllParticipants(orderId);
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
+        model.addAttribute("hasMainChat", orderMainChatId != null);
+        model.addAttribute("mainChatId", orderMainChatId);
         model.addAttribute("order", order);
         model.addAttribute("participants", participants);
         return "main/view-order";

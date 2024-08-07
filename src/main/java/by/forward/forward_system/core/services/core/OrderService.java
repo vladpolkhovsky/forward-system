@@ -442,4 +442,8 @@ public class OrderService {
             }
         }
     }
+
+    public Integer countNotClosed() {
+        return orderRepository.countAllByOrderStatusIsNot(OrderStatus.CLOSED.getName());
+    }
 }

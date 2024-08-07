@@ -4,7 +4,7 @@ import java.util.List;
 
 public record MenuEntry(String entryName, List<MenuItem> menuItems) {
 
-    public record MenuItem(String name, String link) {
+    public record MenuItem(String name, String link, Boolean hasNotification, Integer notification) {
 
     }
 }

@@ -14,4 +14,6 @@ public interface UpdateOrderRequestRepository extends JpaRepository<UpdateOrderR
         "where r.is_viewed = false order by created_at")
     List<UpdateOrderRequestEntity> getNotReviewedOrderRequests();
 
+    Integer countAllByIsViewedFalse();
+
 }
