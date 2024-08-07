@@ -220,4 +220,36 @@ public class CreateOrderController {
         return new RedirectView("/main");
     }
 
+    @GetMapping(value = "change-order-status")
+    public String changeOrderStatusSelector(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.IN_PROGRESS.getName(),
+            OrderStatus.REVIEW.getName(),
+            OrderStatus.FINALIZATION.getName(),
+            OrderStatus.GUARANTEE.getName(),
+            OrderStatus.CLOSED.getName()
+        ));
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите заказ в котором хотите изменить статус");
+        model.addAttribute("ordersList", allOrdersInStatus);
+        return "main/change-order-status-selector";
+    }
+
+    @GetMapping(value = "change-order-status/{orderId}")
+    public String changeOrderStatus(Model model, @PathVariable Long orderId) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Измените статус заказа");
+        model.addAttribute("statuses", OrderStatus.values());
+        model.addAttribute("order", orderUiService.getOrder(orderId));
+        model.addAttribute("orderId", orderId);
+        return "main/change-order-status";
+    }
+
+    @PostMapping(value = "/change-order-status/{orderId}")
+    public RedirectView changeOrderStatusSelector(@PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        String status = body.getFirst("status");
+        orderService.changeStatus(orderId, OrderStatus.byName(status));
+        return new RedirectView("/main");
+    }
+
 }

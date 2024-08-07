@@ -75,6 +75,7 @@
     const orderDeadline = document.getElementById("orderDeadline");
     const searchBar = document.getElementById("search");
     const userId = [[${userId}]];
+    const isAdmin = [[${isAdmin}]];
 
     const stompClient = new StompJs.Client({
         brokerURL: '/ws'
@@ -378,9 +379,16 @@
         processInitChatJson(JSON.parse(resp))
     });
 
-    httpRequest('GET', `/api/messenger/${context.userId}/orders`, null, (resp) => {
-        processInitOrderJson(JSON.parse(resp))
-    });
+    if (isAdmin) {
+        httpRequest('GET', `/api/messenger/orders`, null, (resp) => {
+            processInitOrderJson(JSON.parse(resp))
+        });
+    } else {
+        httpRequest('GET', `/api/messenger/${context.userId}/orders`, null, (resp) => {
+            processInitOrderJson(JSON.parse(resp))
+        });
+    }
+
 
     httpRequest('GET', `/api/messenger/users`, null, (resp) => {
         processInitUserJson(JSON.parse(resp))

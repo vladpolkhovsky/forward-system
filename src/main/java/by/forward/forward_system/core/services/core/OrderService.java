@@ -208,6 +208,14 @@ public class OrderService {
         return orderDtos;
     }
 
+
+    public List<OrderDto> getAllOrders() {
+        List<OrderEntity> orderEntities = orderRepository.findAll();
+        List<OrderDto> orderDtos = orderEntities.stream().map(this::toDto)
+            .toList();
+        return orderDtos;
+    }
+
     public OrderDto getOrder(Long orderId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
         return toDto(orderEntity);
@@ -446,4 +454,9 @@ public class OrderService {
     public Integer countNotClosed() {
         return orderRepository.countAllByOrderStatusIsNot(OrderStatus.CLOSED.getName());
     }
+
+    public Integer countFinalStatusOrders() {
+        return orderRepository.countAllByOrderStatusIn(Arrays.asList(OrderStatus.GUARANTEE.getName(), OrderStatus.FINALIZATION.getName()));
+    }
+
 }

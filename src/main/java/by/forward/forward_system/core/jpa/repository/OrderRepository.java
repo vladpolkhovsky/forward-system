@@ -33,4 +33,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status != :orderStatus")
     Integer countAllByOrderStatusIsNot(String orderStatus);
+
+    @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status in :orderStatus")
+    Integer countAllByOrderStatusIn(List<String> orderStatus);
 }

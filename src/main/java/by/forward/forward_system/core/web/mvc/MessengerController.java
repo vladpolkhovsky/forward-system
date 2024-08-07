@@ -25,13 +25,13 @@ public class MessengerController {
     public String messenger(Model model) {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("userId", userUiService.getCurrentUserId());
+        model.addAttribute("isAdmin", userUiService.isCurrentUserAdmin());
         return "messenger/messenger";
     }
 
     @GetMapping(value = "/request-order/{orderId}")
     public String requestOrder(Model model, @PathVariable Long orderId) {
         OrderDto order = orderService.getOrder(orderId);
-
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("order", order);

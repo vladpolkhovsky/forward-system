@@ -42,6 +42,12 @@ public class UserUiService {
         return getCurrentUser().getId();
     }
 
+    public Boolean isCurrentUserAdmin() {
+        UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+        Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
+        return byUsername.get().getAuthorities().contains(Authority.ADMIN);
+    }
+
     public List<UserUiDto> getAllUsers() {
         return userService.getAllUsers().stream()
             .map(this::toDto)

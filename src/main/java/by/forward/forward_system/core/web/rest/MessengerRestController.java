@@ -38,6 +38,11 @@ public class MessengerRestController {
         return ResponseEntity.ok(orderService.getUserOrders(userId));
     }
 
+    @GetMapping(value = "/orders")
+    public ResponseEntity<List<OrderDto>> getUserOrders() {
+        return ResponseEntity.ok(orderService.getAllOrders());
+    }
+
     @GetMapping(value = "/users")
     public ResponseEntity<List<UserDto>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsersConverted());
