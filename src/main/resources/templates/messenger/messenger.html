@@ -35,8 +35,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-12">
+                    <div class="col-5">
                         <strong>Срок сдачи: </strong><span id="orderDeadline">02.08.2024</span>
+                    </div>
+                    <div class="col-7">
+                        <a id="orderLink" href="">Просмотреть детали заказа</a>
                     </div>
                 </div>
             </div>
@@ -73,6 +76,7 @@
     const orderTechNumber = document.getElementById("orderTechNumber");
     const orderStatus = document.getElementById("orderStatus");
     const orderDeadline = document.getElementById("orderDeadline");
+    const orderLink = document.getElementById("orderLink");
     const searchBar = document.getElementById("search");
     const userId = [[${userId}]];
     const isAdmin = [[${isAdmin}]];
@@ -130,6 +134,7 @@
         orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
         orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
         orderDeadline.innerText = drawDateWide(orderTable[chatTable[chatId].orderId].intermediateDeadline);
+        orderLink.setAttribute("href", `/order-info/${chatTable[chatId].orderId}`);
     }
 
     function loadChat(chatId) {
@@ -160,7 +165,7 @@
                     <div class="fw-bold"><small>${chatJson.chatName}</small></div>
                     <p class="m-0"><small>${drawDate(chatJson.lastMessageTime)}</small></p>
                 </div>
-                <span class="badge text-bg-primary rounded-pill" id="new-msg-chat-${chatJson.id}"></span>
+                <span class="badge rounded-pill" id="new-msg-chat-${chatJson.id}"></span>
             </li>`;
         let div = document.createElement('div');
         div.innerHTML = chatListItemHtml;
@@ -238,6 +243,16 @@
 
     function drawChatNewMessageCount(chatId) {
         let elementById = document.getElementById('new-msg-chat-' + chatId);
+
+        elementById.classList.remove('text-bg-primary');
+        elementById.classList.remove('text-bg-white');
+
+        if (chatNewMessages[chatId] > 0) {
+            elementById.classList.add('text-bg-primary');
+        } else {
+            elementById.classList.add('text-bg-white');
+        }
+
         elementById.innerText = chatNewMessages[chatId];
     }
 
@@ -249,11 +264,13 @@
         if (chatTable[message.chatId] === undefined) {
             return;
         }
+
+        chatTable[message.chatId].messages.push(message);
+
         if (context.chatId !== message.chatId) {
             incChatNewMessageCount(message.chatId);
             drawChatNewMessageCount(message.chatId);
         } else {
-            chatTable[message.chatId].messages.push(message);
             drawNewMessageInList(message);
             sendMessageViewed()
         }

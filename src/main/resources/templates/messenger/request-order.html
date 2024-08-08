@@ -9,7 +9,7 @@
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${orderClosed}" class="alert alert-danger" role="alert">
+    <div th:if="${orderClosedShowError}" class="alert alert-danger" role="alert">
         Данный заказ уже распределён.
     </div>
     <div class="row">
