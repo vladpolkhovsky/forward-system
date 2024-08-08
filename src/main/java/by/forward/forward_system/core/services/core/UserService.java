@@ -72,6 +72,7 @@ public class UserService {
         userDto.setId(userEntity.getId());
         userDto.setFio(userEntity.getFio());
         userDto.setUsername(userEntity.getUsername());
+        userDto.setIsAdmin(userEntity.getAuthorities().contains(Authority.ADMIN));
         return userDto;
     }
 }

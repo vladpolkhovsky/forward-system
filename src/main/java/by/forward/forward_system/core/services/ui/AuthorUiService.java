@@ -55,11 +55,13 @@ public class AuthorUiService {
 
 
     private AuthorUiDto toDto(AuthorEntity authorEntity) {
+        String fioFull = authorEntity.getUser().getLastname() + " " + authorEntity.getUser().getFirstname() + " " + authorEntity.getUser().getSurname();
         return new AuthorUiDto(
             authorEntity.getId(),
             authorEntity.getUser().getUsername(),
             authorEntity.getUser().getPassword(),
             authorEntity.getUser().getFio(),
+            fioFull,
             authorEntity.getUser().getFirstname(),
             authorEntity.getUser().getLastname(),
             authorEntity.getUser().getSurname(),

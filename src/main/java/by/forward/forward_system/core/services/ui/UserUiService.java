@@ -92,6 +92,7 @@ public class UserUiService {
     }
 
     private UserUiDto toDto(UserEntity userEntity) {
+        String fioFull = userEntity.getLastname() + " " + userEntity.getFirstname() + " " + userEntity.getSurname();
         return new UserUiDto(
             userEntity.getId(),
             userEntity.getUsername(),
@@ -100,6 +101,7 @@ public class UserUiService {
             userEntity.getLastname(),
             userEntity.getSurname(),
             userEntity.getFio(),
+            fioFull,
             userEntity.getContact(),
             userEntity.getContactTelegram(),
             userEntity.getEmail(),

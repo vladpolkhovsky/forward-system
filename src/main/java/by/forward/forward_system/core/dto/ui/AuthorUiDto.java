@@ -14,6 +14,7 @@ public class AuthorUiDto {
     private String username;
     private String password;
     private String fio;
+    private String fioFull;
     private String firstname;
     private String lastname;
     private String surname;

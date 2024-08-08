@@ -1,3 +1,3 @@
 cd ./docker
 docker compose build --no-cache
-docker compose --profile dependency up
+docker compose --profile production up

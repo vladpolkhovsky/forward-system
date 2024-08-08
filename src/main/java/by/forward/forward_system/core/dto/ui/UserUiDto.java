@@ -17,6 +17,7 @@ public class UserUiDto {
     private String lastname;
     private String surname;
     private String fio;
+    private String fioFull;
     private String contact;
     private String contactTelegram;
     private String email;

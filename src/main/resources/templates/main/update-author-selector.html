@@ -19,7 +19,7 @@
 <div class="container">
     <ul class="list-group">
         <li class="list-group-item" th:each="user, userStat : ${userList}">
-            <a th:href="|/update-author/| + ${user.getId()}" th:text="${user.getFio()} + | (| + ${user.getUsername()} + |)|"></a>
+            <a th:href="|/update-author/| + ${user.getId()}" th:text="${user.getFioFull()} + | (| + ${user.getUsername()} + |)|"></a>
         </li>
     </ul>
 </div>

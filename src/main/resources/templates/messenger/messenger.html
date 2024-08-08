@@ -175,22 +175,27 @@
     function calcUserNameAndRole(message) {
         if (message.isSystemMessage) {
             return "Система";
-        } else {
-            let user = usersTable[message.fromUserId];
-            let role = [];
-            if (chatTable[context.chatId].orderId !== null) {
-                let order = orderTable[chatTable[context.chatId].orderId];
-                for (const participant of order.participants) {
-                    if (participant.userId === message.fromUserId) {
-                        role.push(participant.participantsTypeRus);
-                    }
+        }
+
+        let user = usersTable[message.fromUserId];
+        let role = [];
+        if (chatTable[context.chatId].orderId !== null) {
+            let order = orderTable[chatTable[context.chatId].orderId];
+            for (const participant of order.participants) {
+                if (participant.userId === message.fromUserId) {
+                    role.push(participant.participantsTypeRus);
                 }
             }
-            if (role.length > 0) {
-                return `${user.username} (${role.join(', ')})`;
-            } else {
-                return `${user.username}`
-            }
+        }
+
+        if (role.length === 0 && usersTable[message.fromUserId].isAdmin) {
+            role.push("Администратор")
+        }
+
+        if (role.length > 0) {
+            return `${user.username} (${role.join(', ')})`;
+        } else {
+            return `${user.username}`
         }
     }
 

@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public enum ParticipantType {
     OWNER("OWNER", "Владелец"),
-    CATCHER("CATCHER", "Менеджер (Кетчер)"),
-    HOST("HOST", "Менеджер (Хост)"),
+    CATCHER("CATCHER", "Менеджер Кетчер"),
+    HOST("HOST", "Менеджер Хост"),
     AUTHOR("AUTHOR", "Автор на рассмотрении"),
     DECLINE_AUTHOR("DECLINE_AUTHOR", "Отказавшийся автор"),
     MAIN_AUTHOR("MAIN_AUTHOR", "Взявший в работу автор"),

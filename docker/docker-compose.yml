@@ -5,6 +5,8 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
+    depends_on:
+      - postgres-db
     env_file:
       - .env
     ports:
@@ -30,6 +32,7 @@ services:
       - "5432:5432"
     profiles:
       - dependency
+      - production
 
   adminer:
     image: adminer
@@ -38,3 +41,4 @@ services:
       - 8082:8080
     profiles:
       - dependency
+      - production

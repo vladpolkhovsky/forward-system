@@ -91,6 +91,6 @@ public class UserEntity {
     }
 
     public String getFioFull() {
-        return getFirstname() + " " + getLastname() + " " + getSurname();
+        return getLastname() + " " + getFirstname() + " " + getSurname();
     }
 }
