@@ -338,6 +338,9 @@
         if (notification.type === "new-chat") {
             processWsNewChat(notification.value);
         }
+        if (notification.type === "banned") {
+            alert("Вы заблокированы. Свяжитесь с администратором.")
+        }
     }
 
     // processInitChatJson(chatJson);

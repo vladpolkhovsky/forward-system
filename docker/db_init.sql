@@ -205,4 +205,12 @@ create table if not exists forward_system.reviews
     reviewed_by    bigint references forward_system.users (id),
     review_date    timestamp,
     created_at     timestamp not null
+);
+
+create table if not exists forward_system.spam_block
+(
+    id                 bigint primary key,
+    user_id            bigint    not null references forward_system.users (id),
+    is_permanent_block boolean   not null,
+    created_at         timestamp not null
 )

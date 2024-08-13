@@ -12,6 +12,7 @@ public enum Authority implements GrantedAuthority {
     MANAGER("MANAGER"),
     HR("HR"),
     AUTHOR("AUTHOR"),
+    BANNED("BANNED"),
 
     ;
 

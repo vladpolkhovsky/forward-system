@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.auth;
 
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -42,7 +43,7 @@ public class DatabaseUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return !authorities.contains(Authority.BANNED);
     }
 
     @Override

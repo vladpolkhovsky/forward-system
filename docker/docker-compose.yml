@@ -20,11 +20,13 @@ services:
     image: postgres
     restart: always
     shm_size: 128mb
+    env_file:
+      - .env
     environment:
       PGDATA: /var/lib/postgresql/data/pgdata
       POSTGRES_DB: local
-      POSTGRES_USER: localDB
-      POSTGRES_PASSWORD: localPS
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ./local-db-data:/var/lib/postgresql/data/pgdata
       - ./db_init.sql:/docker-entrypoint-initdb.d/init.sql

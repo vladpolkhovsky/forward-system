@@ -67,7 +67,7 @@ public class UserEntity {
         setRoles(toRoles(authorities));
     }
 
-    public void removeAuthority(Authority grantedAuthority) {
+    public void removeRole(Authority grantedAuthority) {
         List<Authority> authorities = getAuthorities();
         authorities.remove(grantedAuthority);
         setRoles(toRoles(authorities));
