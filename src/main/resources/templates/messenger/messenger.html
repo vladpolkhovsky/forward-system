@@ -224,6 +224,9 @@
     }
 
     function drawNewMessageInList(message) {
+        if (message.isHidden) {
+            return;
+        }
         let textEndFlag = false;
         if (message.fromUserId === context.userId) {
             textEndFlag = true;

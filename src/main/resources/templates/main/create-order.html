@@ -65,7 +65,7 @@
                 <div class="mb-3 mt-3 row">
                     <label for="discipline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
                     <div class="col-sm-10">
-                        <input required id="intermediateDeadline" type="date" class="form-control"
+                        <input required id="intermediateDeadline" type="datetime-local" class="form-control"
                                name="intermediateDeadline"
                                th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd')}">
                     </div>

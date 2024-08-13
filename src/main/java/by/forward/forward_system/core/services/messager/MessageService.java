@@ -118,6 +118,11 @@ public class MessageService {
         return messageDtos;
     }
 
+    public List<MessageDto> getMessagesFromUser(Long userId) {
+        List<ChatMessageEntity> allByUser = messageRepository.findAllByUser(userId);
+        return allByUser.stream().map(this::convertChatMessage).toList();
+    }
+
     public MessageDto convertChatMessage(ChatMessageEntity chatMessage) {
         MessageDto messageDto = new MessageDto();
         messageDto.setId(chatMessage.getId());
@@ -126,6 +131,7 @@ public class MessageService {
         messageDto.setFromUserId(Optional.ofNullable(chatMessage.getFromUser()).map(UserEntity::getId).orElse(null));
         messageDto.setContent(chatMessage.getContent());
         messageDto.setIsSystemMessage(chatMessage.getIsSystemMessage());
+        messageDto.setIsHidden(chatMessage.getIsHidden());
         messageDto.setCreatedAt(LocalDateTime.from(chatMessage.getCreatedAt()));
         messageDto.setOptions(getOptions(chatMessage.getChatMessageOptions()));
         messageDto.setAttachments(getAttachments(chatMessage.getChatMessageAttachments()));

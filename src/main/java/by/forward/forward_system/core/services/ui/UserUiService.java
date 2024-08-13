@@ -5,6 +5,7 @@ import by.forward.forward_system.core.dto.ui.UserShortUiDto;
 import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.services.core.ChatUtilsService;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.AuthUtils;
@@ -22,7 +23,7 @@ public class UserUiService {
 
     private final UserService userService;
 
-    private final ChatService chatService;
+    private final ChatUtilsService chatUtilsService;
 
     public UserShortUiDto getCurrentUser() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
@@ -65,14 +66,7 @@ public class UserUiService {
         UserEntity save = userService.save(user);
 
         if (userUiDto.getIsAdmin()) {
-            List<ChatDto> adminTalkChats = chatService.getAllChats();
-            List<Long> chatIds = adminTalkChats.stream()
-                .map(ChatDto::getId)
-                .toList();
-            chatService.addUserToChats(
-                chatIds,
-                save.getId()
-            );
+            chatUtilsService.addAdminToAllChats(save.getId());
         }
 
         return toDto(save);

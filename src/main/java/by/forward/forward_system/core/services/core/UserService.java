@@ -25,6 +25,10 @@ public class UserService {
         return userRepository.findById(id);
     }
 
+    public UserDto getConverted(Long id) {
+        return convertUserToDto(userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found")));
+    }
+
     public Optional<UserEntity> getByUsername(String username) {
         return userRepository.findByUsername(username);
     }

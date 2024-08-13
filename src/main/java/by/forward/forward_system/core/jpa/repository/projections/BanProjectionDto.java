@@ -1,0 +1,21 @@
+package by.forward.forward_system.core.jpa.repository.projections;
+
+import by.forward.forward_system.core.dto.messenger.MessageDto;
+import by.forward.forward_system.core.dto.messenger.UserDto;
+import by.forward.forward_system.core.dto.ui.UserUiDto;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class BanProjectionDto {
+    private Long id;
+    private UserDto user;
+    private List<MessageDto> messages;
+}

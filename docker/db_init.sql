@@ -160,6 +160,7 @@ create table if not exists forward_system.chat_messages
     from_user_id      bigint references forward_system.users (id),
     chat_message_type varchar(255) not null references forward_system.chat_message_types (name),
     is_system_message boolean      not null,
+    is_hidden         boolean      not null,
     created_at        timestamp    not null,
     content           varchar(16384)
 );

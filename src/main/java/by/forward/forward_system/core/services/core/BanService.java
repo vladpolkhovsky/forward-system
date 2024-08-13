@@ -1,21 +1,30 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.messenger.MessageDto;
+import by.forward.forward_system.core.dto.messenger.UserDto;
+import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.SpamBlockEntity;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.SpamBlockRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto;
+import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class BanService {
 
-    private SpamBlockRepository spamBlockRepository;
+    private final MessageService messageService;
+    private final SpamBlockRepository spamBlockRepository;
+    private final UserService userService;
 
     private UserRepository userRepository;
 
@@ -63,6 +72,22 @@ public class BanService {
     }
 
     public Integer countNewBaned() {
-        return spamBlockRepository.findAllByIsPermanentBlockFalse();
+        return spamBlockRepository.countAllByIsPermanentBlockFalse();
+    }
+
+    public List<BanProjectionDto> getAllNewBanned() {
+        List<SpamBlockEntity> allByIsPermanentBlockFalse = spamBlockRepository.findAllByIsPermanentBlockFalse();
+        return allByIsPermanentBlockFalse.stream().map(this::toDto).toList();
+    }
+
+    public BanProjectionDto getBanned(Long banId) {
+        SpamBlockEntity spamBlockEntity = spamBlockRepository.findById(banId).orElseThrow(() -> new RuntimeException("SpamBlockEntity not found"));
+        return toDto(spamBlockEntity);
+    }
+
+    public BanProjectionDto toDto(SpamBlockEntity spamBlockEntity) {
+        UserDto user = userService.getConverted(spamBlockEntity.getId());
+        List<MessageDto> messagesFromUser = messageService.getMessagesFromUser(user.getId());
+        return new BanProjectionDto(spamBlockEntity.getId(), user, messagesFromUser);
     }
 }

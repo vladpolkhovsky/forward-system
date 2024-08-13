@@ -14,6 +14,7 @@ public class MessageDto {
     private Long fromUserId;
     private String chatMessageType;
     private Boolean isSystemMessage;
+    private Boolean isHidden;
     private String content;
     private LocalDateTime createdAt;
     private List<MessageToUserDto> messageToUser;
