@@ -18,7 +18,7 @@
         <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()}"></p>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-danger mt-3">Заблокировать</a>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
-        <p th:text="|Список сообщений пользователя | + ${ban.getUser().getFio()} + | : |"></p>
+        <p th:text="|Список сообщений пользователя | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <div class="col-12">
             <ul class="list-group">
                 <li class="list-group-item align-items-start"
@@ -30,7 +30,7 @@
                         <pre th:text="${message.getContent()}" style="white-space: pre-wrap"></pre>
                     </div>
                     <div>
-                        <p th:text="${#temporals.format(message.getCreatedAt(), 'dd.MM.yyyy hh:mm:ss')}"></p>
+                        <p th:text="${#temporals.format(message.getCreatedAt(), 'dd.MM.yyyy HH:mm:ss')}"></p>
                     </div>
                     <div>
                         <button class="btn btn-secondary" th:onclick="|delMessage(| + ${message.getId()} + |)|">Удалить сообщение</button>

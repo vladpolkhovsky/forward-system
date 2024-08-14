@@ -19,7 +19,7 @@
                     <div class="ms-2 me-auto">
                         <a th:href="${menuItem.link()}" th:text="${menuItem.name()}"></a>
                     </div>
-                    <span class="badge text-bg-primary rounded-pill" th:if="${menuItem.hasNotification()}" th:text="${menuItem.notification()}"></span>
+                    <span class="badge text-bg-primary rounded-pill" th:if="${menuItem.hasNotification() && menuItem.notification() > 0}" th:text="${menuItem.notification()}"></span>
                 </li>
             </ul>
         </div>

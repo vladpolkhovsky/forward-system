@@ -38,6 +38,7 @@ public class CreateOrderController {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("order", new OrderUiDto());
         model.addAttribute("actionUrl", "/create-order");
+        model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         return "main/create-order";
     }
 
@@ -60,6 +61,7 @@ public class CreateOrderController {
         model.addAttribute("menuName", "Изменение заказа");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("order", orderUiService.getOrder(id));
+        model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         model.addAttribute("actionUrl", "/update-order/" + id);
 
         return "main/create-order";

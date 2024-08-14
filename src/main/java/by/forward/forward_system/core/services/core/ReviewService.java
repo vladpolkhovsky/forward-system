@@ -11,6 +11,7 @@ import by.forward.forward_system.core.services.messager.MessageService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
@@ -135,7 +136,7 @@ public class ReviewService {
                 ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
                 reviewProjectionDto.setReviewId(t.getId());
                 reviewProjectionDto.setOrderId(t.getOrder().getId());
-                reviewProjectionDto.setOrderTechNumber(t.getOrder().getTechNumber());
+                reviewProjectionDto.setOrderTechNumber(new BigDecimal(t.getOrder().getTechNumber()));
                 reviewProjectionDto.setOrderName(t.getOrder().getName());
                 reviewProjectionDto.setIsReviewed(t.getIsReviewed());
                 reviewProjectionDto.setReviewStatusName(getStatusRus(t));

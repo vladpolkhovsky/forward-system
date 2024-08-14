@@ -70,15 +70,15 @@
     <div class="row mb-3 mt-3">
         <label for="intermediateDeadline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
         <div class="col-sm-10">
-            <input type="date" readonly class="form-control-plaintext" id="intermediateDeadline"
-                   th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd')}">
+            <input type="datetime-local" readonly class="form-control-plaintext" id="intermediateDeadline"
+                   th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
         </div>
     </div>
     <div class="row mb-3 mt-3">
         <label for="deadline" class="col-sm-2 col-form-label">Окончательный срок сдачи</label>
         <div class="col-sm-10">
-            <input type="date" readonly class="form-control-plaintext" id="deadline"
-                   th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd')}">
+            <input type=datetime-local readonly class="form-control-plaintext" id="deadline"
+                   th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}">
         </div>
     </div>
     <div class="row mb-3 mt-3">

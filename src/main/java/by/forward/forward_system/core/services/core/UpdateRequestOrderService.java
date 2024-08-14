@@ -14,6 +14,7 @@ import by.forward.forward_system.core.utils.AuthUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -39,7 +40,7 @@ public class UpdateRequestOrderService {
 
     public UpdateOrderRequestDto create(MultiValueMap<String, String> multiValueMap,
                                         Long orderId,
-                                        Integer orderTechNumber,
+                                        BigDecimal orderTechNumber,
                                         OrderStatus newStatus) {
         UserEntity userEntity = userRepository.findByUsername(AuthUtils.getCurrentUserDetails().getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
         UpdateOrderRequestDto updateOrderRequestDto = new UpdateOrderRequestDto();
@@ -134,7 +135,7 @@ public class UpdateRequestOrderService {
         updateOrderRequestDto.setId(updateOrderRequestEntity.getId());
         updateOrderRequestDto.setFromUserId(updateOrderRequestEntity.getUser().getId());
         updateOrderRequestDto.setOrderId(updateOrderRequestEntity.getOrder().getId());
-        updateOrderRequestDto.setOrderTechNumber(updateOrderRequestEntity.getOrder().getTechNumber());
+        updateOrderRequestDto.setOrderTechNumber(new BigDecimal(updateOrderRequestEntity.getOrder().getTechNumber()));
         updateOrderRequestDto.setAuthors(mapIds(updateOrderRequestEntity.getAuthorsIds()));
         updateOrderRequestDto.setExperts(mapIds(updateOrderRequestEntity.getExpertsIds()));
         updateOrderRequestDto.setCatchers(mapIds(updateOrderRequestEntity.getCatcherIds()));

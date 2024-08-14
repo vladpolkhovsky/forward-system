@@ -10,4 +10,6 @@ public class UserDto {
     private String fio;
     private String username;
     private Boolean isAdmin;
+    private String roles;
+    private String rolesRus;
 }

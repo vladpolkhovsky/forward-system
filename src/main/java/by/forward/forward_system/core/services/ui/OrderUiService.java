@@ -20,6 +20,7 @@ import by.forward.forward_system.core.services.core.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -181,7 +182,7 @@ public class OrderUiService {
     private OrderUiDto toDto(OrderEntity orderEntity) {
         return new OrderUiDto(
             orderEntity.getId(),
-            orderEntity.getTechNumber(),
+            new BigDecimal(orderEntity.getTechNumber()),
             orderEntity.getName(),
             orderEntity.getWorkType(),
             orderEntity.getDiscipline(),
@@ -190,8 +191,8 @@ public class OrderUiService {
             orderEntity.getOrderStatus().getStatus().getName(),
             orderEntity.getOrderStatus().getStatus().getRusName(),
             orderEntity.getVerificationSystem(),
-            orderEntity.getIntermediateDeadline().toLocalDate(),
-            orderEntity.getDeadline().toLocalDate(),
+            orderEntity.getIntermediateDeadline(),
+            orderEntity.getDeadline(),
             orderEntity.getOther(),
             orderEntity.getTakingCost(),
             orderEntity.getAuthorCost(),
@@ -203,14 +204,14 @@ public class OrderUiService {
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setId(orderUiDto.getId());
         orderEntity.setName(orderUiDto.getName());
-        orderEntity.setTechNumber(orderUiDto.getTechNumber());
+        orderEntity.setTechNumber(orderUiDto.getTechNumber().toString());
         orderEntity.setWorkType(orderUiDto.getWorkType());
         orderEntity.setDiscipline(orderUiDto.getDiscipline());
         orderEntity.setSubject(orderUiDto.getSubject());
         orderEntity.setOriginality(orderUiDto.getOriginality());
         orderEntity.setVerificationSystem(orderUiDto.getVerificationSystem());
-        orderEntity.setIntermediateDeadline(orderUiDto.getIntermediateDeadline().atStartOfDay());
-        orderEntity.setDeadline(orderUiDto.getDeadline().atStartOfDay());
+        orderEntity.setIntermediateDeadline(orderUiDto.getIntermediateDeadline());
+        orderEntity.setDeadline(orderUiDto.getDeadline());
         orderEntity.setOther(orderUiDto.getOther());
         orderEntity.setTakingCost(orderUiDto.getTakingCost());
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
@@ -239,4 +240,7 @@ public class OrderUiService {
         return authorWithFeeDtos;
     }
 
+    public BigDecimal getLastTechNumber() {
+        return new BigDecimal(orderService.getLastTechNumber());
+    }
 }

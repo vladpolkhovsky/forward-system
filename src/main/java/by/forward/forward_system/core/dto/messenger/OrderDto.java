@@ -3,6 +3,7 @@ package by.forward.forward_system.core.dto.messenger;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,7 +12,7 @@ import java.util.List;
 public class OrderDto {
     private Long id;
     private String name;
-    private Integer techNumber;
+    private BigDecimal techNumber;
     private String orderStatus;
     private String orderStatusRus;
     private String workType;

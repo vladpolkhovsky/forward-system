@@ -13,4 +13,5 @@ public class UserShortUiDto {
     private Long id;
     private String username;
     private String fio;
+    private String rolesRus;
 }

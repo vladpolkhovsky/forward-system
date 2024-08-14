@@ -24,7 +24,7 @@ public class OrderEntity {
     private String name;
 
     @Column(name = "tech_number", nullable = false)
-    private Integer techNumber;
+    private String techNumber;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "order_status", nullable = false)

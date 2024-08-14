@@ -20,6 +20,7 @@ import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -124,7 +125,7 @@ public class OrderService {
 
         for (Long userId : userIds) {
             addParticipant(orderEntity, orderParticipantsTypeEntity, userId);
-            sendNewOrderRequest(userId, orderEntity.getId(), orderEntity.getTechNumber(), orderEntity.getName(), orderEntity.getDiscipline(), orderEntity.getSubject());
+            sendNewOrderRequest(userId, orderEntity.getId(), new BigDecimal(orderEntity.getTechNumber()), orderEntity.getName(), orderEntity.getDiscipline(), orderEntity.getSubject());
         }
 
         orderRepository.save(orderEntity);
@@ -137,7 +138,7 @@ public class OrderService {
             || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
-    private void sendNewOrderRequest(Long userId, Long orderId, Integer techNumber, String name, String discipline, String subject) {
+    private void sendNewOrderRequest(Long userId, Long orderId, BigDecimal techNumber, String name, String discipline, String subject) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
 
@@ -225,7 +226,7 @@ public class OrderService {
         OrderDto orderDto = new OrderDto();
         orderDto.setId(orderEntity.getId());
         orderDto.setName(orderEntity.getName());
-        orderDto.setTechNumber(orderEntity.getTechNumber());
+        orderDto.setTechNumber(new BigDecimal(orderEntity.getTechNumber()));
         orderDto.setOrderStatus(orderEntity.getOrderStatus().getStatus().getName());
         orderDto.setOrderStatusRus(orderEntity.getOrderStatus().getStatus().getRusName());
         orderDto.setWorkType(orderEntity.getWorkType());
@@ -459,4 +460,7 @@ public class OrderService {
         return orderRepository.countAllByOrderStatusIn(Arrays.asList(OrderStatus.GUARANTEE.getName(), OrderStatus.FINALIZATION.getName()));
     }
 
+    public String getLastTechNumber() {
+        return orderRepository.maxTechNumber().orElseThrow(() -> new RuntimeException("Tech number not found"));
+    }
 }

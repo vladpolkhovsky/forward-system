@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class OrderUiDto {
     private Long id;
-    private Integer techNumber;
+    private BigDecimal techNumber;
     private String name;
     private String workType;
     private String discipline;
@@ -23,8 +24,8 @@ public class OrderUiDto {
     private String orderStatus;
     private String orderStatusRus;
     private String verificationSystem;
-    private LocalDate intermediateDeadline;
-    private LocalDate deadline;
+    private LocalDateTime intermediateDeadline;
+    private LocalDateTime deadline;
     private String other;
     private Integer takingCost;
     private Integer authorCost;

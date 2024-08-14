@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
@@ -36,4 +37,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status in :orderStatus")
     Integer countAllByOrderStatusIn(List<String> orderStatus);
+
+    @Query(value = "select MAX(o.techNumber) from OrderEntity o")
+    Optional<String> maxTechNumber();
 }

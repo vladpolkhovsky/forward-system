@@ -22,7 +22,7 @@
                     th:each="ban, banStat : ${banned}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:text="|Пользователь | + ${ban.getUser().getFio()}"
+                            <a th:text="|Пользователь | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |)|"
                                th:href="|/auto-ban-user/| + ${ban.getId()}">
                             </a>
                         </div>

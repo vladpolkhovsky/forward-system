@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -35,7 +36,8 @@ public class UserUiService {
         return new UserShortUiDto(
             userEntity.getId(),
             userEntity.getUsername(),
-            userEntity.getFioFull()
+            userEntity.getFioFull(),
+            userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
 

@@ -7,19 +7,21 @@ import java.util.Optional;
 
 public enum Authority implements GrantedAuthority {
 
-    OWNER("OWNER"),
-    ADMIN("ADMIN"),
-    MANAGER("MANAGER"),
-    HR("HR"),
-    AUTHOR("AUTHOR"),
-    BANNED("BANNED"),
+    OWNER("OWNER", "Владелец"),
+    ADMIN("ADMIN", "Администратор"),
+    MANAGER("MANAGER", "Менеджер"),
+    HR("HR", "HR"),
+    AUTHOR("AUTHOR", "Автор"),
+    BANNED("BANNED", "Заблокирован"),
 
     ;
 
     private final String authorityName;
+    private final String authorityNameRus;
 
-    Authority(String authorityName) {
+    Authority(String authorityName, String authorityNameRus) {
         this.authorityName = authorityName;
+        this.authorityNameRus = authorityNameRus;
     }
 
     public static Authority byName(String name) {
@@ -30,6 +32,10 @@ public enum Authority implements GrantedAuthority {
     @Override
     public String getAuthority() {
         return authorityName;
+    }
+
+    public String getAuthorityNameRus() {
+        return authorityNameRus;
     }
 
 }
