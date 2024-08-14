@@ -28,7 +28,7 @@ public class ManagerMenuComponent implements MenuComponent {
         List<MenuEntry.MenuItem> list = Arrays.asList(
             new MenuEntry.MenuItem("Создать заказ", "/create-order", false, null),
             new MenuEntry.MenuItem("Изменить заказ", "/update-order", false, null),
-            new MenuEntry.MenuItem("Прсмотреть заказы", "/view-order", true, orderService.countNotClosed())
+            new MenuEntry.MenuItem("Просмотреть заказы", "/view-order", true, orderService.countNotClosed())
         );
         return new MenuEntry("Меню заказов", list);
     }
