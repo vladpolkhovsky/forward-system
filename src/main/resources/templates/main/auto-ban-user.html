@@ -15,7 +15,7 @@
 </div>
 <div class="container">
     <div class="row">
-        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()}"></p>
+        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-danger mt-3">Заблокировать</a>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
         <p th:text="|Список сообщений пользователя | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
