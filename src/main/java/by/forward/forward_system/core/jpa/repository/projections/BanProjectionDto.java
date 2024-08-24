@@ -16,5 +16,7 @@ import java.util.List;
 public class BanProjectionDto {
     private Long id;
     private UserDto user;
-    private List<MessageDto> messages;
+    private String reason;
+    private MessageDto message;
+    private List<MessageDto> lastMessages;
 }

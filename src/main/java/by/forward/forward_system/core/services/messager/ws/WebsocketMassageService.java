@@ -35,7 +35,7 @@ public class WebsocketMassageService {
         Long userId = chatMessage.getUserId();
 
         if (spamDetectorService.isSpam(chatId)) {
-            if (banService.ban(userId)) {
+            if (banService.ban(userId, "Превышен лимит сообщений в чате.")) {
                 notifyBanned(Collections.singletonList(userId), chatId);
                 return;
             }

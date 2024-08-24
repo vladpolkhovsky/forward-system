@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.web.rest;
 
 import by.forward.forward_system.core.dto.messenger.ChatDto;
+import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.UserDto;
 import by.forward.forward_system.core.dto.rest.AttachmentDto;
@@ -26,6 +27,7 @@ public class MessengerRestController {
     private final OrderService orderService;
 
     private final UserService userService;
+
     private final AttachmentService attachmentService;
 
     @GetMapping(value = "/{userId}/chats")
@@ -46,6 +48,12 @@ public class MessengerRestController {
     @GetMapping(value = "/users")
     public ResponseEntity<List<UserDto>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsersConverted());
+    }
+
+    @PostMapping(value = "/hide-message/{messageId}")
+    private ResponseEntity<String> hideMessage(@PathVariable Long messageId) {
+        chatService.hideMessage(messageId);
+        return ResponseEntity.ok("ok");
     }
 
     @PostMapping(value = "/message-viewed/{chatId}/{userId}")

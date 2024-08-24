@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -19,15 +18,19 @@ public class OrderUiDto {
     private String name;
     private String workType;
     private String discipline;
+    private Long disciplineId;
     private String subject;
     private Integer originality;
     private String orderStatus;
     private String orderStatusRus;
     private String verificationSystem;
+    private String additionalDates;
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;
     private String other;
     private Integer takingCost;
     private Integer authorCost;
     private LocalDateTime createdAt;
+    private String responsibleManager;
+    private Integer distributionDaysCount;
 }

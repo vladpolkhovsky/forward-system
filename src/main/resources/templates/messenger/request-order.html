@@ -69,6 +69,12 @@
                    th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd')}">
         </div>
     </div>
+    <div class="mb-3 mt-3 row">
+        <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
+        <input id="additionalDates" type="text" hidden th:value="${order.getAdditionalDates()}">
+        <div id="additionalDatesDiv" class="col-sm-9">
+        </div>
+    </div>
     <div class="row mb-3 mt-3">
         <label for="other" class="col-sm-2 col-form-label">Дополнительные требования и пожелания</label>
         <div class="col-sm-10">
@@ -106,6 +112,45 @@
     <script>
         let declineText = document.getElementById("decline-text");
         let declineBtn = document.getElementById("decline-btn")
+
+        let additionalDateDiv = document.getElementById(`additionalDatesDiv`);
+        let additionalDate = document.getElementById(`additionalDates`);
+        let additionalDateCount = 0;
+
+        function createAdditionalDate(id, isNew) {
+            let div = document.createElement("div");
+            div.id = `additional-date-${id}`;
+            div.classList.add("row");
+            if (isNew) {
+                div.classList.add("bg-warning")
+            }
+            div.innerHTML =
+                `<div class="col-6">
+                    <input readonly id="additional-date-text-${id}" type="text" class="form-control-plaintext" placeholder="Что сделать">
+                </div>
+                <div class="col-6">
+                    <input readonly id="additional-date-time-${id}" type="datetime-local" class="form-control-plaintext">
+                </div>`
+            additionalDateDiv.append(div);
+        }
+
+        function loadSavedAdditionalDates(jsonArray) {
+            for (let i = 0; i < jsonArray.length; i++) {
+                createAdditionalDate(i, false);
+                document.getElementById(`additional-date-text-${i}`).value = jsonArray[i].text;
+                document.getElementById(`additional-date-time-${i}`).value = jsonArray[i].time;
+            }
+            additionalDateCount = jsonArray.length;
+        }
+
+        function loadAdditionalDates() {
+            let savedData = additionalDate.value;
+            if (savedData !== "") {
+                loadSavedAdditionalDates(JSON.parse(savedData));
+            }
+        }
+
+        loadAdditionalDates();
 
         declineText.addEventListener('change', ev => {
             if (ev.target.value.length !== 0) {

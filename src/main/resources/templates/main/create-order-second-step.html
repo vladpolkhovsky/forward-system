@@ -61,7 +61,7 @@
         </div>
     </div>
     <div class="row mt-3">
-        <button class="btn btn-primary" onclick="window.location='/main'">Вернуться на галавную</button>
+        <button class="btn btn-primary" onclick="window.location='/main'">Вернуться на главную</button>
     </div>
 </div>
 <script th:inline="text">
@@ -113,7 +113,7 @@
 
     function disableSelected(selectedItems) {
         for (let selectedItem of selectedItems) {
-            selectedItem.setAttribute("disabled", null)
+            selectedItem.setAttribute("disabled", null);
         }
     }
 
@@ -126,6 +126,9 @@
     function sendSelectedCatcher(event) {
         let selectedItems = getSelectedItems(catchers);
         sendSelected(convertToIds(selectedItems), apiEndpoint, 'CATCHER');
+        disableSelected(selectedItems);
+        catcherSubmitBtn.setAttribute("disabled", null);
+        catcherSubmitBtn.textContent = "Назначен";
     }
 
     authorSubmitBtn.addEventListener('click', (evt) => sendSelectedAuthors(evt));

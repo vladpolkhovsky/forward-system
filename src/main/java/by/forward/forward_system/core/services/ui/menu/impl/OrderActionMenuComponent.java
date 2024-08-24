@@ -4,6 +4,7 @@ import by.forward.forward_system.core.dto.ui.MenuEntry;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.ReviewService;
+import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.menu.MenuComponent;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -21,6 +22,8 @@ public class OrderActionMenuComponent implements MenuComponent {
 
     private final OrderService orderService;
 
+    private final OrderUiService orderUiService;
+
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
         return authorities.contains(Authority.OWNER) || authorities.contains(Authority.ADMIN) || authorities.contains(Authority.MANAGER);
@@ -29,6 +32,10 @@ public class OrderActionMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
+            new MenuEntry.MenuItem("Создать заказ", "/create-order", false, null),
+            new MenuEntry.MenuItem("Изменить заказ", "/update-order", false, null),
+            new MenuEntry.MenuItem("Просмотреть все заказы", "/view-order", true, orderService.countNotClosed()),
+            new MenuEntry.MenuItem("Мои заказы", "/view-my-order", true, orderUiService.countMyOrders()),
             new MenuEntry.MenuItem("Отправить заказ в работу", "/order-to-in-progress", false, null),
             new MenuEntry.MenuItem("Отправить заказ на проверку", "/review-order", false, null),
             new MenuEntry.MenuItem("Изменить запрос на проверку", "/edit-review-order", false, null),
@@ -37,7 +44,7 @@ public class OrderActionMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Добавить автора в заказ", "/add-author-to-order", false, null),
             new MenuEntry.MenuItem("Изменение долей в заказе", "/change-fee-in-order", false, null)
         );
-        return new MenuEntry("Меню продвижения заказов", list);
+        return new MenuEntry("Заказы", list, 4);
     }
 
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -76,7 +77,8 @@ public class AuthorUiService {
             authorEntity.getUser().getAuthorities().contains(Authority.MANAGER),
             authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
             authorEntity.getUser().getAuthorities().contains(Authority.HR),
-            authorEntity.getUser().getAuthorities().contains(Authority.OWNER)
+            authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
+            authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
 

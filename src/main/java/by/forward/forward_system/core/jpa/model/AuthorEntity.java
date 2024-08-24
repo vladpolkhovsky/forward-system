@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -30,4 +32,6 @@ public class AuthorEntity {
     @JoinColumn(name = "created_by", nullable = false)
     private UserEntity createdByUser;
 
+    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+    private List<AuthorDisciplineEntity> authorDisciplineEntities;
 }

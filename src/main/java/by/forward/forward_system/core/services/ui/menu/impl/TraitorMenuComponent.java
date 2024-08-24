@@ -30,6 +30,6 @@ public class TraitorMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Заблокированные пользователи", "/ban-user", false, null)
         );
 
-        return new MenuEntry("Подозрительные дествия", list);
+        return new MenuEntry("Безопасность чатов", list, 5);
     }
 }

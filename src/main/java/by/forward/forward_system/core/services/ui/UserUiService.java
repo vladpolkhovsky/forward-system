@@ -1,13 +1,11 @@
 package by.forward.forward_system.core.services.ui;
 
-import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.dto.ui.UserShortUiDto;
 import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.services.core.ChatUtilsService;
 import by.forward.forward_system.core.services.core.UserService;
-import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,6 +37,14 @@ public class UserUiService {
             userEntity.getFioFull(),
             userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
+    }
+
+    public void checkAccessAdmin() {
+        UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
+        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        throw new IllegalStateException("Нет доступа к просмотру страницы.");
     }
 
     public Long getCurrentUserId() {
@@ -107,7 +113,8 @@ public class UserUiService {
             userEntity.getAuthorities().contains(Authority.MANAGER),
             userEntity.getAuthorities().contains(Authority.AUTHOR),
             userEntity.getAuthorities().contains(Authority.HR),
-            userEntity.getAuthorities().contains(Authority.OWNER)
+            userEntity.getAuthorities().contains(Authority.OWNER),
+            userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
 
@@ -149,4 +156,5 @@ public class UserUiService {
 
         return userEntity;
     }
+
 }

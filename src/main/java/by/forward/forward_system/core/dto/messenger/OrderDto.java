@@ -19,6 +19,7 @@ public class OrderDto {
     private String discipline;
     private String subject;
     private String verificationSystem;
+    private String additionalDates;
     private Integer originality;
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;

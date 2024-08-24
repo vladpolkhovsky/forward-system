@@ -1,7 +1,5 @@
 package by.forward.forward_system.core.services.ui;
 
-import by.forward.forward_system.core.dto.messenger.OrderDto;
-import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
 import by.forward.forward_system.core.dto.ui.AuthorWithFeeDto;
 import by.forward.forward_system.core.dto.ui.OrderParticipantUiDto;
 import by.forward.forward_system.core.dto.ui.OrderUiDto;
@@ -9,10 +7,9 @@ import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
-import by.forward.forward_system.core.jpa.model.AuthorEntity;
-import by.forward.forward_system.core.jpa.model.OrderEntity;
-import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
+import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.services.core.OrderService;
@@ -21,10 +18,9 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +32,11 @@ public class OrderUiService {
     private final UserService userService;
 
     private final AuthorService authorService;
+
+    private final UserUiService userUiService;
+
+    private final UserRepository userRepository;
+    private final DisciplineRepository disciplineRepository;
 
     public OrderUiDto getOrder(Long id) {
         Optional<OrderEntity> byId = orderService.getById(id);
@@ -50,6 +51,27 @@ public class OrderUiService {
             .toList();
     }
 
+    public List<OrderUiDto> getAllMyOrders(Long currentUserId) {
+        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST);
+
+        Predicate<OrderEntity> isParticipant = (order) -> {
+            List<OrderParticipantEntity> orderParticipants = order.getOrderParticipants();
+            for (OrderParticipantEntity orderParticipant : orderParticipants) {
+                if (participantTypes.contains(orderParticipant.getParticipantsType().getType())
+                    && orderParticipant.getUser().getId().equals(currentUserId)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        return orderService.findAllOrder().stream()
+            .filter(isParticipant)
+            .map(this::toDto)
+            .sorted(Comparator.comparing(OrderUiDto::getId).reversed())
+            .toList();
+    }
+
     public List<OrderUiDto> findAllOrdersInStatus(List<String> statuses) {
         return orderService.findAllOrdersInStatus(statuses)
             .stream().map(this::toDto)
@@ -59,6 +81,8 @@ public class OrderUiService {
 
     public OrderUiDto createOrder(OrderUiDto order) {
         OrderEntity entity = toEntity(order);
+        UserEntity userEntity = userRepository.findById(userUiService.getCurrentUserId()).orElseThrow(() -> new RuntimeException("User not found"));
+        entity.setCreatedBy(userEntity);
         entity = orderService.save(entity);
         return toDto(entity);
     }
@@ -185,31 +209,65 @@ public class OrderUiService {
             new BigDecimal(orderEntity.getTechNumber()),
             orderEntity.getName(),
             orderEntity.getWorkType(),
-            orderEntity.getDiscipline(),
+            orderEntity.getDiscipline().getName(),
+            orderEntity.getDiscipline().getId(),
             orderEntity.getSubject(),
             orderEntity.getOriginality(),
             orderEntity.getOrderStatus().getStatus().getName(),
             orderEntity.getOrderStatus().getStatus().getRusName(),
             orderEntity.getVerificationSystem(),
+            orderEntity.getAdditionalDates(),
             orderEntity.getIntermediateDeadline(),
             orderEntity.getDeadline(),
             orderEntity.getOther(),
             orderEntity.getTakingCost(),
             orderEntity.getAuthorCost(),
-            orderEntity.getCreatedAt()
+            orderEntity.getCreatedAt(),
+            findResponsibleManager(orderEntity),
+            calcDistributionDays(orderEntity)
         );
     }
 
+    private Integer calcDistributionDays(OrderEntity orderEntity) {
+        List<OrderStatus> catcherStatus = Arrays.asList(OrderStatus.DISTRIBUTION, OrderStatus.CREATED);
+        if (!catcherStatus.contains(orderEntity.getOrderStatus().getStatus())) {
+            return null;
+        }
+        return Math.toIntExact(
+            Duration.between(orderEntity.getCreatedAt(), LocalDateTime.now()).toDays()
+        );
+    }
+
+    private String findResponsibleManager(OrderEntity orderEntity) {
+        ParticipantType participantType = ParticipantType.CATCHER;
+        List<OrderStatus> catcherStatus = Arrays.asList(OrderStatus.DISTRIBUTION, OrderStatus.CREATED);
+
+        if (!catcherStatus.contains(orderEntity.getOrderStatus().getStatus())) {
+            participantType = ParticipantType.HOST;
+        }
+
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (orderParticipant.getParticipantsType().getType().equals(participantType)) {
+                return orderParticipant.getUser().getUsername();
+            }
+        }
+        return "Не назначен";
+    }
+
     private OrderEntity toEntity(OrderUiDto orderUiDto) {
+        DisciplineEntity discipline = disciplineRepository.findById(orderUiDto.getDisciplineId())
+            .orElseThrow(() -> new RuntimeException("Discipline not found"));
+
         OrderEntity orderEntity = new OrderEntity();
         orderEntity.setId(orderUiDto.getId());
         orderEntity.setName(orderUiDto.getName());
         orderEntity.setTechNumber(orderUiDto.getTechNumber().toString());
         orderEntity.setWorkType(orderUiDto.getWorkType());
-        orderEntity.setDiscipline(orderUiDto.getDiscipline());
+        orderEntity.setDiscipline(discipline);
         orderEntity.setSubject(orderUiDto.getSubject());
         orderEntity.setOriginality(orderUiDto.getOriginality());
         orderEntity.setVerificationSystem(orderUiDto.getVerificationSystem());
+        orderEntity.setAdditionalDates(orderUiDto.getAdditionalDates());
         orderEntity.setIntermediateDeadline(orderUiDto.getIntermediateDeadline());
         orderEntity.setDeadline(orderUiDto.getDeadline());
         orderEntity.setOther(orderUiDto.getOther());
@@ -242,5 +300,9 @@ public class OrderUiService {
 
     public BigDecimal getLastTechNumber() {
         return new BigDecimal(orderService.getLastTechNumber());
+    }
+
+    public Integer countMyOrders() {
+        return orderService.countMyOrders(userUiService.getCurrentUserId());
     }
 }

@@ -26,6 +26,6 @@ public class OwnerMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Изменить пользователя", "/update-user", false, null)
         );
 
-        return new MenuEntry("Меню владельца", list);
+        return new MenuEntry("Владелец", list, 0);
     }
 }

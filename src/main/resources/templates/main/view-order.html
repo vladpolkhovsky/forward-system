@@ -56,7 +56,7 @@
     <div class="row mb-3 mt-3">
         <label for="originality" class="col-sm-2 col-form-label">Оригинальность</label>
         <div class="col-sm-10">
-            <input type="number" readonly class="form-control-plaintext" id="originality"
+            <input type="number" readonly min="0" max="100" class="form-control-plaintext" id="originality"
                    th:value="${order.getOriginality()}">
         </div>
     </div>
@@ -72,6 +72,12 @@
         <div class="col-sm-10">
             <input type="datetime-local" readonly class="form-control-plaintext" id="intermediateDeadline"
                    th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
+        </div>
+    </div>
+    <div class="mb-3 mt-3 row">
+        <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
+        <input id="additionalDates" type="text" hidden th:value="${order.getAdditionalDates()}">
+        <div id="additionalDatesDiv" class="col-sm-9">
         </div>
     </div>
     <div class="row mb-3 mt-3">
@@ -102,6 +108,13 @@
                    th:value="${order.getAuthorCost()}">
         </div>
     </div>
+    <div class="row mb-3 mt-3">
+        <label for="createdAt" class="col-sm-2 col-form-label">Дата создания заказа</label>
+        <div class="col-sm-10">
+            <input type=datetime-local readonly class="form-control-plaintext" id="createdAt"
+                   th:value="${#temporals.format(order?.getCreatedAt(), 'yyyy-MM-dd HH:mm')}">
+        </div>
+    </div>
     <hr/>
     <div class="row">
         <div class="col-8">
@@ -120,5 +133,46 @@
             </ul>
         </div>
     </div>
+
+    <script>
+        let additionalDateDiv = document.getElementById(`additionalDatesDiv`);
+        let additionalDate = document.getElementById(`additionalDates`);
+        let additionalDateCount = 0;
+
+        function createAdditionalDate(id, isNew) {
+            let div = document.createElement("div");
+            div.id = `additional-date-${id}`;
+            div.classList.add("row");
+            if (isNew) {
+                div.classList.add("bg-warning")
+            }
+            div.innerHTML =
+                `<div class="col-6">
+                    <input readonly id="additional-date-text-${id}" type="text" class="form-control" placeholder="Что сделать">
+                </div>
+                <div class="col-6">
+                    <input readonly id="additional-date-time-${id}" type="datetime-local" class="form-control">
+                </div>`
+            additionalDateDiv.append(div);
+        }
+
+        function loadSavedAdditionalDates(jsonArray) {
+            for (let i = 0; i < jsonArray.length; i++) {
+                createAdditionalDate(i, false);
+                document.getElementById(`additional-date-text-${i}`).value = jsonArray[i].text;
+                document.getElementById(`additional-date-time-${i}`).value = jsonArray[i].time;
+            }
+            additionalDateCount = jsonArray.length;
+        }
+
+        function loadAdditionalDates() {
+            let savedData = additionalDate.value;
+            if (savedData !== "") {
+                loadSavedAdditionalDates(JSON.parse(savedData));
+            }
+        }
+
+        loadAdditionalDates();
+    </script>
 </div>
 </body>

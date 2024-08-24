@@ -4,14 +4,13 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "spam_block", schema = "forward_system")
-public class SpamBlockEntity {
+@Table(name = "security_block", schema = "forward_system")
+public class SecurityBlockEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -23,6 +22,13 @@ public class SpamBlockEntity {
 
     @Column(name = "is_permanent_block", nullable = false)
     private Boolean isPermanentBlock = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "message_id")
+    private ChatMessageEntity chatMessage;
+
+    @Column(name = "reason")
+    private String reason;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

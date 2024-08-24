@@ -33,8 +33,9 @@ public class OrderEntity {
     @Column(name = "work_type", nullable = false)
     private String workType;
 
-    @Column(name = "discipline", nullable = false, length = 2048)
-    private String discipline;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "discipline_id", nullable = false)
+    private DisciplineEntity discipline;
 
     @Column(name = "subject", nullable = false, length = 2048)
     private String subject;
@@ -45,13 +46,16 @@ public class OrderEntity {
     @Column(name = "verification_system")
     private String verificationSystem;
 
-    @Column(name = "intermediate_deadline", nullable = false)
+    @Column(name = "intermediate_deadline")
     private LocalDateTime intermediateDeadline;
+
+    @Column(name = "additional_dates")
+    private String additionalDates;
 
     @Column(name = "deadline", nullable = false)
     private LocalDateTime deadline;
 
-    @Column(name = "other", length = 2048)
+    @Column(name = "other")
     private String other;
 
     @Column(name = "taking_cost", nullable = false)
@@ -63,6 +67,10 @@ public class OrderEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @JoinColumn(name = "created_by")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private UserEntity createdBy;
+
     @OneToMany(mappedBy = "order")
     private List<OrderAttachment> orderAttachment = new ArrayList<>();
 
@@ -71,4 +79,5 @@ public class OrderEntity {
 
     @OneToMany(mappedBy = "order")
     private List<ChatEntity> chats = new ArrayList<>();
+
 }

@@ -23,10 +23,15 @@
                 <li class="list-group-item d-flex justify-content-between align-items-start" th:each="order, orderStat : ${ordersList}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:text="|Заказ №| + ${order.getTechNumber()}" th:href="|/view-order/| + ${order.getId()}">
-                            </a>
+                            <a th:text="|Заказ №| + ${order.getTechNumber()}" th:href="|/view-order/| + ${order.getId()}"></a>
                         </div>
-                        <p th:text="|Название заказа: | + ${order.getName()}"></p>
+                        <p class="mt-1 mb-0" th:text="|Название заказа: | + ${order.getName()}"></p>
+                        <p class="mt-1 mb-0" th:text="|Дисциплина: | + ${order.getDiscipline()}"></p>
+                        <p class="mt-1 mb-0" th:text="|Стоимость: | + ${order.getTakingCost()}"></p>
+                        <p class="mt-1 mb-0" th:text="|Срок сдачи: | + ${#temporals.format(order.getDeadline(), 'yyyy-MM-dd HH:mm')}"></p>
+                        <p class="mt-1 mb-0" th:text="|Ответственный менеджер: | + ${order.getResponsibleManager()}"></p>
+                        <p class="mt-1 mb-0" th:if="${order.getDistributionDaysCount() != null}" th:text="|Дней на распределении: | + ${order.getDistributionDaysCount()}"></p>
+                        <p class="mt-1 mb-0"><a th:href="|/update-order/| + ${order.getId()}">Открыть для изменения</a></p>
                     </div>
                     <span class="badge text-bg-primary rounded-pill" th:text="${order.getOrderStatusRus()}"></span>
                 </li>

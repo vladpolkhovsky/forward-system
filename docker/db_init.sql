@@ -6,22 +6,16 @@ CREATE TABLE IF NOT EXISTS forward_system.users
     username         varchar(100) unique not null,
     firstname        varchar(255)        not null,
     lastname         varchar(255)        not null,
-    surname          varchar(255)        not null,
+    surname          varchar(255),
     roles            varchar(512)        not null,
     contact          varchar(512)        not null,
     contact_telegram varchar(512)        not null,
-    email            varchar(512)        not null,
-    other            varchar(2048),
+    email            varchar(512),
+    other            varchar(65536),
     payment          varchar(255)        not null,
     password         varchar(100)        not null,
     created_at       timestamp           not null
 );
-
-INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
-                                  other, payment, password, created_at)
-VALUES (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+888888888', '+888888888',
-        'vpl@mail.ru', '123', '321', '$2a$10$V5PwvJ4Q0GkdGVeLITkjh.FxzzgnwAMJ8FYi1L42Bb4b4QymzmyPC',
-        '2024-07-31 13:50:46.688700');
 
 CREATE TABLE IF NOT EXISTS forward_system.authors
 (
@@ -31,20 +25,23 @@ CREATE TABLE IF NOT EXISTS forward_system.authors
     created_by bigint        not null references forward_system.users (id)
 );
 
+create table if not exists forward_system.disciplines
+(
+    id   bigint primary key,
+    name varchar(2048) unique not null
+);
+
+create table if not exists forward_system.author_disciplines
+(
+    id            bigint primary key,
+    author_id     bigint not null references forward_system.authors (id),
+    discipline_id bigint not null references forward_system.disciplines (id)
+);
+
 create table if not exists forward_system.order_statuses
 (
     name varchar(255) primary key
 );
-
-insert into forward_system.order_statuses
-values ('CREATED'),
-       ('DISTRIBUTION'),
-       ('ADMIN_REVIEW'),
-       ('IN_PROGRESS'),
-       ('REVIEW'),
-       ('GUARANTEE'),
-       ('FINALIZATION'),
-       ('CLOSED');
 
 create table if not exists forward_system.orders
 (
@@ -53,16 +50,18 @@ create table if not exists forward_system.orders
     tech_number           int           not null,
     order_status          varchar(255)  not null references forward_system.order_statuses (name),
     work_type             varchar(255)  not null,
-    discipline            varchar(2048) not null,
+    discipline_id         bigint        not null references forward_system.disciplines (id),
     subject               varchar(2048) not null,
     originality           int           not null,
     verification_system   varchar(255),
-    intermediate_deadline timestamp     not null,
+    additional_dates      varchar(65536),
+    intermediate_deadline timestamp,
     deadline              timestamp     not null,
-    other                 varchar(2048),
+    other                 varchar(65536),
     taking_cost           int           not null,
     author_cost           int           not null,
-    created_at            timestamp     not null
+    created_at            timestamp     not null,
+    created_by            bigint        not null references forward_system.users (id)
 );
 
 create table if not exists forward_system.update_order_request
@@ -84,15 +83,6 @@ create table if not exists forward_system.order_participants_type
 (
     name varchar(255) primary key
 );
-
-insert into forward_system.order_participants_type
-values ('CATCHER'),
-       ('OWNER'),
-       ('HOST'),
-       ('AUTHOR'),
-       ('DECLINE_AUTHOR'),
-       ('MAIN_AUTHOR'),
-       ('EXPERT');
 
 create table if not exists forward_system.order_participants
 (
@@ -122,11 +112,6 @@ create table if not exists forward_system.chat_type
     name varchar(255) primary key
 );
 
-insert into forward_system.chat_type
-values ('REQUEST_ORDER_CHAT'),
-       ('ORDER_CHAT'),
-       ('OTHER_CHAT');
-
 create table if not exists forward_system.chats
 (
     id                bigint primary key,
@@ -148,11 +133,6 @@ create table if not exists forward_system.chat_message_types
     name varchar(255) primary key
 );
 
-insert into forward_system.chat_message_types
-values ('NEW_ORDER'),
-       ('NEW_CHAT'),
-       ('MESSAGE');
-
 create table if not exists forward_system.chat_messages
 (
     id                bigint primary key,
@@ -162,7 +142,7 @@ create table if not exists forward_system.chat_messages
     is_system_message boolean      not null,
     is_hidden         boolean      not null,
     created_at        timestamp    not null,
-    content           varchar(16384)
+    content           varchar(65536)
 );
 
 create table if not exists forward_system.chat_message_options
@@ -197,8 +177,8 @@ create table if not exists forward_system.reviews
     id             bigint primary key,
     order_id       bigint    not null references forward_system.orders (id),
     attachment_id  bigint    not null references forward_system.attachments (id),
-    review_message varchar(16384),
-    review_verdict varchar(16384),
+    review_message varchar(65536),
+    review_verdict varchar(65536),
     review_mark    int,
     review_file_id bigint references forward_system.attachments (id),
     is_reviewed    boolean   not null,
@@ -208,10 +188,199 @@ create table if not exists forward_system.reviews
     created_at     timestamp not null
 );
 
-create table if not exists forward_system.spam_block
+create table if not exists forward_system.security_block
 (
     id                 bigint primary key,
     user_id            bigint    not null references forward_system.users (id),
+    message_id         bigint references forward_system.chat_messages (id),
+    reason             varchar(65536),
     is_permanent_block boolean   not null,
     created_at         timestamp not null
-)
+);
+
+INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
+                                  other, payment, password, created_at)
+VALUES (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+888888888', '+888888888',
+        'vpl@mail.ru', '123', '321', '$2a$10$V5PwvJ4Q0GkdGVeLITkjh.FxzzgnwAMJ8FYi1L42Bb4b4QymzmyPC',
+        '2024-07-31 13:50:46.688700');
+
+insert into forward_system.order_statuses
+values ('CREATED'),
+       ('DISTRIBUTION'),
+       ('ADMIN_REVIEW'),
+       ('IN_PROGRESS'),
+       ('REVIEW'),
+       ('GUARANTEE'),
+       ('FINALIZATION'),
+       ('CLOSED');
+
+insert into forward_system.order_participants_type
+values ('CATCHER'),
+       ('OWNER'),
+       ('HOST'),
+       ('AUTHOR'),
+       ('DECLINE_AUTHOR'),
+       ('MAIN_AUTHOR'),
+       ('EXPERT');
+
+insert into forward_system.chat_type
+values ('REQUEST_ORDER_CHAT'),
+       ('ORDER_CHAT'),
+       ('OTHER_CHAT');
+
+insert into forward_system.chat_message_types
+values ('NEW_ORDER'),
+       ('NEW_CHAT'),
+       ('MESSAGE');
+
+insert into forward_system.disciplines
+values (1, 'Бух. учет'),
+       (2, 'Аудит'),
+       (3, 'Финансы'),
+       (4, 'Налоги'),
+       (5, 'Экономика'),
+       (6, 'Микро-, макро- экономика'),
+       (7, 'Экономика предприятия'),
+       (8, 'Экономика труда'),
+       (9, 'Экономическая безопасность'),
+       (10, 'Экономический анализ'),
+       (11, 'Мировая экономика'),
+       (12, 'ВЭД'),
+       (13, 'Международные валютно-кредитные отношения'),
+       (14, 'Международные финансово-экономические рассчеты'),
+       (15, 'Международные стандарты финансовой отчетности'),
+       (16, 'Менеджмент организации'),
+       (17, 'Производственный менеджмент'),
+       (18, 'Инновационный менеджмент'),
+       (19, 'Кадровый менеджмент'),
+       (20, 'Технический менеджмент'),
+       (21, 'Риск-менеджмент'),
+       (22, 'Стратегический менеджмент'),
+       (23, 'Финансовый менеджмент'),
+       (24, 'Теория управления'),
+       (25, 'Управление качеством'),
+       (26, 'Антикризисное управление'),
+       (27, 'Управление персоналом'),
+       (28, 'Маркетинговые технологии управления'),
+       (29, 'Управление проектами'),
+       (30, 'Управление запасами'),
+       (31, 'Бизнес-администрированике'),
+       (32, 'Управленческий анализ'),
+       (33, 'Планирование и проектирование организаций'),
+       (34, 'Моделирование бизнес-процессов'),
+       (35, 'Бизнес-анализ'),
+       (36, 'Стратегический анализ'),
+       (37, 'Стратегическое планирование'),
+       (38, 'Бизнес-планирование'),
+       (39, 'Проектная деятельность'),
+       (40, 'Теория организации'),
+       (41, 'АХД'),
+       (42, 'Организационное развитие'),
+       (43, 'Коммерция'),
+       (44, 'Маркетинг'),
+       (45, 'Производственный маркетинг'),
+       (46, 'Туризм'),
+       (47, 'Гостиничное дело'),
+       (48, 'Инновации'),
+       (49, 'Банковское дело'),
+       (50, 'ГМУ'),
+       (51, 'Товароведение'),
+       (52, 'Эконометрика'),
+       (53, 'Деньги'),
+       (54, 'Рынок ценных бумаг'),
+       (55, 'Страхование'),
+       (56, 'Торговое дело'),
+       (57, 'Ценообразование и оценка бизнеса'),
+       (58, 'Логистика'),
+       (59, 'Инвестиции'),
+       (60, 'Таможенное дело'),
+       (61, 'Языкознание и филология'),
+       (62, 'Лингвистика'),
+       (63, 'Лексикология'),
+       (64, 'Русский язык'),
+       (65, 'Английский язык'),
+       (66, 'Немецкий язык'),
+       (67, 'Перевод'),
+       (68, 'Искусство'),
+       (69, 'Дизайн'),
+       (70, 'Музыка'),
+       (71, 'Теория и история искусств'),
+       (72, 'Архитектура и урбанистика'),
+       (73, 'Скульптура'),
+       (74, 'Режиссура'),
+       (75, 'Хореография'),
+       (76, 'Драматургия'),
+       (77, 'Музейное дело'),
+       (78, 'Фольклор'),
+       (79, 'Актерское дело'),
+       (80, 'Журналистика'),
+       (81, 'Телевидение'),
+       (82, 'Реклама и PR'),
+       (83, 'Издетельское дело'),
+       (84, 'Связи с общественностью'),
+       (85, 'Деловая коммуникация'),
+       (86, 'Риторика'),
+       (87, 'Религоведение'),
+       (88, 'Теология'),
+       (89, 'Культурология'),
+       (90, 'Востоковедение'),
+       (91, 'Африканистика'),
+       (92, 'История'),
+       (93, 'Краеведение'),
+       (94, 'Геральдика и генеалогия'),
+       (95, 'Социология'),
+       (96, 'Социальная работа'),
+       (97, 'Социально-педагогическая работа'),
+       (98, 'Педагогика'),
+       (99, 'Коррекционная педагогика'),
+       (100, 'Дефектология'),
+       (101, 'Дошкольное образование'),
+       (102, 'Методика преподавания'),
+       (103, 'Музыкальное образование'),
+       (104, 'Психология'),
+       (105, 'Педагогическая психология'),
+       (106, 'Клиническая психология'),
+       (107, 'Социальная психология'),
+       (108, 'Психоанализ'),
+       (109, 'Конфликтология'),
+       (110, 'Международные отношения'),
+       (111, 'Политология'),
+       (112, 'Библиотечное дело'),
+       (113, 'Документоведение'),
+       (114, 'Обществознание'),
+       (115, 'Философия'),
+       (116, 'Литература'),
+       (117, 'Безопасность жизнедеятельности'),
+       (118, 'Логика'),
+       (119, 'Физическая культура'),
+       (120, 'Статистика'),
+       (121, 'Криминалистика'),
+       (122, 'Уголовное право'),
+       (123, 'Административное право'),
+       (124, 'Прокурорский надзор'),
+       (125, 'Криминология'),
+       (126, 'Уголовный процесс'),
+       (127, 'Административный процесс'),
+       (128, 'Теория государства и права'),
+       (129, 'История политических и правовых учений'),
+       (130, 'История государства и права'),
+       (131, 'Римское частное право'),
+       (132, 'Международное частное право'),
+       (133, 'Международное публичное право'),
+       (134, 'Международное гуманитарное право'),
+       (135, 'Право прав человека'),
+       (136, 'Гражданское право'),
+       (137, 'Семейное право'),
+       (138, 'Корпоративное право'),
+       (139, 'Жилищное право'),
+       (140, 'Земельное право'),
+       (141, 'Право интеллектуальной собственности'),
+       (142, 'Арбитражный процесс'),
+       (143, 'Гражданский процесс'),
+       (144, 'Конституционное право'),
+       (145, 'Муниципальное право'),
+       (146, 'Право соц. обеспечения'),
+       (147, 'Трудовое право'),
+       (148, 'Охрана труда'),
+       (149, 'Экологическое право'),
+       (150, 'Медицинское право');

@@ -1,6 +1,5 @@
 package by.forward.forward_system.core.services.core;
 
-import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.dto.messenger.OrderAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
@@ -11,6 +10,7 @@ import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
@@ -38,7 +38,6 @@ public class OrderService {
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final ChatService chatService;
     private final ChatTypeRepository chatTypeRepository;
-    private final ReviewRepository reviewRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -71,6 +70,7 @@ public class OrderService {
         orderEntity.setSubject(order.getSubject());
         orderEntity.setOriginality(order.getOriginality());
         orderEntity.setVerificationSystem(order.getVerificationSystem());
+        orderEntity.setAdditionalDates(order.getAdditionalDates());
         orderEntity.setIntermediateDeadline(order.getIntermediateDeadline());
         orderEntity.setDeadline(order.getDeadline());
         orderEntity.setOther(order.getOther());
@@ -125,7 +125,14 @@ public class OrderService {
 
         for (Long userId : userIds) {
             addParticipant(orderEntity, orderParticipantsTypeEntity, userId);
-            sendNewOrderRequest(userId, orderEntity.getId(), new BigDecimal(orderEntity.getTechNumber()), orderEntity.getName(), orderEntity.getDiscipline(), orderEntity.getSubject());
+            sendNewOrderRequest(
+                userId,
+                orderEntity.getId(),
+                new BigDecimal(orderEntity.getTechNumber()),
+                orderEntity.getName(),
+                orderEntity.getDiscipline().getName(),
+                orderEntity.getSubject()
+            );
         }
 
         orderRepository.save(orderEntity);
@@ -156,7 +163,7 @@ public class OrderService {
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(
                 null,
                 newOrdersChatByUser.get(),
-                "Поступил новый заказ №%d.\nНазвание работы \"%s\".\nТема \"%s\".\nДисциплина \"%s\".".formatted(techNumber, name, discipline, subject),
+                "Поступил новый заказ №%s.\nНазвание работы \"%s\".\nТема \"%s\".\nДисциплина \"%s\".".formatted(techNumber, name, discipline, subject),
                 true,
                 chatMessageType.get(),
                 Collections.emptyList(),
@@ -230,10 +237,11 @@ public class OrderService {
         orderDto.setOrderStatus(orderEntity.getOrderStatus().getStatus().getName());
         orderDto.setOrderStatusRus(orderEntity.getOrderStatus().getStatus().getRusName());
         orderDto.setWorkType(orderEntity.getWorkType());
-        orderDto.setDiscipline(orderEntity.getDiscipline());
+        orderDto.setDiscipline(orderEntity.getDiscipline().getName());
         orderDto.setSubject(orderEntity.getSubject());
         orderDto.setOriginality(orderEntity.getOriginality());
         orderDto.setVerificationSystem(orderEntity.getVerificationSystem());
+        orderDto.setAdditionalDates(orderEntity.getAdditionalDates());
         orderDto.setIntermediateDeadline(orderEntity.getIntermediateDeadline());
         orderDto.setDeadline(orderEntity.getDeadline());
         orderDto.setOther(orderEntity.getOther());
@@ -284,7 +292,7 @@ public class OrderService {
         ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
         chatService.createChat(
             Arrays.asList(userEntity, catcherEntity),
-            ChatNames.ORDER_REQUEST_CHAT.formatted(orderEntity.getTechNumber(), userEntity.getFio(), userEntity.getUsername()),
+            ChatNames.ORDER_REQUEST_CHAT.formatted(orderEntity.getTechNumber(), userEntity.getUsername()),
             orderEntity,
             "Автор %s (%s) готов обсудить заказ.".formatted(userEntity.getFio(), userEntity.getUsername()),
             chatTypeEntity
@@ -461,6 +469,54 @@ public class OrderService {
     }
 
     public String getLastTechNumber() {
-        return orderRepository.maxTechNumber().orElseThrow(() -> new RuntimeException("Tech number not found"));
+        return orderRepository.maxTechNumber().orElse("0");
     }
+
+    public void checkOrderAccessEdit(Long orderId, Long currentUserId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        if (orderEntity.getCreatedBy().getId().equals(userEntity.getId())) {
+            return;
+        }
+
+        List<ParticipantType> editTypes = Arrays.asList(ParticipantType.HOST, ParticipantType.CATCHER);
+        boolean isParticipant = orderEntity.getOrderParticipants()
+            .stream()
+            .anyMatch(t -> t.getUser().getId().equals(currentUserId) && editTypes.contains(t.getParticipantsType().getType()));
+
+        if (isParticipant) {
+            return;
+        }
+
+        throw new IllegalStateException("У вас нет доступа к данному заказу.");
+    }
+
+    public void checkOrderAccessView(Long orderId, Long currentUserId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        if (orderEntity.getCreatedBy().getId().equals(userEntity.getId())) {
+            return;
+        }
+
+        boolean isParticipant = orderEntity.getOrderParticipants()
+            .stream()
+            .anyMatch(t -> t.getUser().getId().equals(currentUserId));
+
+        if (isParticipant) {
+            return;
+        }
+
+        throw new IllegalStateException("У вас нет доступа к данному заказу.");
+    }
+
+    public Integer countMyOrders(Long currentUserId) {
+        return orderRepository.countMyOrders(currentUserId);
+    }
+
 }

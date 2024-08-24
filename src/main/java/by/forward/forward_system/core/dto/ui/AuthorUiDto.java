@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -30,4 +32,5 @@ public class AuthorUiDto {
     private Boolean isAuthor;
     private Boolean isHr;
     private Boolean isOwner;
+    private String rolesRus;
 }

@@ -38,7 +38,7 @@ public class ChatMessageEntity {
     @Column(name = "is_hidden", nullable = false)
     private Boolean isHidden = false;
 
-    @Column(name = "content", length = 16384)
+    @Column(name = "content")
     private String content;
 
     @Column(name = "created_at", nullable = false)

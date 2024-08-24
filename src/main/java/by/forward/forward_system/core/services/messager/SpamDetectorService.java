@@ -13,7 +13,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class SpamDetectorService {
 
-    private final int MESSAGE_LIMIT = 6;
+    private final int MESSAGE_LIMIT = 10;
 
     private final int PERIOD_MIN = 1;
 

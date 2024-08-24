@@ -15,33 +15,58 @@
 </div>
 <div class="container">
     <div class="row">
-        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + |(| + ${ban.getUser().getUsername()} + |) (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+        <p class="mt-3 mb-3" th:text="|Причина блокировки: | + ${ban.getReason()}"></p>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-danger mt-3">Заблокировать</a>
-        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
+        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=false|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
         <p th:text="|Список сообщений пользователя | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <div class="col-12">
             <ul class="list-group">
+                <!--/*@thymesVar id="msg" type="by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto"*/-->
                 <li class="list-group-item align-items-start"
-                    th:each="message : ${ban.getMessages()}">
+                    th:each="msg : ${ban.getLastMessages()}">
                     <div>
-                        <p th:id="|msg-| + ${message.getId()}" th:hidden="${!message.getIsHidden()}" style="color: indianred"><strong>Удалено</strong></p>
+                        <p th:id="|msg-| + ${msg.getId()}" th:hidden="${!msg.getIsHidden()}" style="color: indianred"><strong>Удалено</strong></p>
                     </div>
                     <div>
-                        <pre th:text="${message.getContent()}" style="white-space: pre-wrap"></pre>
+                        <pre th:text="${msg.getContent()}" style="white-space: pre-wrap"></pre>
+                    </div>
+                    <div th:each="att : ${msg.getAttachments()}">
+                        <a th:href="|/load-file/| + ${att.getAttachmentId()}" th:text="${att.getAttachmentName()}"></a>
                     </div>
                     <div>
-                        <p th:text="${#temporals.format(message.getCreatedAt(), 'dd.MM.yyyy HH:mm:ss')}"></p>
+                        <p th:text="${#temporals.format(msg.getCreatedAt(), 'dd.MM.yyyy HH:mm:ss')}"></p>
                     </div>
                     <div>
-                        <button class="btn btn-secondary" th:onclick="|delMessage(| + ${message.getId()} + |)|">Удалить сообщение</button>
+                        <button class="btn btn-secondary" th:onclick="|delMessage(| + ${msg.getId()} + |)|">Удалить сообщение</button>
                     </div>
                 </li>
             </ul>
         </div>
     </div>
     <script>
+        function sendDelete(id, endpoint) {
+            let xhr = new XMLHttpRequest();
+            xhr.open('POST', endpoint, false);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            let data = JSON.stringify({
+                messageId: id
+            });
+            xhr.onerror = function () {
+                alert("Ошибка соединения!");
+            }
+            xhr.onload = function () {
+                if (xhr.status !== 200) {
+                    alert("Ошибка соединения!")
+                } else {
+                    document.getElementById(`msg-${id}`).removeAttribute("hidden");
+                }
+            }
+            xhr.send(data);
+        }
+
         function delMessage(messageId) {
-            console.log(messageId);
+            sendDelete(messageId, `/api/messenger/hide-message/${messageId}`)
         }
     </script>
 </div>

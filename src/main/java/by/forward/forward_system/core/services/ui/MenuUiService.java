@@ -28,7 +28,7 @@ public class MenuUiService {
             }
         }
 
-        menuEntries.sort(Comparator.comparing(MenuEntry::entryName));
+        menuEntries.sort(Comparator.comparing(MenuEntry::sortOrder));
 
         return menuEntries;
     }

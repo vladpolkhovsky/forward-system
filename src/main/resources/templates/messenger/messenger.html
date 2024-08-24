@@ -133,7 +133,14 @@
         orderName.innerText = orderTable[chatTable[chatId].orderId].name;
         orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
         orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
-        orderDeadline.innerText = drawDateWide(orderTable[chatTable[chatId].orderId].intermediateDeadline);
+
+        let intermediateDeadline = orderTable[chatTable[chatId].orderId].intermediateDeadline;
+        if (intermediateDeadline != null) {
+            orderDeadline.innerText = drawDateWide(intermediateDeadline);
+        } else {
+            orderDeadline.innerText = "Не назначен";
+        }
+
         orderLink.setAttribute("href", `/order-info/${chatTable[chatId].orderId}`);
     }
 

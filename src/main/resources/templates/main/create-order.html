@@ -5,6 +5,12 @@
     <title>Главное меню</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+            crossorigin="anonymous"></script>
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -30,7 +36,8 @@
                     <div class="col-sm-10">
                         <div class="input-group">
                             <span class="input-group-text" th:text="|Последний номер ТЗ: | + ${lastTechNumber}"></span>
-                            <input required id="techName" type="number" min="0" step="0.01" class="form-control" th:field="*{techNumber}">
+                            <input required id="techName" type="number" min="0" step="0.01" class="form-control"
+                                   th:field="*{techNumber}">
                         </div>
                     </div>
                 </div>
@@ -43,7 +50,13 @@
                 <div class="mb-3 mt-3 row">
                     <label for="discipline" class="col-sm-2 col-form-label">Дисциплина</label>
                     <div class="col-sm-10">
-                        <input required id="discipline" type="text" class="form-control" th:field="*{discipline}">
+                        <input required readonly id="discipline" type="text" class="form-control"
+                               th:field="*{discipline}">
+                        <input required hidden readonly id="disciplineId" type="text" class="form-control"
+                               th:field="*{disciplineId}">
+                        <div class="row">
+                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDiscipline">Выбрать дисциплину</button>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
@@ -55,7 +68,8 @@
                 <div class="mb-3 mt-3 row">
                     <label for="discipline" class="col-sm-2 col-form-label">Оригинальность</label>
                     <div class="col-sm-10">
-                        <input required id="originality" type="number" class="form-control" th:field="*{originality}">
+                        <input required id="originality" type="number" min="0" max="100" class="form-control"
+                               th:field="*{originality}">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
@@ -63,14 +77,33 @@
                     <div class="col-sm-10">
                         <input required id="verificationSystem" type="text" class="form-control"
                                th:field="*{verificationSystem}">
+                        <div class="row">
+                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVerificationSystem">Выбрать систему проверки</button>
+                        </div>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
                     <label for="discipline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
                     <div class="col-sm-10">
-                        <input required id="intermediateDeadline" type="datetime-local" class="form-control"
+                        <input id="intermediateDeadline" type="datetime-local" class="form-control"
                                name="intermediateDeadline"
                                th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <div class="">
+
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
+                    <input id="additionalDates" type="text" hidden th:field="*{additionalDates}">
+                    <div id="additionalDatesDiv" class="col-sm-9">
+                    </div>
+                    <div class="col-sm-1">
+                        <button type="button" class="btn" onclick="addNewAdditionalDate()">&#x2795;</button>
+                        <button type="button" class="btn" onclick="removeAdditionalDate()">&#x2796;</button>
+                        <button type="button" class="btn" onclick="saveAdditionalDates()">&#x1f4be;</button>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
@@ -85,7 +118,7 @@
                     <label for="discipline" class="col-sm-2 col-form-label">Дополнительные требования и
                         пожелания</label>
                     <div class="col-sm-10">
-                        <textarea required id="other" class="form-control" th:field="*{other}" rows="5"></textarea>
+                        <textarea id="other" class="form-control" th:field="*{other}" rows="5"></textarea>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
@@ -106,5 +139,147 @@
             <button type="submit" class="btn btn-primary mb-3">Продолжить</button>
         </div>
     </form>
+
+    <div class="modal fade" id="modalDiscipline" tabindex="-1" aria-labelledby="labelDiscipline" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="labelDiscipline">Выбор дисциплины</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row mb-2 border" th:each="d : ${disciplines}">
+                        <div th:id="|name-| + ${d.getId()}" th:for="${d.getId()}" class="col-9" th:text="${d.getName()}"></div>
+                        <button th:id="${d.getId()}" class="btn btn-primary col-3" th:onclick="|saveDiscipline(| + ${d.getId()} + |)|" data-bs-dismiss="modal">Выбрать</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalVerificationSystem" tabindex="-1" aria-labelledby="labelVerif" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="labelVerif">Выбор системы проверки</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-2 border">
+                        <div id="verif-1" class="col-9">ап.вуз</div>
+                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(1)" data-bs-dismiss="modal">Выбрать</button>
+                    </div>
+                    <div class="row mb-2 border">
+                        <div id="verif-2" class="col-9">ап.ру</div>
+                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(2)" data-bs-dismiss="modal">Выбрать</button>
+                    </div>
+                    <div class="row mb-2 border">
+                        <div id="verif-3" class="col-9">etxt</div>
+                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(3)" data-bs-dismiss="modal">Выбрать</button>
+                    </div>
+                    <div class="row mb-2 border">
+                        <div id="verif-4" class="col-9">Не требуется</div>
+                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(4)" data-bs-dismiss="modal">Выбрать</button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let additionalDateDiv = document.getElementById(`additionalDatesDiv`);
+        let additionalDate = document.getElementById(`additionalDates`);
+        let additionalDateCount = 0;
+
+        function saveDiscipline(id) {
+            let textContent = document.getElementById(`name-${id}`).textContent;
+            document.getElementById("discipline").value = textContent;
+            document.getElementById("disciplineId").value = id;
+        }
+
+        function saveVerificationSystem(id) {
+            let textContent = document.getElementById(`verif-${id}`).textContent;
+            document.getElementById("verificationSystem").value = textContent;
+        }
+
+        function markAsChanged(id) {
+            let div = document.getElementById(`additional-date-${id}`);
+            div.classList.add("bg-warning")
+        }
+
+        function createAdditionalDate(id, isNew) {
+            let div = document.createElement("div");
+            div.id = `additional-date-${id}`;
+            div.classList.add("row");
+            if (isNew) {
+                div.classList.add("bg-warning")
+            }
+            div.innerHTML =
+                `<div class="col-6">
+                    <input id="additional-date-text-${id}" type="text" class="form-control" onchange="markAsChanged(${id})" placeholder="Что сделать">
+                </div>
+                <div class="col-6">
+                    <input id="additional-date-time-${id}" type="datetime-local" onchange="markAsChanged(${id})" class="form-control">
+                </div>`
+            additionalDateDiv.append(div);
+        }
+
+        function addNewAdditionalDate() {
+            createAdditionalDate(additionalDateCount, true);
+            additionalDateCount++;
+        }
+
+        function removeAdditionalDate() {
+            alert()
+            if (additionalDateDiv.childNodes.length === 0) {
+                return;
+            }
+            additionalDateDiv.removeChild(additionalDateDiv.lastChild);
+            additionalDateCount = Math.max(0, additionalDateCount - 1);
+        }
+
+        function saveAdditionalDates() {
+            let toSave = [];
+            for (let i = 0; i < additionalDateCount; i++) {
+                let text = document.getElementById(`additional-date-text-${i}`).value;
+                let time = document.getElementById(`additional-date-time-${i}`).value;
+                toSave.push({
+                    text: text,
+                    time: time
+                });
+            }
+            additionalDate.value = JSON.stringify(toSave);
+            for (let i = 0; i < additionalDateDiv.childNodes.length; i++) {
+                if (additionalDateDiv.childNodes[i].classList !== undefined) {
+                    additionalDateDiv.childNodes[i].classList.remove("bg-warning");
+                }
+            }
+        }
+
+        function loadSavedAdditionalDates(jsonArray) {
+            for (let i = 0; i < jsonArray.length; i++) {
+                createAdditionalDate(i, false);
+                document.getElementById(`additional-date-text-${i}`).value = jsonArray[i].text;
+                document.getElementById(`additional-date-time-${i}`).value = jsonArray[i].time;
+            }
+            additionalDateCount = jsonArray.length;
+        }
+
+        function loadAdditionalDates() {
+            let savedData = additionalDate.value;
+            if (savedData !== "") {
+                loadSavedAdditionalDates(JSON.parse(savedData));
+            }
+        }
+
+        loadAdditionalDates();
+    </script>
 </div>
 </body>

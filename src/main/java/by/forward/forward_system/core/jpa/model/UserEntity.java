@@ -35,7 +35,7 @@ public class UserEntity {
     @Column(name = "lastname", nullable = false, length = 255)
     private String lastname;
 
-    @Column(name = "surname", nullable = false, length = 255)
+    @Column(name = "surname")
     private String surname;
 
     @Column(name = "roles", nullable = false, length = 512)
@@ -87,7 +87,7 @@ public class UserEntity {
     public String getFio() {
         return getFirstname() + " " +
             getLastname().substring(0, 1) + ". " +
-            getSurname().substring(0, 1) + ".";
+            StringUtils.abbreviate(StringUtils.defaultString(getSurname(), ""), ".", 2);
     }
 
     public String getFioFull() {

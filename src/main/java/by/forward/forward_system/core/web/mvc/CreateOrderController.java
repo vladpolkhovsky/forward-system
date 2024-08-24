@@ -3,6 +3,7 @@ package by.forward.forward_system.core.web.mvc;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.services.core.DisciplineService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
@@ -31,6 +32,7 @@ public class CreateOrderController {
     private final OrderService orderService;
 
     private final UpdateRequestOrderService updateRequestOrderService;
+    private final DisciplineService disciplineService;
 
     @GetMapping("/create-order")
     public String createOrder(Model model) {
@@ -39,30 +41,7 @@ public class CreateOrderController {
         model.addAttribute("order", new OrderUiDto());
         model.addAttribute("actionUrl", "/create-order");
         model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
-        return "main/create-order";
-    }
-
-    @GetMapping("/update-order")
-    public String updateOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
-            OrderStatus.CREATED.getName(),
-            OrderStatus.DISTRIBUTION.getName()
-        ));
-
-        model.addAttribute("menuName", "Выберите заказ для изменения");
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", allOrdersInStatus);
-        return "main/update-order-selector";
-    }
-
-    @GetMapping("/update-order/{id}")
-    public String updateOrder(Model model, @PathVariable Long id) {
-
-        model.addAttribute("menuName", "Изменение заказа");
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("order", orderUiService.getOrder(id));
-        model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
-        model.addAttribute("actionUrl", "/update-order/" + id);
+        model.addAttribute("disciplines", disciplineService.allDisciplines());
 
         return "main/create-order";
     }
@@ -82,8 +61,38 @@ public class CreateOrderController {
         return "main/create-order-second-step";
     }
 
+    @GetMapping("/update-order")
+    public String updateOrder(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.CREATED.getName(),
+            OrderStatus.DISTRIBUTION.getName()
+        ));
+
+        model.addAttribute("menuName", "Выберите заказ для изменения");
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("ordersList", allOrdersInStatus);
+
+        return "main/update-order-selector";
+    }
+
+    @GetMapping("/update-order/{id}")
+    public String updateOrder(Model model, @PathVariable Long id) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        model.addAttribute("menuName", "Изменение заказа");
+        model.addAttribute("disciplines", disciplineService.allDisciplines());
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("order", orderUiService.getOrder(id));
+        model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
+        model.addAttribute("actionUrl", "/update-order/" + id);
+
+        return "main/create-order";
+    }
+
     @PostMapping(value = "/update-order/{id}", consumes = MediaType.ALL_VALUE)
     public String updateOrder(@PathVariable Long id, @ModelAttribute("order") OrderUiDto order, Model model) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
         order = orderUiService.updateOrder(id, order);
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -100,24 +109,41 @@ public class CreateOrderController {
     @GetMapping(value = "/view-order")
     public String viewOrder(Model model) {
         List<OrderUiDto> allOrdersInStatus = orderUiService.getAllOrders();
-        model.addAttribute("menuName", "Выберите заказ для изменения");
+
+        model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("ordersList", allOrdersInStatus);
+
         return "main/view-order-selector";
     }
 
     @GetMapping(value = "/view-order/{orderId}")
     public String viewOrder(Model model, @PathVariable Long orderId) {
+        orderService.checkOrderAccessView(orderId, userUiService.getCurrentUserId());
+
         OrderDto order = orderService.getOrder(orderId);
         Long orderMainChatId = orderService.getOrderMainChat(orderId);
         List<OrderParticipantUiDto> participants = orderUiService.getAllParticipants(orderId);
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("hasMainChat", orderMainChatId != null);
         model.addAttribute("mainChatId", orderMainChatId);
         model.addAttribute("order", order);
         model.addAttribute("participants", participants);
+
         return "main/view-order";
+    }
+
+    @GetMapping(value = "/view-my-order")
+    public String viewMyOrder(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
+
+        model.addAttribute("menuName", "Выберите заказ для просмотра");
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("ordersList", allOrdersInStatus);
+
+        return "main/view-order-selector";
     }
 
     @GetMapping(value = "/order-to-in-progress")
@@ -131,28 +157,36 @@ public class CreateOrderController {
 
         model.addAttribute("menuName", "Выберите заказ для перевода в статус \"В работе\"");
         model.addAttribute("ordersList", allOrdersInStatus);
+
         return "main/to-in-progress-order-selector";
     }
 
     @GetMapping(value = "/order-to-in-progress/{orderId}")
     public String orderToInProgress(Model model, @PathVariable Long orderId) {
-        model.addAttribute("userShort", userUiService.getCurrentUser());
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         OrderUiDto order = orderUiService.getOrder(orderId);
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Укажите данные для перевода в статус \"В работе\"");
         model.addAttribute("authors", orderUiService.getAuthorsByOrder(order.getId()));
         model.addAttribute("experts", orderUiService.getAllAuthors());
         model.addAttribute("catchers", orderUiService.getUserListWithCatcherMark(order.getId()));
         model.addAttribute("hosts", orderUiService.getAllManagers());
         model.addAttribute("orderId", orderId);
+
         return "main/to-in-progress-order";
     }
 
     @PostMapping(value = "/order-to-in-progress/{orderId}")
     public RedirectView orderToInProgress(@PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         OrderUiDto order = orderUiService.getOrder(orderId);
         UpdateOrderRequestDto updateOrderRequestDto = updateRequestOrderService.create(body, orderId, order.getTechNumber(), OrderStatus.ADMIN_REVIEW);
         updateRequestOrderService.save(updateOrderRequestDto);
         orderService.changeStatus(orderId, OrderStatus.DISTRIBUTION, OrderStatus.ADMIN_REVIEW);
+
         return new RedirectView("/order-to-in-progress");
     }
 
@@ -163,25 +197,33 @@ public class CreateOrderController {
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName()
         ));
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Выберите заказ в которого хотите добавить автора");
         model.addAttribute("ordersList", allOrdersInStatus);
+
         return "main/add-author-to-order-selector";
     }
 
     @GetMapping(value = "/add-author-to-order/{orderId}")
     public String addAuthorToOrder(Model model, @PathVariable Long orderId) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         List<UserSelectionUiDto> allAuthors = orderUiService.getAllAuthors();
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("menuName", "Выберите атвора, которого хотите добавить в заказ");
+        model.addAttribute("menuName", "Выберите автора, которого хотите добавить в заказ");
         model.addAttribute("authors", allAuthors);
+
         return "main/add-author-to-order";
     }
 
     @PostMapping(value = "/add-author-to-order/{orderId}")
     public RedirectView addAuthorToOrder(Model model, @PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         Long authorId = Long.parseLong(body.getFirst("author"));
         orderService.addMainAuthorToOrder(orderId, authorId);
+
         return new RedirectView("/change-fee-in-order");
     }
 
@@ -192,33 +234,42 @@ public class CreateOrderController {
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName()
         ));
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Выберите заказ в котором хотите изменить доли авторов");
         model.addAttribute("ordersList", allOrdersInStatus);
+
         return "main/change-fee-in-order-selector";
     }
 
     @GetMapping(value = "/change-fee-in-order/{orderId}")
     public String changeFeeInOrder(Model model, @PathVariable Long orderId) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         List<AuthorWithFeeDto> authorWithFeeDtos = orderUiService.getOrderAuthorsWithFee(orderId);
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Укажите доли авторов");
         model.addAttribute("authors", authorWithFeeDtos);
         model.addAttribute("order", orderUiService.getOrder(orderId));
         model.addAttribute("orderId", orderId);
+
         return "main/change-fee-in-order";
     }
 
 
     @PostMapping(value = "/change-fee-in-order/{orderId}")
     public RedirectView changeFeeInOrder(Model model, @PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         Map<Long, Integer> authorIdToFee = new HashMap<>();
         for (Map.Entry<String, List<String>> idToFee : body.entrySet()) {
             Long userId = Long.parseLong(idToFee.getKey().split("-")[1]);
             Integer fee = Integer.parseInt(idToFee.getValue().get(0));
             authorIdToFee.put(userId, fee);
         }
+
         orderService.applyFee(orderId, authorIdToFee);
+
         return new RedirectView("/main");
     }
 
@@ -231,26 +282,34 @@ public class CreateOrderController {
             OrderStatus.GUARANTEE.getName(),
             OrderStatus.CLOSED.getName()
         ));
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Выберите заказ в котором хотите изменить статус");
         model.addAttribute("ordersList", allOrdersInStatus);
+
         return "main/change-order-status-selector";
     }
 
     @GetMapping(value = "change-order-status/{orderId}")
     public String changeOrderStatus(Model model, @PathVariable Long orderId) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Измените статус заказа");
         model.addAttribute("statuses", OrderStatus.values());
         model.addAttribute("order", orderUiService.getOrder(orderId));
         model.addAttribute("orderId", orderId);
+
         return "main/change-order-status";
     }
 
     @PostMapping(value = "/change-order-status/{orderId}")
     public RedirectView changeOrderStatusSelector(@PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
         String status = body.getFirst("status");
         orderService.changeStatus(orderId, OrderStatus.byName(status));
+
         return new RedirectView("/main");
     }
 

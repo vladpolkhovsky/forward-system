@@ -28,6 +28,6 @@ public class AdminMenuComponent implements MenuComponent {
         List<MenuEntry.MenuItem> list = Arrays.asList(
             new MenuEntry.MenuItem("Подтвердить заказы на расмотрении", "/order-review", true, updateRequestOrderService.countUpdateRequests())
         );
-        return new MenuEntry("Админ меню", list);
+        return new MenuEntry("Админ", list, 1);
     }
 }

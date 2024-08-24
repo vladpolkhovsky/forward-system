@@ -129,4 +129,8 @@ public class ChatService {
     public List<ChatDto> getAllChats() {
         return chatRepository.findAll().stream().map(this::getChat).toList();
     }
+
+    public void hideMessage(Long messageId) {
+        messageService.hideMessage(messageId);
+    }
 }

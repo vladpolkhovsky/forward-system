@@ -24,13 +24,13 @@ public class ReviewEntity {
     @JoinColumn(name = "attachment_id", nullable = false)
     private AttachmentEntity attachment;
 
-    @Column(name = "review_message", length = 16384)
+    @Column(name = "review_message")
     private String reviewMessage;
 
-    @Column(name = "review_verdict", length = 16384)
+    @Column(name = "review_verdict")
     private String reviewVerdict;
 
-    @Column(name = "review_mark", length = 16384)
+    @Column(name = "review_mark")
     private Integer reviewMark;
 
     @ManyToOne(fetch = FetchType.EAGER)

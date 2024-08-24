@@ -123,6 +123,11 @@ public class MessageService {
         return allByUser.stream().map(this::convertChatMessage).toList();
     }
 
+    public MessageDto getMessageById(Long messageId) {
+        ChatMessageEntity chatMessageEntity = messageRepository.findById(messageId).orElseThrow(() -> new RuntimeException("Message not found for id " + messageId));
+        return convertChatMessage(chatMessageEntity);
+    }
+
     public MessageDto convertChatMessage(ChatMessageEntity chatMessage) {
         MessageDto messageDto = new MessageDto();
         messageDto.setId(chatMessage.getId());
@@ -189,4 +194,9 @@ public class MessageService {
     }
 
 
+    public void hideMessage(Long messageId) {
+        ChatMessageEntity chatMessageEntity = messageRepository.findById(messageId).orElseThrow(() -> new RuntimeException("Message not found for id " + messageId));
+        chatMessageEntity.setIsHidden(true);
+        messageRepository.save(chatMessageEntity);
+    }
 }
