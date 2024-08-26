@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.ui.AuthorUiDto;
+import by.forward.forward_system.core.services.core.DisciplineService;
 import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
@@ -21,11 +22,14 @@ public class CreateAuthorController {
 
     private final AuthorUiService authorUiService;
 
+    private final DisciplineService disciplineService;
+
     @GetMapping("/create-author")
     public String createAuthor(Model model) {
 
         model.addAttribute("menuName", "Создать автора");
         model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("disciplines", disciplineService.allDisciplines());
         model.addAttribute("user", new AuthorUiDto());
         model.addAttribute("actionUrl", "/create-author");
         model.addAttribute("passwordRequired", true);
@@ -49,6 +53,7 @@ public class CreateAuthorController {
         model.addAttribute("menuName", "Изменение автора");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("user", authorUiService.getAuthor(id));
+        model.addAttribute("disciplines", disciplineService.allDisciplines());
         model.addAttribute("passwordRequired", false);
 
         model.addAttribute("actionUrl", "/update-author/" + id);

@@ -18,7 +18,9 @@ import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -38,6 +40,8 @@ public class OrderService {
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final ChatService chatService;
     private final ChatTypeRepository chatTypeRepository;
+    private final AttachmentService attachmentService;
+    private final OrderAttachmentRepository orderAttachmentRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -264,13 +268,13 @@ public class OrderService {
         orderDto.setParticipants(orderParticipantDtos);
 
         List<OrderAttachmentDto> orderAttachmentDtos = new ArrayList<>();
-        for (OrderAttachment orderAttachment : orderEntity.getOrderAttachment()) {
+        for (OrderAttachmentEntity orderAttachmentEntity : orderEntity.getOrderAttachment()) {
             OrderAttachmentDto orderAttachmentDto = new OrderAttachmentDto();
 
-            orderAttachmentDto.setId(orderAttachment.getId());
+            orderAttachmentDto.setId(orderAttachmentEntity.getId());
             orderAttachmentDto.setOrderId(orderEntity.getId());
-            orderAttachmentDto.setAttachmentId(orderAttachment.getAttachment().getId());
-            orderAttachmentDto.setAttachmentName(orderAttachment.getAttachment().getFilename());
+            orderAttachmentDto.setAttachmentId(orderAttachmentEntity.getAttachment().getId());
+            orderAttachmentDto.setAttachmentName(orderAttachmentEntity.getAttachment().getFilename());
 
             orderAttachmentDtos.add(orderAttachmentDto);
         }
@@ -519,4 +523,28 @@ public class OrderService {
         return orderRepository.countMyOrders(currentUserId);
     }
 
+    @SneakyThrows
+    public void saveOrderFile(Long id, MultipartFile file) {
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());
+        OrderAttachmentEntity orderAttachmentEntity = new OrderAttachmentEntity();
+        orderAttachmentEntity.setOrder(orderEntity);
+        orderAttachmentEntity.setAttachment(attachmentEntity);
+        orderAttachmentRepository.save(orderAttachmentEntity);
+    }
+
+    public List<OrderAttachmentDto> getOrderAttachments(Long id) {
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        return toDto(orderEntity).getAttachments();
+    }
+
+    public void removeOrderFile(Long id, Long attachmentId) {
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        for (OrderAttachmentEntity orderAttachmentEntity : orderEntity.getOrderAttachment()) {
+            if (orderAttachmentEntity.getAttachment().getId().equals(attachmentId)) {
+                orderAttachmentRepository.delete(orderAttachmentEntity);
+                return;
+            }
+        }
+    }
 }

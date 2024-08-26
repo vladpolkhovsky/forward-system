@@ -1,9 +1,7 @@
 package by.forward.forward_system.core.services.ui;
 
-import by.forward.forward_system.core.dto.ui.AuthorWithFeeDto;
-import by.forward.forward_system.core.dto.ui.OrderParticipantUiDto;
-import by.forward.forward_system.core.dto.ui.OrderUiDto;
-import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
+import by.forward.forward_system.core.dto.ui.*;
+import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
@@ -127,7 +125,7 @@ public class OrderUiService {
             .toList();
     }
 
-    public List<UserSelectionUiDto> getAuthorListWithAuthorMark(Long orderId) {
+    public List<UserSelectionWithGradeDto> getAuthorListWithAuthorMark(Long orderId) {
         List<AuthorEntity> allAuthors = authorService.getAllAuthors();
 
         OrderEntity order = orderService.getById(orderId)
@@ -143,9 +141,56 @@ public class OrderUiService {
             .collect(Collectors.toSet());
 
         return allAuthors.stream()
-            .map(AuthorEntity::getUser)
-            .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), authorIds.contains(t.getId())))
+            .sorted(Comparator.comparing(t -> calcOrder((AuthorEntity) t, order)).thenComparing(o -> ((AuthorEntity)o).getUser().getUsername()))
+            .map(t -> new UserSelectionWithGradeDto(t.getId(), t.getUser().getFio(), t.getUser().getUsername(), authorIds.contains(t.getUser().getId()), calcBgColor(order, t)))
             .toList();
+    }
+
+    private int calcOrder(AuthorEntity authorEntity, OrderEntity order) {
+        boolean hasExcellent = false;
+        boolean hasGood = false;
+        boolean hasMaybe = false;
+
+        for (AuthorDisciplineEntity authorDiscipline : authorEntity.getAuthorDisciplines()) {
+            if (!order.getDiscipline().getId().equals(authorDiscipline.getDiscipline().getId())) {
+                continue;
+            }
+            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.EXCELLENT)) {
+                hasExcellent = true;
+            }
+            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.GOOD)) {
+                hasGood = true;
+            }
+            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.MAYBE)) {
+                hasMaybe = true;
+            }
+        }
+
+        if (hasExcellent) {
+            return 0;
+        }
+        if (hasGood) {
+            return 1;
+        }
+        if (hasMaybe) {
+            return 2;
+        }
+        return 3;
+    }
+
+    private String calcBgColor(OrderEntity order, AuthorEntity t) {
+        int comp = calcOrder(t, order);
+        if (comp == 0) {
+            return "text-bg-success";
+        }
+        if (comp == 1) {
+            return "text-bg-warning";
+        }
+        if (comp == 2) {
+            return "text-bg-primary";
+        } else {
+            return "text-bg-light";
+        }
     }
 
     public List<UserSelectionUiDto> getAuthorsByOrder(Long orderId) {

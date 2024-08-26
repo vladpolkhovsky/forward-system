@@ -1,19 +1,21 @@
 package by.forward.forward_system.core.services.ui;
 
 import by.forward.forward_system.core.dto.ui.AuthorUiDto;
+import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.enums.auth.Authority;
-import by.forward.forward_system.core.jpa.model.AuthorEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.DisciplineQualityRepository;
+import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +25,8 @@ public class AuthorUiService {
     private final AuthorService authorService;
 
     private final UserRepository userRepository;
+    private final DisciplineRepository disciplineRepository;
+    private final DisciplineQualityRepository disciplineQualityRepository;
 
     public AuthorUiDto getAuthor(Long id) {
         Optional<AuthorEntity> byId = authorService.getById(id);
@@ -56,7 +60,12 @@ public class AuthorUiService {
 
 
     private AuthorUiDto toDto(AuthorEntity authorEntity) {
-        String fioFull = authorEntity.getUser().getLastname() + " " + authorEntity.getUser().getFirstname() + " " + authorEntity.getUser().getSurname();
+        String fioFull = authorEntity.getUser().getLastname() + " " +
+            authorEntity.getUser().getFirstname() + " " +
+            StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
+        String excellentSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.EXCELLENT);
+        String goodSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.GOOD);
+        String maybeSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.MAYBE);
         return new AuthorUiDto(
             authorEntity.getId(),
             authorEntity.getUser().getUsername(),
@@ -71,8 +80,9 @@ public class AuthorUiService {
             authorEntity.getUser().getEmail(),
             authorEntity.getUser().getPayment(),
             authorEntity.getUser().getOther(),
-            authorEntity.getSubjects(),
-            authorEntity.getQuality(),
+            excellentSubjects,
+            goodSubjects,
+            maybeSubjects,
             authorEntity.getUser().getAuthorities().contains(Authority.ADMIN),
             authorEntity.getUser().getAuthorities().contains(Authority.MANAGER),
             authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
@@ -82,12 +92,24 @@ public class AuthorUiService {
         );
     }
 
+    private String getDisciplineIds(List<AuthorDisciplineEntity> authorDisciplines, DisciplineQualityType disciplineQualityType) {
+        List<Long> ids = new ArrayList<>();
+        for (AuthorDisciplineEntity authorDiscipline : authorDisciplines) {
+            if (authorDiscipline.getDisciplineQuality().getType().equals(disciplineQualityType)) {
+                ids.add(authorDiscipline.getDiscipline().getId());
+            }
+        }
+        return ids.stream().map(Object::toString).collect(Collectors.joining(","));
+    }
+
     private AuthorEntity toEntity(AuthorUiDto authorUiDto) {
         AuthorEntity authorEntity = new AuthorEntity();
 
         authorEntity.setId(authorUiDto.getId());
-        authorEntity.setQuality(authorUiDto.getQuality());
-        authorEntity.setSubjects(authorUiDto.getSubject());
+
+        authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getExcellentSubjects(), DisciplineQualityType.EXCELLENT));
+        authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getGoodSubjects(), DisciplineQualityType.GOOD));
+        authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getMaybeSubjects(), DisciplineQualityType.MAYBE));
 
         UserEntity userEntity = new UserEntity();
 
@@ -109,5 +131,23 @@ public class AuthorUiService {
         userEntity.addRole(Authority.AUTHOR);
 
         return authorEntity;
+    }
+
+    private List<AuthorDisciplineEntity> createSubjects(AuthorEntity authorEntity, String excellentSubjects, DisciplineQualityType disciplineQualityType) {
+        DisciplineQualityEntity disciplineQuality = disciplineQualityRepository.findById(disciplineQualityType.getName()).orElseThrow(() -> new RuntimeException("disciplineQualityType not found"));
+
+        List<Long> disciplineIds = Arrays.stream(excellentSubjects.split(",")).filter(StringUtils::isNotBlank).map(Long::parseLong).toList();
+        List<DisciplineEntity> allById = disciplineRepository.findAllById(disciplineIds);
+
+        List<AuthorDisciplineEntity> authorDisciplineEntities = new ArrayList<>();
+        for (DisciplineEntity discipline : allById) {
+            AuthorDisciplineEntity authorDisciplineEntity = new AuthorDisciplineEntity();
+            authorDisciplineEntity.setAuthor(authorEntity);
+            authorDisciplineEntity.setDisciplineQuality(disciplineQuality);
+            authorDisciplineEntity.setDiscipline(discipline);
+            authorDisciplineEntities.add(authorDisciplineEntity);
+        }
+
+        return authorDisciplineEntities;
     }
 }

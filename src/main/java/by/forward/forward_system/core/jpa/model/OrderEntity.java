@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +71,7 @@ public class OrderEntity {
     private UserEntity createdBy;
 
     @OneToMany(mappedBy = "order")
-    private List<OrderAttachment> orderAttachment = new ArrayList<>();
+    private List<OrderAttachmentEntity> orderAttachment = new ArrayList<>();
 
     @OneToMany(mappedBy = "order")
     private List<OrderParticipantEntity> orderParticipants = new ArrayList<>();

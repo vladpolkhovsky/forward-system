@@ -20,8 +20,6 @@ CREATE TABLE IF NOT EXISTS forward_system.users
 CREATE TABLE IF NOT EXISTS forward_system.authors
 (
     id         bigint primary key references forward_system.users (id),
-    subjects   varchar(2048) not null,
-    quality    varchar(512)  not null,
     created_by bigint        not null references forward_system.users (id)
 );
 
@@ -31,11 +29,17 @@ create table if not exists forward_system.disciplines
     name varchar(2048) unique not null
 );
 
+create table if not exists forward_system.discipline_quality
+(
+    name varchar(255) primary key
+);
+
 create table if not exists forward_system.author_disciplines
 (
-    id            bigint primary key,
-    author_id     bigint not null references forward_system.authors (id),
-    discipline_id bigint not null references forward_system.disciplines (id)
+    id                 bigint primary key,
+    author_id          bigint not null references forward_system.authors (id),
+    discipline_quality varchar(255) not null references forward_system.discipline_quality (name),
+    discipline_id      bigint not null references forward_system.disciplines (id)
 );
 
 create table if not exists forward_system.order_statuses
@@ -232,6 +236,11 @@ insert into forward_system.chat_message_types
 values ('NEW_ORDER'),
        ('NEW_CHAT'),
        ('MESSAGE');
+
+insert into forward_system.discipline_quality
+values ('EXCELLENT'),
+       ('GOOD'),
+       ('MAYBE');
 
 insert into forward_system.disciplines
 values (1, 'Бух. учет'),

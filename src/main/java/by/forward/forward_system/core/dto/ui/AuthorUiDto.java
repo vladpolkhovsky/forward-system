@@ -5,8 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -25,8 +23,9 @@ public class AuthorUiDto {
     private String email;
     private String payment;
     private String other;
-    private String subject;
-    private String quality;
+    private String excellentSubjects;
+    private String goodSubjects;
+    private String maybeSubjects;
     private Boolean isAdmin;
     private Boolean isManager;
     private Boolean isAuthor;

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.Arrays;
@@ -47,18 +48,10 @@ public class CreateOrderController {
     }
 
     @PostMapping(value = "/create-order", consumes = MediaType.ALL_VALUE)
-    public String createOrder(@ModelAttribute("order") OrderUiDto order, Model model) {
+    public RedirectView createOrder(@ModelAttribute("order") OrderUiDto order, Model model) {
         order = orderUiService.createOrder(order);
 
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("order", order);
-        model.addAttribute("users", orderUiService.getUserListWithCatcherMark(order.getId()));
-        model.addAttribute("authors", orderUiService.getAuthorListWithAuthorMark(order.getId()));
-        model.addAttribute("orderStatusName", orderUiService.getOrderStatus(order.getId()).getRusName());
-        model.addAttribute("notDistributionStatus", !orderUiService.isDistributionStatus(order.getId()));
-        model.addAttribute("orderCreated", order.getTechNumber());
-
-        return "main/create-order-second-step";
+        return new RedirectView("/files-order/" + order.getId());
     }
 
     @GetMapping("/update-order")
@@ -90,10 +83,19 @@ public class CreateOrderController {
     }
 
     @PostMapping(value = "/update-order/{id}", consumes = MediaType.ALL_VALUE)
-    public String updateOrder(@PathVariable Long id, @ModelAttribute("order") OrderUiDto order, Model model) {
+    public RedirectView updateOrder(@PathVariable Long id, @ModelAttribute("order") OrderUiDto order, Model model) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
         order = orderUiService.updateOrder(id, order);
+
+        return new RedirectView("/files-order/" + id);
+    }
+
+    @GetMapping("/order-second-step/{id}")
+    public String orderSecondStep(@PathVariable Long id, Model model) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        OrderUiDto order = orderUiService.getOrder(id);
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("order", order);
@@ -101,9 +103,44 @@ public class CreateOrderController {
         model.addAttribute("authors", orderUiService.getAuthorListWithAuthorMark(order.getId()));
         model.addAttribute("orderStatusName", orderUiService.getOrderStatus(order.getId()).getRusName());
         model.addAttribute("notDistributionStatus", !orderUiService.isDistributionStatus(order.getId()));
-        model.addAttribute("orderUpdated", order.getTechNumber());
 
         return "main/create-order-second-step";
+    }
+
+
+    @GetMapping("/files-order/{id}")
+    public String orderFiles(@PathVariable Long id, Model model) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Фыйлы для заказа");
+        model.addAttribute("files", orderService.getOrderAttachments(id));
+        model.addAttribute("orderId", id);
+
+        return "main/order-files";
+    }
+
+    @PostMapping("/order-file-delete/{id}/{attId}")
+    public RedirectView saveOrderFile(@PathVariable Long id, @PathVariable Long attId) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        orderService.removeOrderFile(id, attId);
+
+        return new RedirectView("/files-order/" + id);
+    }
+
+    @PostMapping("/files-order/{id}")
+    public String saveOrderFile(@PathVariable Long id, @RequestParam("file") MultipartFile file, Model model) {
+        orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        orderService.saveOrderFile(id, file);
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Файлы для заказа");
+        model.addAttribute("files", orderService.getOrderAttachments(id));
+        model.addAttribute("orderId", id);
+
+        return "main/order-files";
     }
 
     @GetMapping(value = "/view-order")

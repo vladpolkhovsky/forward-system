@@ -31,7 +31,8 @@
     <div class="row mb-3 mt-3">
         <label for="techNumber" class="col-sm-2 col-form-label">Номер ТЗ</label>
         <div class="col-sm-10">
-            <input type="number" readonly class="form-control-plaintext" id="techNumber" th:value="${order.getTechNumber()}">
+            <input type="number" readonly class="form-control-plaintext" id="techNumber"
+                   th:value="${order.getTechNumber()}">
         </div>
     </div>
     <div class="row mb-3 mt-3">
@@ -81,6 +82,14 @@
         </div>
     </div>
     <div class="row mb-3 mt-3">
+        <p class="col-sm-2 col-form-label">Файлы заказа:</p>
+        <div class="col-sm-10">
+            <div class="row mb-3" th:each="d : ${order.getAttachments()}">
+                <a target="_blank" th:href="|/load-file/| + ${d.getAttachmentId()}" th:text="${d.getAttachmentName()}"></a>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3 mt-3">
         <label for="deadline" class="col-sm-2 col-form-label">Окончательный срок сдачи</label>
         <div class="col-sm-10">
             <input type=datetime-local readonly class="form-control-plaintext" id="deadline"
@@ -124,7 +133,8 @@
                     th:each="participant, stat : ${participants}">
                     <p class="mb-0">
                         <span th:text="${participant.getFio()} + | (| + ${participant.getUserName()} + |) |"></span>
-                        <mark class="mb-0" th:if="${participant.getHasFee()}" th:text="| Доля: | + ${participant.getFee()}"></mark>
+                        <mark class="mb-0" th:if="${participant.getHasFee()}"
+                              th:text="| Доля: | + ${participant.getFee()}"></mark>
                     </p>
 
                     <span class="badge text-bg-primary rounded-pill"

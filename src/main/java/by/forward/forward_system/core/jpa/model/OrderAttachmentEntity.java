@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "order_attachments", schema = "forward_system")
-public class OrderAttachment {
+public class OrderAttachmentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -21,5 +21,4 @@ public class OrderAttachment {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "attachment_id", nullable = false)
     private AttachmentEntity attachment;
-
 }

@@ -40,18 +40,19 @@
         <div class="col-6">
             <div class="container border">
                 <p>Отметьте тех авторов, которым хотите предложить данный заказ.</p>
+                <p>Обозначение: <strong><span class="badge text-bg-success">напишет на 5</span>, <span class="badge text-bg-warning">напишет на 4-5</span>, <span class="badge text-bg-primary">готов рассмотреть</span></strong>.</p>
                 <div class="alert alert-danger" role="alert" th:if="${notDistributionStatus}">
                     Статус заказа <strong th:text="${orderStatusName}"></strong>. Невозможно предложить заказ другим
                     авторам.
                 </div>
                 <div class="form-check mb-2" th:each="author, stat : ${authors}">
-                    <input class="author-selection form-check-input"
+                    <input th:class="|author-selection form-check-input h5 | + ${author.getBgColor()}"
                            type="checkbox"
                            th:attr="idValue=${author.getId()}"
                            th:disabled="${author.getChecked() || notDistributionStatus}"
                            th:checked="${author.getChecked()}"
                            th:id="|author-| + ${author.getId()}">
-                    <label class="form-check-label" th:for="|author-| + ${author.getId()}"
+                    <label th:class="|form-check-label fs-5 | + ${author.getBgColor()}" th:for="|author-| + ${author.getId()}"
                            th:text="${author.getFio()} + | (| + ${author.getUsername()} + |)|"></label>
                 </div>
                 <button id="author-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">

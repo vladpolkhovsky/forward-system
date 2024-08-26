@@ -10,6 +10,7 @@ import lombok.Setter;
 @Table(name = "author_disciplines", schema = "forward_system")
 public class AuthorDisciplineEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -20,4 +21,8 @@ public class AuthorDisciplineEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     private AuthorEntity author;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "discipline_quality", nullable = false)
+    private DisciplineQualityEntity disciplineQuality;
 }

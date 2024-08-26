@@ -5,6 +5,12 @@
     <title>Главное меню</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+            integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+            crossorigin="anonymous"></script>
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -33,7 +39,8 @@
                     <div class="col-sm-10">
                         <input required type="text" class="form-control" id="lastname" th:field="*{lastname}">
                     </div>
-                </div><div class="mb-3 mt-3 row">
+                </div>
+                <div class="mb-3 mt-3 row">
                     <label for="firstname" class="col-sm-2 col-form-label">Имя</label>
                     <div class="col-sm-10">
                         <input required type="text" class="form-control" id="firstname" th:field="*{firstname}">
@@ -45,18 +52,51 @@
                         <input type="text" class="form-control" id="surname" th:field="*{surname}">
                     </div>
                 </div>
+
                 <div class="mb-3 mt-3 row">
-                    <label for="subject" class="col-sm-2 col-form-label">Предметы</label>
+                    <label for="excellentSubjects" class="col-sm-2 col-form-label">Предметы на 100% (5 баллов)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="subject" th:field="*{subject}">
+                        <input hidden readonly name="excellentSubjects" id="excellentSubjects" th:field="*{excellentSubjects}">
+                        <textarea rows="2" readonly id="excellentSubjectsText" type="text"
+                                  class="form-control"></textarea>
+                        <div class="row">
+                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#modalExcellentSubjects">Выбрать предметы
+                            </button>
+                        </div>
                     </div>
                 </div>
+
                 <div class="mb-3 mt-3 row">
-                    <label for="subject" class="col-sm-2 col-form-label">Уровень компитенции автора</label>
+                    <label for="goodSubjects" class="col-sm-2 col-form-label">Предметы, которые хорошо напишет (4
+                        балла)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="quality" th:field="*{quality}">
+                        <input hidden readonly name="goodSubjects" id="goodSubjects" th:field="*{goodSubjects}">
+                        <textarea rows="2" readonly id="goodSubjectsText" type="text"
+                                  class="form-control"></textarea>
+                        <div class="row">
+                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#modalGoodSubjects">Выбрать предметы
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                <div class="mb-3 mt-3 row">
+                    <label for="maybeSubjects" class="col-sm-2 col-form-label">Предметы, которые может
+                        рассмотреть</label>
+                    <div class="col-sm-10">
+                        <input hidden readonly name="maybeSubjects" id="maybeSubjects" th:field="*{maybeSubjects}">
+                        <textarea rows="2" readonly id="maybeSubjectsText" type="text"
+                                  class="form-control"></textarea>
+                        <div class="row">
+                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#modalMaybeSubjects">Выбрать предметы
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3 mt-3 row">
                     <label for="password" class="col-sm-2 col-form-label">Пароль</label>
                     <div class="col-sm-10">
@@ -105,5 +145,178 @@
             <button type="submit" class="btn btn-primary mb-3">Применить</button>
         </div>
     </form>
+
+    <div class="modal fade" id="modalExcellentSubjects" tabindex="-1" aria-labelledby="excellentLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="excellentLabel">Выбор предметов на 100%</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check" th:each="d : ${disciplines}">
+                        <input th:attr="idValue=${d.getId()}" class="form-check-input excellentSubject" type="checkbox"
+                               th:id="|excellent-| + ${d.getId()}">
+                        <label class="form-check-label" th:for="|excellent-| + ${d.getId()}"
+                               th:id="|label-excellent-| + ${d.getId()}" th:text="${d.getName()}"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalGoodSubjects" tabindex="-1" aria-labelledby="goodLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="goodLabel">Предметы, которые хорошо напишет</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check" th:each="d : ${disciplines}">
+                        <input th:attr="idValue=${d.getId()}" class="form-check-input goodSubject" type="checkbox"
+                               th:id="|good-| + ${d.getId()}">
+                        <label class="form-check-label" th:for="|good-| + ${d.getId()}"
+                               th:id="|label-good-| + ${d.getId()}" th:text="${d.getName()}"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalMaybeSubjects" tabindex="-1" aria-labelledby="maybeLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="maybeLabel">Предметы, которые может рассмотреть</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-check" th:each="d : ${disciplines}">
+                        <input th:attr="idValue=${d.getId()}" class="form-check-input maybeSubject" type="checkbox"
+                               th:id="|maybe-| + ${d.getId()}">
+                        <label class="form-check-label" th:for="|maybe-| + ${d.getId()}"
+                               th:id="|label-maybe-| + ${d.getId()}" th:text="${d.getName()}"></label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let excellentSubjectInput = document.getElementById("excellentSubjects");
+        let goodSubjectInput = document.getElementById("goodSubjects");
+        let maybeSubjectInput = document.getElementById("maybeSubjects");
+
+        let excellentSubjectText = document.getElementById("excellentSubjectsText");
+        let goodSubjectText = document.getElementById("goodSubjectsText");
+        let maybeSubjectText = document.getElementById("maybeSubjectsText");
+
+        let excellentSubjectsCheckbox = document.getElementsByClassName("excellentSubject");
+        let goodSubjectsCheckbox = document.getElementsByClassName("goodSubject");
+        let maybeSubjectsCheckbox = document.getElementsByClassName("maybeSubject");
+
+        let excellentSubjectsIds = [];
+        let goodSubjectsIds = [];
+        let maybeSubjectsIds = [];
+
+        function refreshTextArea(listIds, idsPrefix, targetTextArea) {
+            let names = [];
+            for (let listId of listIds) {
+                let name = document.getElementById(`label-${idsPrefix}-${listId}`).textContent;
+                names.push(name);
+            }
+            targetTextArea.textContent = names.join("; ");
+        }
+
+        function addIdToList(listIds, idValue, prefix, input, textArea) {
+            listIds.push(idValue);
+            input.value = listIds.join(",");
+            refreshTextArea(listIds, prefix, textArea);
+        }
+
+        function removeIfFromList(listIds, idValue, prefix, input, textArea) {
+            const index = listIds.indexOf(idValue);
+            if (index > -1) {
+                listIds.splice(index, 1);
+            }
+            input.value = listIds.join(",");
+            refreshTextArea(listIds, prefix, textArea);
+        }
+
+        function loadData(listIds, idsPrefix, checkBoxes, targetTextArea) {
+            for (let checkBox of checkBoxes) {
+                if (listIds.includes(parseInt(checkBox.getAttribute("idValue")))) {
+                    checkBox.checked = true;
+                }
+            }
+            refreshTextArea(listIds, idsPrefix, targetTextArea);
+        }
+
+        function load(input, listIds, idsPrefix, checkBoxes, targetTextArea) {
+            if (input.value !== '') {
+                let strIds = input.value.split(',');
+                for (let strId of strIds) {
+                    listIds.push(parseInt(strId));
+                }
+                loadData(listIds, idsPrefix, checkBoxes, targetTextArea);
+            }
+        }
+
+        for (let subject of excellentSubjectsCheckbox) {
+            subject.addEventListener('change', (e) => {
+                let idValue = parseInt(e.target.getAttribute("idValue"));
+                let isChecked = e.target.checked;
+
+                if (isChecked) {
+                    addIdToList(excellentSubjectsIds, idValue, "excellent", excellentSubjectInput, excellentSubjectText);
+                } else {
+                    removeIfFromList(excellentSubjectsIds, idValue, "excellent", excellentSubjectInput, excellentSubjectText);
+                }
+            });
+        }
+
+        for (let subject of goodSubjectsCheckbox) {
+            subject.addEventListener('change', (e) => {
+                let idValue = parseInt(e.target.getAttribute("idValue"));
+                let isChecked = e.target.checked;
+
+                if (isChecked) {
+                    addIdToList(goodSubjectsIds, idValue, "good", goodSubjectInput, goodSubjectText);
+                } else {
+                    removeIfFromList(goodSubjectsIds, idValue, "good", goodSubjectInput, goodSubjectText);
+                }
+            });
+        }
+
+        for (let subject of maybeSubjectsCheckbox) {
+            subject.addEventListener('change', (e) => {
+                let idValue = parseInt(e.target.getAttribute("idValue"));;
+                let isChecked = e.target.checked;
+
+                if (isChecked) {
+                    addIdToList(maybeSubjectsIds, idValue, "maybe", maybeSubjectInput, maybeSubjectText);
+                } else {
+                    removeIfFromList(maybeSubjectsIds, idValue, "maybe", maybeSubjectInput, maybeSubjectText);
+                }
+            });
+        }
+
+        load(excellentSubjectInput, excellentSubjectsIds, "excellent", excellentSubjectsCheckbox, excellentSubjectText);
+        load(goodSubjectInput, goodSubjectsIds, "good", goodSubjectsCheckbox, goodSubjectText);
+        load(maybeSubjectInput, maybeSubjectsIds, "maybe", maybeSubjectsCheckbox, maybeSubjectText);
+    </script>
 </div>
 </body>

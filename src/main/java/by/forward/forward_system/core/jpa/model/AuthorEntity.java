@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -11,7 +12,6 @@ import java.util.List;
 @Entity
 @Table(name = "authors", schema = "forward_system")
 public class AuthorEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -22,16 +22,10 @@ public class AuthorEntity {
     @JoinColumn(name = "id", nullable = false)
     private UserEntity user;
 
-    @Column(name = "subjects", nullable = false, length = 2048)
-    private String subjects;
-
-    @Column(name = "quality", nullable = false, length = 512)
-    private String quality;
-
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "created_by", nullable = false)
     private UserEntity createdByUser;
 
     @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
-    private List<AuthorDisciplineEntity> authorDisciplineEntities;
+    private List<AuthorDisciplineEntity> authorDisciplines = new ArrayList<>();
 }
