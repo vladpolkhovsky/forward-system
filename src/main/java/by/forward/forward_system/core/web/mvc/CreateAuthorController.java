@@ -26,6 +26,7 @@ public class CreateAuthorController {
 
     @GetMapping("/create-author")
     public String createAuthor(Model model) {
+        userUiService.checkAccessHR();
 
         model.addAttribute("menuName", "Создать автора");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -39,6 +40,7 @@ public class CreateAuthorController {
 
     @GetMapping("/update-author")
     public String updateAuthor(Model model) {
+        userUiService.checkAccessHR();
 
         model.addAttribute("menuName", "Выберите автора для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -49,6 +51,7 @@ public class CreateAuthorController {
 
     @GetMapping("/update-author/{id}")
     public String updateAuthor(Model model, @PathVariable Long id) {
+        userUiService.checkAccessHR();
 
         model.addAttribute("menuName", "Изменение автора");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -63,13 +66,19 @@ public class CreateAuthorController {
 
     @PostMapping(value = "create-author", consumes = MediaType.ALL_VALUE)
     public RedirectView createAuthor(@ModelAttribute AuthorUiDto user) {
+        userUiService.checkAccessHR();
+
         authorUiService.createAuthor(user);
+
         return new RedirectView("/create-author?userCreated");
     }
 
     @PostMapping(value = "update-author/{id}", consumes = MediaType.ALL_VALUE)
     public RedirectView updateAuthor(@PathVariable Long id, @ModelAttribute AuthorUiDto user) {
+        userUiService.checkAccessHR();
+
         authorUiService.updateAuthor(id, user);
+
         return new RedirectView("/update-author?userUpdated");
     }
 

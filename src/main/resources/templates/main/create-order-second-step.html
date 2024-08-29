@@ -22,7 +22,7 @@
     <div class="row">
         <div class="col-6">
             <div class="container g-3 border">
-                <p>Отметьте менеджера, который создал заказ.</p>
+                <p>Отметьте кетчера, который создал заказ.</p>
                 <div class="form-check mb-2" th:each="user, stat : ${users}">
                     <input class="catcher-selection form-check-input"
                            type="radio"
@@ -46,7 +46,7 @@
                     авторам.
                 </div>
                 <div class="form-check mb-2" th:each="author, stat : ${authors}">
-                    <input th:class="|author-selection form-check-input h5 | + ${author.getBgColor()}"
+                    <input class="author-selection form-check-input h5"
                            type="checkbox"
                            th:attr="idValue=${author.getId()}"
                            th:disabled="${author.getChecked() || notDistributionStatus}"

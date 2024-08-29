@@ -41,4 +41,10 @@ public class DisciplineService {
     private DisciplineDto toDto(DisciplineEntity disciplineEntity) {
         return new DisciplineDto(disciplineEntity.getId(), disciplineEntity.getName());
     }
+
+    public DisciplineDto getById(long id) {
+        return disciplineRepository.findById(id)
+            .map(this::toDto)
+            .orElseThrow(() -> new RuntimeException("Discipline not found"));
+    }
 }

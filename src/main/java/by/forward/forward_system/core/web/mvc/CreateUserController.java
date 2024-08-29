@@ -20,6 +20,8 @@ public class CreateUserController {
 
     @GetMapping("/create-user")
     public String createUser(Model model) {
+        userUiService.checkAccessOwner();
+
         model.addAttribute("menuName", "Создать пользователя");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("user", new UserUiDto());
@@ -31,6 +33,7 @@ public class CreateUserController {
 
     @GetMapping("/update-user")
     public String updateUser(Model model) {
+        userUiService.checkAccessOwner();
 
         model.addAttribute("menuName", "Выберите пользователя для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -41,6 +44,7 @@ public class CreateUserController {
 
     @GetMapping("/update-user/{id}")
     public String updateUser(Model model, @PathVariable Long id) {
+        userUiService.checkAccessOwner();
 
         model.addAttribute("menuName", "Изменение пользователя");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -54,13 +58,19 @@ public class CreateUserController {
 
     @PostMapping(value = "create-user", consumes = MediaType.ALL_VALUE)
     public RedirectView createUser(@ModelAttribute UserUiDto user) {
+        userUiService.checkAccessOwner();
+
         userUiService.createUser(user);
+
         return new RedirectView("/create-user?userCreated");
     }
 
     @PostMapping(value = "update-user/{id}", consumes = MediaType.ALL_VALUE)
     public RedirectView updateUser(@PathVariable Long id, @ModelAttribute UserUiDto user) {
+        userUiService.checkAccessOwner();
+
         userUiService.updateUser(id, user);
+
         return new RedirectView("/update-user?userUpdated");
     }
 }

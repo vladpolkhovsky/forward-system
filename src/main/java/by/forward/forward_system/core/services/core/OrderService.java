@@ -444,7 +444,7 @@ public class OrderService {
                 messageService.sendMessage(
                     null,
                     chat,
-                    "В чат добавлен пользователь %s".formatted(userEntity.getFio()),
+                    "В чат добавлен пользователь %s (%s)".formatted(userEntity.getFio(), userEntity.getUsername()),
                     true,
                     messageType,
                     Collections.emptyList(),

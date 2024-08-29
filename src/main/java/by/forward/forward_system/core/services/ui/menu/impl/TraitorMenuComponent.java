@@ -27,9 +27,10 @@ public class TraitorMenuComponent implements MenuComponent {
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
             new MenuEntry.MenuItem("Автоматическая блокировка", "/auto-ban-user", true, banService.countNewBaned()),
-            new MenuEntry.MenuItem("Заблокированные пользователи", "/ban-user", false, null)
+            new MenuEntry.MenuItem("Заблокированные пользователи", "/ban-user", false, null),
+            new MenuEntry.MenuItem("Заблокировать пользователя", "/manual-ban-user", false, null)
         );
 
-        return new MenuEntry("Безопасность чатов", list, 5);
+        return new MenuEntry("Безопасность чатов", list, 6);
     }
 }

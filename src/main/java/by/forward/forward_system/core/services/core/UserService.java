@@ -64,6 +64,10 @@ public class UserService {
         return userRepository.findByRolesNotContains(Authority.AUTHOR.getAuthority());
     }
 
+    public List<UserEntity> getAllUserWithoutRole(Authority authority) {
+        return userRepository.findByRolesNotContains(authority.getAuthority());
+    }
+
     public List<UserEntity> findUsersWithRole(String role) {
         return userRepository.findByRolesContains(role);
     }

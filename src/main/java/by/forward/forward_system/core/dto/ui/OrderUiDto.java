@@ -33,4 +33,5 @@ public class OrderUiDto {
     private LocalDateTime createdAt;
     private String responsibleManager;
     private Integer distributionDaysCount;
+    private Boolean isDistributionStatus;
 }

@@ -44,7 +44,7 @@ public class OrderActionMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Добавить автора в заказ", "/add-author-to-order", false, null),
             new MenuEntry.MenuItem("Изменение долей в заказе", "/change-fee-in-order", false, null)
         );
-        return new MenuEntry("Заказы", list, 4);
+        return new MenuEntry("Заказы", list, 5);
     }
 
 }

@@ -94,8 +94,7 @@ public class OrderUiService {
     public Boolean isDistributionStatus(Long orderId) {
         Optional<OrderEntity> byId = orderService.getById(orderId);
         OrderEntity orderEntity = byId.orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
-        return orderEntity.getOrderStatus().getStatus().equals(OrderStatus.CREATED)
-            || orderEntity.getOrderStatus().getStatus().equals(OrderStatus.DISTRIBUTION);
+        return isDistributionStatus(orderEntity);
     }
 
     public OrderStatus getOrderStatus(Long orderId) {
@@ -269,13 +268,18 @@ public class OrderUiService {
             orderEntity.getAuthorCost(),
             orderEntity.getCreatedAt(),
             findResponsibleManager(orderEntity),
-            calcDistributionDays(orderEntity)
+            calcDistributionDays(orderEntity),
+            isDistributionStatus(orderEntity)
         );
     }
 
-    private Integer calcDistributionDays(OrderEntity orderEntity) {
+    private Boolean isDistributionStatus(OrderEntity orderEntity) {
         List<OrderStatus> catcherStatus = Arrays.asList(OrderStatus.DISTRIBUTION, OrderStatus.CREATED);
-        if (!catcherStatus.contains(orderEntity.getOrderStatus().getStatus())) {
+        return catcherStatus.contains(orderEntity.getOrderStatus().getStatus());
+    }
+
+    private Integer calcDistributionDays(OrderEntity orderEntity) {
+        if (!isDistributionStatus(orderEntity)) {
             return null;
         }
         return Math.toIntExact(

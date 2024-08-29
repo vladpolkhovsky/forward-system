@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +22,9 @@ import java.util.Optional;
 public class BanService {
 
     private final MessageService messageService;
+
     private final SecurityBlockRepository securityBlockRepository;
+
     private final UserService userService;
 
     private UserRepository userRepository;
@@ -115,4 +118,11 @@ public class BanService {
         securityBlockRepository.save(securityBlockEntity);
     }
 
+    public List<UserDto> getAllUsersForBan() {
+        return userService.getAllUserWithoutRole(Authority.OWNER).stream()
+            .filter(u -> !u.getAuthorities().contains(Authority.BANNED))
+            .map(userService::convertUserToDto)
+            .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))
+            .toList();
+    }
 }

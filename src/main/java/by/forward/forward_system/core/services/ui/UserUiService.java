@@ -47,6 +47,30 @@ public class UserUiService {
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
     }
 
+    public void checkAccessManager() {
+        UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
+        if (userEntity.getAuthorities().contains(Authority.MANAGER) || userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        throw new IllegalStateException("Нет доступа к просмотру страницы.");
+    }
+
+    public void checkAccessHR() {
+        UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
+        if (userEntity.getAuthorities().contains(Authority.HR) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        throw new IllegalStateException("Нет доступа к просмотру страницы.");
+    }
+
+    public void checkAccessOwner() {
+        UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
+        if (userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        throw new IllegalStateException("Нет доступа к просмотру страницы.");
+    }
+
     public Long getCurrentUserId() {
         return getCurrentUser().getId();
     }

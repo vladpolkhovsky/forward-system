@@ -21,8 +21,8 @@ public class HrMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Создать атора", "/create-author", false, null),
-            new MenuEntry.MenuItem("Изменить атора", "/update-author", false, null)
+            new MenuEntry.MenuItem("Создать автора", "/create-author", false, null),
+            new MenuEntry.MenuItem("Изменить автора", "/update-author", false, null)
         );
 
         return new MenuEntry("HR", list, 3);
