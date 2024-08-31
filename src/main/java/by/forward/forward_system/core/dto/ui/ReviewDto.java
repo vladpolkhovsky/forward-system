@@ -15,7 +15,7 @@ public class ReviewDto {
     private Long attachmentId;
     private String reviewMessage;
     private String reviewVerdict;
-    private Integer reviewVerdictMark;
+    private Double reviewVerdictMark;
     private Long reviewFileId;
     private Boolean isReviewed;
     private Boolean isAccepted;

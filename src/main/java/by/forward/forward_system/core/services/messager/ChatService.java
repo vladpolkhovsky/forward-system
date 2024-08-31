@@ -91,6 +91,8 @@ public class ChatService {
         ChatDto chatDto = new ChatDto();
         chatDto.setId(chatEntity.getId());
         chatDto.setChatName(chatEntity.getChatName());
+        chatDto.setChatType(chatEntity.getChatType().getType().getName());
+        chatDto.setChatTypeRus(chatEntity.getChatType().getType().getRusName());
         chatDto.setOrderId(Optional.ofNullable(chatEntity.getOrder()).map(OrderEntity::getId).orElse(null));
         chatDto.setLastMessageTime(LocalDateTime.from(chatEntity.getLastMessageDate()));
         chatDto.setChatMembers(chatMemberService.getChatMembers(chatEntity));

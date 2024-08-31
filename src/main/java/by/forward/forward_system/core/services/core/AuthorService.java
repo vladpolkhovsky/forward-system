@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -45,19 +46,29 @@ public class AuthorService {
 
         authorUser = userService.save(authorUser);
 
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.OTHER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
-        addChatToUser(authorUser,
-            ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUser().getUsername()),
-            "Здесь будут появляться новые заказы!",
-            chatTypeEntity);
-        ChatEntity adminChat = addChatToUser(authorUser,
+        ChatTypeEntity requestOrderChat = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
+        ChatTypeEntity adminTalkChat = chatTypeRepository.findById(ChatType.ADMIN_TALK_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
+
+        ChatEntity adminChat = addChatToUser(
+            Collections.singletonList(authorUser),
             ChatNames.ADMINISTRATION_CHAT_NAME.formatted(author.getUser().getUsername()),
             "Чат для связи с администраторами!",
-            chatTypeEntity);
+            adminTalkChat
+        );
 
         List<UserEntity> allAdmins = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allAdmins) {
             chatMemberService.addMemberToChat(admin, adminChat);
+        }
+
+        List<UserEntity> allManagers = userService.findUsersWithRole(Authority.MANAGER.getAuthority());
+        for (UserEntity manager : allManagers) {
+            addChatToUser(
+                Arrays.asList(authorUser, manager),
+                ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUser().getUsername(), manager.getUsername()),
+                "Здесь будут появляться новые заказы!",
+                requestOrderChat
+            );
         }
 
         author.setUser(authorUser);
@@ -70,8 +81,8 @@ public class AuthorService {
         return save;
     }
 
-    private ChatEntity addChatToUser(UserEntity user, String chatName, String initMessage, ChatTypeEntity chatTypeEntity) {
-        return chatService.createChat(Collections.singletonList(user), chatName, null, initMessage, chatTypeEntity);
+    private ChatEntity addChatToUser(List<UserEntity> users, String chatName, String initMessage, ChatTypeEntity chatTypeEntity) {
+        return chatService.createChat(users, chatName, null, initMessage, chatTypeEntity);
     }
 
     @Transactional

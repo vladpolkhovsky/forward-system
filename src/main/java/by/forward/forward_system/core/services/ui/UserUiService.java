@@ -101,6 +101,10 @@ public class UserUiService {
             chatUtilsService.addAdminToAllChats(save.getId());
         }
 
+        if (userUiDto.getIsManager()) {
+            chatUtilsService.createNewOrderChats(save.getId());
+        }
+
         return toDto(save);
     }
 

@@ -9,6 +9,7 @@ import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.utils.AuthUtils;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,6 +41,7 @@ public class AuthorUiService {
             .toList();
     }
 
+    @Transactional
     public AuthorUiDto createAuthor(AuthorUiDto user) {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userRepository.findByUsername(currentUserDetails.getUsername());
@@ -51,7 +53,7 @@ public class AuthorUiService {
         return toDto(save);
     }
 
-
+    @Transactional
     public AuthorUiDto updateAuthor(Long id, AuthorUiDto user) {
         AuthorEntity entity = toEntity(user);
         authorService.update(id, entity);

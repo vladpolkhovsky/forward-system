@@ -12,6 +12,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentP
 import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UserService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -77,6 +78,7 @@ public class OrderUiService {
             .toList();
     }
 
+    @Transactional
     public OrderUiDto createOrder(OrderUiDto order) {
         OrderEntity entity = toEntity(order);
         UserEntity userEntity = userRepository.findById(userUiService.getCurrentUserId()).orElseThrow(() -> new RuntimeException("User not found"));
@@ -85,6 +87,7 @@ public class OrderUiService {
         return toDto(entity);
     }
 
+    @Transactional
     public OrderUiDto updateOrder(Long id, OrderUiDto order) {
         OrderEntity entity = toEntity(order);
         entity = orderService.update(id, entity);

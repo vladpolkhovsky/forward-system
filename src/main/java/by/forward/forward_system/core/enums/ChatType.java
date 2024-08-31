@@ -6,6 +6,7 @@ import lombok.Getter;
 public enum ChatType {
     REQUEST_ORDER_CHAT("REQUEST_ORDER_CHAT", "Чат обсуждение заказ"),
     ORDER_CHAT("ORDER_CHAT", "Чат заказа"),
+    ADMIN_TALK_CHAT("ADMIN_TALK_CHAT", "Чат с администратором"),
     OTHER_CHAT("OTHER_CHAT", "Простой чат"),
     ;
 

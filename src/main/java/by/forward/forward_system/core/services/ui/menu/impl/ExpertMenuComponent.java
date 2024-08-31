@@ -33,9 +33,9 @@ public class ExpertMenuComponent implements MenuComponent {
         List<ReviewProjectionDto> notReviewedByUser = reviewService.getNotReviewedByUser(userUiService.getCurrentUserId());
 
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Просмотреть запросы на проверку", "/expert-review-requests", true, notReviewedByUser.size())
+            new MenuEntry.MenuItem("Просмотреть запросы на проверку, если вы Эксперт", "/expert-review-requests", true, notReviewedByUser.size())
         );
 
-        return new MenuEntry("Эксперта", list, 2);
+        return new MenuEntry("Меню Эксперта", list, 2);
     }
 }

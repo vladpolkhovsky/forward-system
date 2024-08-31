@@ -41,7 +41,6 @@ public class BanFilter implements Filter {
                 }
             }
         } catch (Exception e) {
-            System.err.println(e);
         }
 
         filterChain.doFilter(servletRequest, servletResponse);

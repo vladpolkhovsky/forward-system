@@ -10,21 +10,39 @@
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container mt-3">
     <div class="row">
-        <div class="col-4 overflow-scroll" style="height: 720px; max-height: 720px;">
-            <div class="row">
+        <div class="col-5">
+            <div class="d-flex justify-content-between mt-1" style="height: 40px">
+                <a id="new-orders-tab" href="/messenger?tab=new-orders"
+                   class="badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Новые
+                    заказы
+                    <strong><span id="new-orders-count" class="fs-5"></span></strong>
+                </a>
+                <a id="admin-tab" href="/messenger?tab=admin"
+                   class="ms-1 badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Администрация
+                    <strong><span id="admin-count" class="fs-5"></span></strong>
+                </a>
+                <a id="orders-tab" href="/messenger?tab=orders"
+                   class="ms-1 badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Заказы
+                    в работе
+                    <strong><span id="orders-count" class="fs-5"></span></strong>
+                </a>
+            </div>
+            <div class="row mt-2">
                 <input id="search" type="text" placeholder="Поиск чата">
             </div>
-            <ul class="list-group list-group" id="chat-list-box">
-                <!--                <li id="chat-10" class="list-group-item d-flex justify-content-between align-items-start"-->
-                <!--                    onclick="loadChat(1)">-->
-                <!--                    <div class="ms-2 me-auto">-->
-                <!--                        <div class="fw-bold"><small>Текст</small></div>-->
-                <!--                    </div>-->
-                <!--                    <span class="badge text-bg-primary rounded-pill" id="new-msg-chat-10">14</span>-->
-                <!--                </li>-->
-            </ul>
+            <div class="mt-2 col-12 overflow-scroll" style="height: 720px; max-height: 720px;">
+                <ul class="list-group list-group" id="chat-list-box">
+                    <!--                <li id="chat-10" class="list-group-item d-flex justify-content-between align-items-start"-->
+                    <!--                    onclick="loadChat(1)">-->
+                    <!--                    <div class="ms-2 me-auto">-->
+                    <!--                        <div class="fw-bold"><small>Текст</small></div>-->
+                    <!--                    </div>-->
+                    <!--                    <span class="badge text-bg-primary rounded-pill" id="new-msg-chat-10">14</span>-->
+                    <!--                </li>-->
+                </ul>
+            </div>
         </div>
-        <div class="col-8">
+        <div class="col-7">
             <h5><strong id="chat-header">Название чата</strong></h5>
             <div id="orderInfo" hidden="">
                 <div class="row">
@@ -78,6 +96,11 @@
     const orderDeadline = document.getElementById("orderDeadline");
     const orderLink = document.getElementById("orderLink");
     const searchBar = document.getElementById("search");
+
+    const newOrdersTabCount = document.getElementById("new-orders-count");
+    const adminTabCount = document.getElementById("admin-count");
+    const ordersTabCount = document.getElementById("orders-count");
+
     const userId = [[${userId}]];
     const isAdmin = [[${isAdmin}]];
 
@@ -90,10 +113,18 @@
     const usersTable = {};
     const orderTable = {};
     const messagesTable = {};
+    const tabChatNewMessages = {};
 
     const context = {
-        userId: userId
+        userId: userId,
+        tabName: getURLParam("tab")
     }
+
+    function updateTabColor() {
+        document.getElementById(`${getURLParam("tab")}-tab`).classList.add("text-bg-success");
+    }
+
+    updateTabColor();
 
     function drawDate(date) {
         if (date.length > 7) {
@@ -234,14 +265,20 @@
         if (message.isHidden) {
             return;
         }
-        let textEndFlag = false;
+        let isSelfMessage = false;
         if (message.fromUserId === context.userId) {
-            textEndFlag = true;
+            isSelfMessage = true;
+        }
+        let textColorClass = 'bg-secondary-subtle';
+        if (message.isSystemMessage) {
+            textColorClass = 'bg-danger-subtle'
+        } else if (isSelfMessage) {
+            textColorClass = 'bg-success-subtle';
         }
         let newMessageHtml =
-            `<li class="list-group-item mt-2">
+            `<li class="list-group-item mt-2 ${textColorClass}">
                 <div class="ms-2 me-auto">
-                    <div class="fw-bold ${textEndFlag ? 'text-end' : ''}"><small>${calcUserNameAndRole(message)}</small></div>
+                    <div class="fw-bold ${isSelfMessage ? 'text-end' : ''}"><small>${calcUserNameAndRole(message)}</small></div>
                     <blockquote class="blockquote">
                         <pre class="m-0 mb-1" style="white-space: pre-wrap">${message.content}</pre>
                     </blockquote>
@@ -275,6 +312,13 @@
         chatNewMessages[chatId]++;
     }
 
+    function incTabNewMessagesCount(tab) {
+        if (!tabChatNewMessages[tab]) {
+            tabChatNewMessages[tab] = 0;
+        }
+        tabChatNewMessages[tab]++;
+    }
+
     function processWsMessage(message) {
         if (chatTable[message.chatId] === undefined) {
             return;
@@ -296,24 +340,68 @@
     }
 
     function processChatNewMsgCount(chatJson) {
+        let hasMessages = false;
         for (let message of chatJson.messages) {
             for (let messageToUser of message.messageToUser) {
                 if (messageToUser.userId === context.userId && !messageToUser.isViewed) {
                     incChatNewMessageCount(chatJson.id);
+                    hasMessages = true;
                 }
             }
         }
-        drawChatNewMessageCount(chatJson.id);
+        return hasMessages;
+    }
+
+    function getURLParam(paramName) {
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        return urlParams.get(paramName);
     }
 
     function searchForChatId() {
-        const queryString = window.location.search;
-        const urlParams = new URLSearchParams(queryString);
-        if (urlParams.has("chatId")) {
-            const chatId = parseInt(urlParams.get("chatId"));
+        const chatIdParam = getURLParam("chatId")
+        if (chatIdParam != null) {
+            const chatId = parseInt(chatIdParam);
             const chatName = chatTable[chatId].chatName;
             searchBar.value = chatName;
             search(searchBar.value)
+        }
+    }
+
+    function getTabByChatType(chatType) {
+        if (chatType === 'REQUEST_ORDER_CHAT') {
+            return "new-orders";
+        }
+        if (chatType === 'ADMIN_TALK_CHAT') {
+            return "admin";
+        }
+        if (chatType === 'ORDER_CHAT') {
+            return "orders";
+        }
+    }
+
+    function shouldShowInThisTab(tabName, chatType) {
+        if (tabName === 'new-orders') {
+            return chatType === 'REQUEST_ORDER_CHAT';
+        }
+        if (tabName === 'admin') {
+            return chatType === 'ADMIN_TALK_CHAT'
+        }
+        if (tabName === 'orders') {
+            return chatType === 'ORDER_CHAT'
+        }
+        return false;
+    }
+
+    function updateTabsCount() {
+        if (tabChatNewMessages["new-orders"]) {
+            newOrdersTabCount.innerText = `(${tabChatNewMessages["new-orders"]})`
+        }
+        if (tabChatNewMessages["admin"]) {
+            adminTabCount.innerText = `(${tabChatNewMessages["admin"]})`
+        }
+        if (tabChatNewMessages["orders"]) {
+            ordersTabCount.innerText = `(${tabChatNewMessages["orders"]})`
         }
     }
 
@@ -323,9 +411,19 @@
             chatNewMessages[chatJsonElement.id] = 0;
             chatTable[chatJsonElement.id] = chatJsonElement;
             messagesTable[chatJsonElement.id] = chatJsonElement.messages;
-            drawNewChatInList(chatJsonElement);
-            processChatNewMsgCount(chatJsonElement)
+
+            let hasMessages = processChatNewMsgCount(chatJsonElement);
+
+            if (hasMessages) {
+                incTabNewMessagesCount(getTabByChatType(chatJsonElement.chatType));
+            }
+
+            if (shouldShowInThisTab(context.tabName, chatJsonElement.chatType)) {
+                drawNewChatInList(chatJsonElement);
+                drawChatNewMessageCount(chatJsonElement.id);
+            }
         }
+        updateTabsCount();
         searchForChatId()
     }
 
@@ -424,7 +522,6 @@
         });
     }
 
-
     httpRequest('GET', `/api/messenger/users`, null, (resp) => {
         processInitUserJson(JSON.parse(resp))
     });
@@ -493,7 +590,7 @@
     function search(value) {
         let fndChats = [];
         for (const key of Object.keys(chatTable)) {
-            let fnd = chatTable[key].chatName.includes(value);
+            let fnd = chatTable[key].chatName.toLowerCase().includes(value.toLowerCase());
             if (fnd) {
                 fndChats.push(chatTable[key]);
             }
@@ -511,10 +608,13 @@
         for (let i = 0; i < fndChats.length; i++) {
             drawNewChatInList(fndChats[i]);
             processChatNewMsgCount(fndChats[i])
+            drawChatNewMessageCount(fndChats[i].id);
         }
     }
 
-    searchBar.addEventListener('change', (v) => {search(v.target.value)});
+    searchBar.addEventListener('change', (v) => {
+        search(v.target.value)
+    });
 </script>
 </div>
 </body>

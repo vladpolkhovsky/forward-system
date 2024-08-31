@@ -3,22 +3,28 @@ spring:
     multipart:
       max-request-size: 128MB
       max-file-size: 128MB
+
   mvc:
     async:
       request-timeout: 60s
 
-  application:
-    name: forward-system
   datasource:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:localDB}
     password: ${DB_PASSWORD:localPS}
     url: ${DB_URL:jdbc:postgresql://host.docker.internal:5432/local}
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: true
     hibernate:
       ddl-auto: update
+
+vapid:
+  public:
+    key: ${VAPID_PUBLIC_KEY}
+  private:
+    key: ${VAPID_PRIVATE_KEY}
 
 server:
   port: 8081

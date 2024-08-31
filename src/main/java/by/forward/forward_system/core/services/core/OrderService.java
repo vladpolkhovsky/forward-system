@@ -16,6 +16,7 @@ import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -42,6 +43,7 @@ public class OrderService {
     private final ChatTypeRepository chatTypeRepository;
     private final AttachmentService attachmentService;
     private final OrderAttachmentRepository orderAttachmentRepository;
+    private final UserUiService userUiService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -152,8 +154,11 @@ public class OrderService {
     private void sendNewOrderRequest(Long userId, Long orderId, BigDecimal techNumber, String name, String discipline, String subject) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        Long currentUserId = userUiService.getCurrentUserId();
 
-        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatByUserAndChatName(userEntity.getId(), ChatNames.NEW_ORDER_CHAT_NAME.formatted(userEntity.getUsername()));
+        UserEntity manager = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found with id " + currentUserId));
+
+        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatByUserAndChatName(userEntity.getId(), ChatNames.NEW_ORDER_CHAT_NAME.formatted(userEntity.getUsername(), manager.getUsername()));
         Optional<ChatMessageTypeEntity> chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.NEW_ORDER.getName());
         Optional<OrderParticipantsTypeEntity> participantsType = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName());
 
@@ -167,7 +172,7 @@ public class OrderService {
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(
                 null,
                 newOrdersChatByUser.get(),
-                "Поступил новый заказ №%s.\nНазвание работы \"%s\".\nТема \"%s\".\nДисциплина \"%s\".".formatted(techNumber, name, discipline, subject),
+                "Поступил новый заказ №%s.\nНазвание работы \"%s\".\nТема \"%s\".\nДисциплина \"%s\".".formatted(techNumber, name, subject, discipline),
                 true,
                 chatMessageType.get(),
                 Collections.emptyList(),

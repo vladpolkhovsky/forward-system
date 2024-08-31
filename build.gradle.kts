@@ -32,7 +32,9 @@ dependencies {
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
 
 	implementation("org.apache.commons:commons-lang3:3.12.0")
-	implementation("commons-collections:commons-collections:3.2.2")
+	implementation("org.apache.commons:commons-collections4:4.4")
+	implementation("nl.martijndwars:web-push:5.1.1")
+	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("com.h2database:h2")

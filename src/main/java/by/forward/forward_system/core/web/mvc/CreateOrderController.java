@@ -130,10 +130,12 @@ public class CreateOrderController {
     }
 
     @PostMapping("/files-order/{id}")
-    public String saveOrderFile(@PathVariable Long id, @RequestParam("file") MultipartFile file, Model model) {
+    public String saveOrderFile(@PathVariable Long id, @RequestParam("file") MultipartFile[] file, Model model) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
-        orderService.saveOrderFile(id, file);
+        for (MultipartFile multipartFile : file) {
+            orderService.saveOrderFile(id, multipartFile);
+        }
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Файлы для заказа");

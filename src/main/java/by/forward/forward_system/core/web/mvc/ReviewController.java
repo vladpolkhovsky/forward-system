@@ -105,7 +105,7 @@ public class ReviewController {
     public RedirectView expertAnswer(@PathVariable Long orderId,
                                      @PathVariable Long reviewId,
                                      @RequestParam("verdict") String verdict,
-                                     @RequestParam("verdict-mark") Integer verdictMark,
+                                     @RequestParam("verdict-mark") Double verdictMark,
                                      @RequestParam("verdict-file") MultipartFile file) {
 
         AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());

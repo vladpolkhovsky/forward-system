@@ -9,5 +9,11 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect
 
+vapid:
+  public:
+    key: BKvfltkWFh7IScunnziDpMopLEgL00NLmWJsqnHvQsziiYi-_si1-C56TB1n2i2QZ6yjKjB4kAAdos1GKkbiX8Y
+  private:
+    key: 8sJ_vTLgtE9aMDJLH3HRO7yIriJ_L8fezN8fE-ZvV1g
+
 server:
   port: 8081

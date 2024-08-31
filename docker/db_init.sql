@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS forward_system.users
 CREATE TABLE IF NOT EXISTS forward_system.authors
 (
     id         bigint primary key references forward_system.users (id),
-    created_by bigint        not null references forward_system.users (id)
+    created_by bigint not null references forward_system.users (id)
 );
 
 create table if not exists forward_system.disciplines
@@ -37,9 +37,9 @@ create table if not exists forward_system.discipline_quality
 create table if not exists forward_system.author_disciplines
 (
     id                 bigint primary key,
-    author_id          bigint not null references forward_system.authors (id),
+    author_id          bigint       not null references forward_system.authors (id),
     discipline_quality varchar(255) not null references forward_system.discipline_quality (name),
-    discipline_id      bigint not null references forward_system.disciplines (id)
+    discipline_id      bigint       not null references forward_system.disciplines (id)
 );
 
 create table if not exists forward_system.order_statuses
@@ -202,6 +202,14 @@ create table if not exists forward_system.security_block
     created_at         timestamp not null
 );
 
+create table if not exists forward_system.notification_data
+(
+    id                bigint primary key,
+    user_id           bigint        not null references forward_system.users (id),
+    unique_number     bigint        not null,
+    subscription_data varchar(8192) not null
+);
+
 INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
                                   other, payment, password, created_at)
 VALUES (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+888888888', '+888888888',
@@ -230,6 +238,7 @@ values ('CATCHER'),
 insert into forward_system.chat_type
 values ('REQUEST_ORDER_CHAT'),
        ('ORDER_CHAT'),
+       ('ADMIN_TALK_CHAT'),
        ('OTHER_CHAT');
 
 insert into forward_system.chat_message_types

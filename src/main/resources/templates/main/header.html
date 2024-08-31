@@ -4,12 +4,13 @@
     <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-md-between py-3 mb-4 border-bottom">
         <ul class="nav col-12 col-md-auto mb-2 justify-content-center mb-md-0">
             <li><a th:href="@{/main}" class="nav-link px-2 link-primary">Главное меню</a></li>
-            <li></li>
             <li class="list-group-item d-flex justify-content-between align-items-start">
                 <div class="ms-2 me-auto">
-                    <div class="fw-bold"><a th:href="@{/messenger}" class="nav-link px-2" >Мессенджер</a></div>
+                    <div class="fw-bold"><a href="/messenger?tab=new-orders" class="nav-link px-2" >Мессенджер</a></div>
                 </div>
                 <span class="badge text-bg-primary rounded-pill" th:if="@{__${@newMsgCount.newMessageCount() > 0}__}" th:text="@{__${@newMsgCount.newMessageCount()}__}"></span>
+            </li>
+            <li><a class="nav-link px-2 link-primary" href="/push-subscription">Уведомления</a></li>
         </ul>
         <div class="col-md-3 text-end d-flex">
             <!--/*@thymesVar id="userShort" type="by.forward.forward_system.core.dto.ui.UserShortUiDto"*/-->
