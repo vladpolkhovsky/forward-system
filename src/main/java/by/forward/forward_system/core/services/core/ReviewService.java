@@ -149,7 +149,7 @@ public class ReviewService {
         return toDto(reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("review not found")));
     }
 
-    public void saveVerdict(Long reviewId, String verdict, Double verdictMark, Long fileId) {
+    public void saveVerdict(Long reviewId, String verdict, String verdictMark, Long fileId) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
         AttachmentEntity attachment = attachmentRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Attachment not found"));
 

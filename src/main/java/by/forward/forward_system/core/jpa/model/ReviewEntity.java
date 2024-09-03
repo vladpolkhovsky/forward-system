@@ -31,7 +31,7 @@ public class ReviewEntity {
     private String reviewVerdict;
 
     @Column(name = "review_mark")
-    private Double reviewMark;
+    private String reviewMark;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "review_file_id")

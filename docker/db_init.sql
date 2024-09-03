@@ -183,7 +183,7 @@ create table if not exists forward_system.reviews
     attachment_id  bigint    not null references forward_system.attachments (id),
     review_message varchar(65536),
     review_verdict varchar(65536),
-    review_mark    int,
+    review_mark    varchar(16),
     review_file_id bigint references forward_system.attachments (id),
     is_reviewed    boolean   not null,
     is_accepted    boolean   not null,
