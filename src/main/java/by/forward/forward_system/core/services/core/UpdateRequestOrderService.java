@@ -54,13 +54,11 @@ public class UpdateRequestOrderService {
         updateOrderRequestDto.setNewStatusRus(newStatus.getRusName());
 
         List<Long> hosts = mapIds(multiValueMap.get("host"));
-        List<Long> experts = mapIds(multiValueMap.get("expert"));
         List<Long> catchers = mapIds(multiValueMap.get("catcher"));
         List<Long> authors = mapIds(multiValueMap.get("author"));
 
         updateOrderRequestDto.setCatchers(catchers);
         updateOrderRequestDto.setHosts(hosts);
-        updateOrderRequestDto.setExperts(experts);
         updateOrderRequestDto.setAuthors(authors);
 
         updateOrderRequestDto.setIsViewed(false);
@@ -85,7 +83,6 @@ public class UpdateRequestOrderService {
         updateOrderRequestEntity.setNewStatus(orderStatus);
         updateOrderRequestEntity.setCatcherIds(toStrList(updateOrderRequestDto.getCatchers()));
         updateOrderRequestEntity.setAuthorsIds(toStrList(updateOrderRequestDto.getAuthors()));
-        updateOrderRequestEntity.setExpertsIds(toStrList(updateOrderRequestDto.getExperts()));
         updateOrderRequestEntity.setHostsIds(toStrList(updateOrderRequestDto.getHosts()));
         updateOrderRequestEntity.setIsViewed(updateOrderRequestDto.getIsViewed());
         updateOrderRequestEntity.setIsAccepted(updateOrderRequestDto.getIsAccepted());
@@ -121,7 +118,6 @@ public class UpdateRequestOrderService {
         updateOrderRequestEntity.setUser(userEntity);
         updateOrderRequestEntity.setCatcherIds(toStrList(updateOrderRequestDto.getCatchers()));
         updateOrderRequestEntity.setAuthorsIds(toStrList(updateOrderRequestDto.getAuthors()));
-        updateOrderRequestEntity.setExpertsIds(toStrList(updateOrderRequestDto.getExperts()));
         updateOrderRequestEntity.setHostsIds(toStrList(updateOrderRequestDto.getHosts()));
         updateOrderRequestEntity.setNewStatus(orderStatus);
         updateOrderRequestEntity.setIsViewed(updateOrderRequestDto.getIsViewed());
@@ -137,7 +133,6 @@ public class UpdateRequestOrderService {
         updateOrderRequestDto.setOrderId(updateOrderRequestEntity.getOrder().getId());
         updateOrderRequestDto.setOrderTechNumber(new BigDecimal(updateOrderRequestEntity.getOrder().getTechNumber()));
         updateOrderRequestDto.setAuthors(mapIds(updateOrderRequestEntity.getAuthorsIds()));
-        updateOrderRequestDto.setExperts(mapIds(updateOrderRequestEntity.getExpertsIds()));
         updateOrderRequestDto.setCatchers(mapIds(updateOrderRequestEntity.getCatcherIds()));
         updateOrderRequestDto.setHosts(mapIds(updateOrderRequestEntity.getHostsIds()));
         updateOrderRequestDto.setNewStatus(updateOrderRequestEntity.getNewStatus().getStatus().getName());

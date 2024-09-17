@@ -44,6 +44,7 @@ public class AuthorUiService {
     @Transactional
     public AuthorUiDto createAuthor(AuthorUiDto user) {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+
         Optional<UserEntity> byUsername = userRepository.findByUsername(currentUserDetails.getUsername());
         UserEntity createdBy = byUsername.orElseThrow(() -> new UsernameNotFoundException("User not found with username " + currentUserDetails.getUsername()));
 

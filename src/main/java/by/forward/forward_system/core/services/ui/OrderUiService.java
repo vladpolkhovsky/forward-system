@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.services.ui;
 
+import by.forward.forward_system.core.dto.messenger.OrderDto;
+import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.enums.OrderStatus;
@@ -51,7 +53,7 @@ public class OrderUiService {
     }
 
     public List<OrderUiDto> getAllMyOrders(Long currentUserId) {
-        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST);
+        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
 
         Predicate<OrderEntity> isParticipant = (order) -> {
             List<OrderParticipantEntity> orderParticipants = order.getOrderParticipants();
@@ -355,6 +357,13 @@ public class OrderUiService {
     }
 
     public Integer countMyOrders() {
-        return orderService.countMyOrders(userUiService.getCurrentUserId());
+        return getAllMyOrders(userUiService.getCurrentUserId()).size();
+    }
+
+    public int countOrderAuthors(Long orderId) {
+        OrderDto order = orderService.getOrder(orderId);
+        return (int) order.getParticipants().stream()
+            .filter(t -> t.getParticipantsType().equals(ParticipantType.MAIN_AUTHOR.getName()))
+            .count();
     }
 }

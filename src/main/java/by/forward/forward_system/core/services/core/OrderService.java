@@ -4,7 +4,6 @@ import by.forward.forward_system.core.dto.messenger.OrderAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
-import by.forward.forward_system.core.dto.ui.DeclineDto;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
@@ -21,11 +20,14 @@ import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -65,9 +67,19 @@ public class OrderService {
         return orderRepository.save(orderEntity);
     }
 
+    private String dateToString(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return "не указано";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return localDateTime.format(formatter);
+    }
+
     public OrderEntity update(Long id, OrderEntity order) {
         Optional<OrderEntity> byId = orderRepository.findById(id);
         OrderEntity orderEntity = byId.orElseThrow(() -> new RuntimeException("Order not found with id " + id));
+
+        Map<String, List<String>> changes = getChanges(orderEntity, order);
 
         orderEntity.setName(order.getName());
         orderEntity.setTechNumber(order.getTechNumber());
@@ -80,11 +92,85 @@ public class OrderService {
         orderEntity.setIntermediateDeadline(order.getIntermediateDeadline());
         orderEntity.setDeadline(order.getDeadline());
         orderEntity.setOther(order.getOther());
-        orderEntity.setTakingCost(order.getTakingCost());
         orderEntity.setAuthorCost(order.getAuthorCost());
+        orderEntity.setTakingCost(order.getTakingCost());
+
+        String changesText = convertChangesToText(changes);
+        sendChangesToChat(order.getId(), changesText);
 
         orderEntity = orderRepository.save(orderEntity);
+
         return orderEntity;
+    }
+
+    private Map<String, List<String>> getChanges(OrderEntity oldData, OrderEntity newData) {
+        HashMap<String, List<String>> changes = new HashMap<>();
+        if (!oldData.getName().equals(newData.getName())) {
+            changes.put("Название", Arrays.asList(oldData.getName(), newData.getName()));
+        }
+        if (!oldData.getTechNumber().equals(newData.getTechNumber())) {
+            changes.put("Номер ТЗ", Arrays.asList(oldData.getTechNumber(), newData.getTechNumber()));
+        }
+        if (!oldData.getWorkType().equals(newData.getWorkType())) {
+            changes.put("Тип работы", Arrays.asList(oldData.getWorkType(), newData.getWorkType()));
+        }
+        if (!oldData.getDiscipline().equals(newData.getDiscipline())) {
+            changes.put("Дисциплина", Arrays.asList(oldData.getDiscipline().getName(), newData.getDiscipline().getName()));
+        }
+        if (!oldData.getSubject().equals(newData.getSubject())) {
+            changes.put("Предмет", Arrays.asList(oldData.getSubject(), newData.getSubject()));
+        }
+        if (!oldData.getOriginality().equals(newData.getOriginality())) {
+            changes.put("Оригинальность", Arrays.asList(oldData.getOriginality().toString(), newData.getOriginality().toString()));
+        }
+        if (!oldData.getVerificationSystem().equals(newData.getVerificationSystem())) {
+            changes.put("Система проверки", Arrays.asList(oldData.getVerificationSystem(), newData.getVerificationSystem()));
+        }
+        if (!oldData.getAdditionalDates().equals(newData.getAdditionalDates())) {
+            changes.put("Дополнительные этапы сдачи", Collections.emptyList());
+        }
+        if (!oldData.getIntermediateDeadline().equals(newData.getIntermediateDeadline())) {
+            changes.put("Промежуточный срок сдачи", Arrays.asList(dateToString(oldData.getIntermediateDeadline()), dateToString(newData.getIntermediateDeadline())));
+        }
+        if (!oldData.getDeadline().equals(newData.getDeadline())) {
+            changes.put("Окончательный срок сдачи", Arrays.asList(dateToString(oldData.getDeadline()), dateToString(newData.getDeadline())));
+        }
+        if (!oldData.getOther().equals(newData.getOther())) {
+            changes.put("Доп. информация", Arrays.asList(oldData.getVerificationSystem(), newData.getVerificationSystem()));
+        }
+        if (!oldData.getAuthorCost().equals(newData.getAuthorCost())) {
+            changes.put("Цена", Arrays.asList(oldData.getAuthorCost().toString(), newData.getAuthorCost().toString()));
+        }
+        return changes;
+    }
+
+    private String convertChangesToText(Map<String, List<String>> changes) {
+        return "Изменения в заказе:\n" + changes.entrySet().stream().map(entry -> {
+            String text = "Поле " + entry.getKey() + ": ";
+            if (entry.getValue().isEmpty()) {
+                text = text + "невозможно отобразить см. описание заказа.";
+            } else if (entry.getValue().size() == 1) {
+                text = text + "новое значение: " + entry.getValue().get(0);
+            } else if (entry.getValue().size() == 2) {
+                text = text + "было \"" + entry.getValue().get(0) + "\", стало \"" + entry.getValue().get(1) + "\"";
+            } else {
+                return text + "невозможно отобразить см. описание заказа.";
+            }
+            return text;
+        }).collect(Collectors.joining("\n"));
+    }
+
+    private void sendChangesToChat(Long orderId, String changesString) {
+        Long chatId = getOrderMainChat(orderId);
+        if (chatId == null) {
+            return;
+        }
+
+        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow((() -> new RuntimeException("Chat not found")));
+        ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Message type not found"));
+
+        messageService.sendMessage(null, chatEntity, changesString, true, messageType, Collections.emptyList(), Collections.emptyList());
     }
 
     public void addParticipant(Long orderId, AddParticipantRequestDto addParticipantRequestDto) {
@@ -288,56 +374,7 @@ public class OrderService {
         return orderDto;
     }
 
-    public void acceptOrderByUser(Long orderId, Long currentUserId) {
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
-        UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found with id " + currentUserId));
-
-        UserEntity catcherEntity = orderEntity.getOrderParticipants().stream()
-            .filter(t -> t.getParticipantsType().getType().equals(ParticipantType.CATCHER))
-            .findAny()
-            .map(OrderParticipantEntity::getUser)
-            .orElseThrow(() -> new RuntimeException("Participant CATCHER not found"));
-
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
-        chatService.createChat(
-            Arrays.asList(userEntity, catcherEntity),
-            ChatNames.ORDER_REQUEST_CHAT.formatted(orderEntity.getTechNumber(), userEntity.getUsername()),
-            orderEntity,
-            "Автор %s (%s) готов обсудить заказ.".formatted(userEntity.getFio(), userEntity.getUsername()),
-            chatTypeEntity
-        );
-    }
-
-    public void declineOrder(Long orderId, Long currentUserId, DeclineDto decline) {
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
-        UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found with id " + currentUserId));
-
-        OrderParticipantEntity orderParticipantUser = orderEntity.getOrderParticipants().stream()
-            .filter(t -> t.getUser().getId().equals(userEntity.getId()))
-            .findAny().orElseThrow(() -> new RuntimeException("User not found with id " + userEntity.getId()));
-
-        OrderParticipantsTypeEntity declineAuthorType = orderParticipantsTypeRepository.findById(ParticipantType.DECLINE_AUTHOR.getName())
-            .orElseThrow(() -> new RuntimeException("Decline Author not found"));
-
-        orderParticipantUser.setParticipantsType(declineAuthorType);
-        orderParticipantRepository.save(orderParticipantUser);
-
-        UserEntity catcherEntity = orderEntity.getOrderParticipants().stream()
-            .filter(t -> t.getParticipantsType().getType().equals(ParticipantType.CATCHER))
-            .findAny()
-            .map(OrderParticipantEntity::getUser)
-            .orElseThrow(() -> new RuntimeException("Participant CATCHER not found"));
-
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
-        chatService.createChat(
-            Collections.singletonList(catcherEntity),
-            "Отказ от заказ №%s автором %s (%s)".formatted(orderEntity.getTechNumber(), userEntity.getFio(), userEntity.getUsername()),
-            orderEntity,
-            "Автор %s (%s) не готов взять в работу заказ. Причина: %s".formatted(userEntity.getFio(), userEntity.getUsername(), decline.getDeclineText()),
-            chatTypeEntity
-        );
-    }
-
+    @Transactional
     public void applyUpdateOrderRequest(UpdateOrderRequestDto update) {
         if (!update.getIsAccepted()) {
             changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.DISTRIBUTION);
@@ -351,18 +388,12 @@ public class OrderService {
         orderEntity = orderRepository.save(orderEntity);
 
         List<UserEntity> authors = userRepository.findAllById(update.getAuthors());
-        List<UserEntity> experts = userRepository.findAllById(update.getExperts());
         List<UserEntity> catchers = userRepository.findAllById(update.getCatchers());
         List<UserEntity> hosts = userRepository.findAllById(update.getHosts());
 
         OrderParticipantsTypeEntity mainAuthorParticipant = orderParticipantsTypeRepository.findById(ParticipantType.MAIN_AUTHOR.getName()).orElseThrow(() -> new RuntimeException("Main Author not found"));
         for (UserEntity author : authors) {
             addParticipant(orderEntity, mainAuthorParticipant, author.getId());
-        }
-
-        OrderParticipantsTypeEntity expertParticipant = orderParticipantsTypeRepository.findById(ParticipantType.EXPERT.getName()).orElseThrow(() -> new RuntimeException("EXPERT not found"));
-        for (UserEntity expert : experts) {
-            addParticipant(orderEntity, expertParticipant, expert.getId());
         }
 
         OrderParticipantsTypeEntity catcherParticipant = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).orElseThrow(() -> new RuntimeException("CATCHER not found"));
@@ -405,16 +436,6 @@ public class OrderService {
             }
         }
         return null;
-    }
-
-    public UserEntity findExpert(Long orderId) {
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
-        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
-            if (orderParticipant.getParticipantsType().getType().equals(ParticipantType.EXPERT)) {
-                return orderParticipant.getUser();
-            }
-        }
-        throw new RuntimeException("Expert not found");
     }
 
     public void addMainAuthorToOrder(Long orderId, Long authorId) {
@@ -552,4 +573,39 @@ public class OrderService {
             }
         }
     }
+
+    @Transactional
+    public void delMainAuthorFromOrder(Long orderId, Long authorId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        UserEntity userEntity = userRepository.findById(authorId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (orderParticipant.getUser().getId().equals(authorId)) {
+                orderParticipantRepository.delete(orderParticipant);
+                break;
+            }
+        }
+
+        ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Chat message type not found"));
+
+        ChatEntity chat = chatRepository.findById(getOrderMainChat(orderId)).orElseThrow(() -> new RuntimeException("Order main chat not found"));
+
+        chatService.delUserFromChats(Collections.singletonList(chat.getId()), authorId);
+
+        chat = chatRepository.findById(getOrderMainChat(orderId)).orElseThrow(() -> new RuntimeException("Order main chat not found"));
+
+        messageService.sendMessage(
+            null,
+            chat,
+            "Из чата удалён пользователь %s (%s)".formatted(userEntity.getFio(), userEntity.getUsername()),
+            true,
+            messageType,
+            Collections.emptyList(),
+            Collections.emptyList()
+        );
+
+        chatService.setMessageViewed(chat.getId(), authorId);
+    }
+
 }

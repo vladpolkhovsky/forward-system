@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.web.mvc;
 
-import by.forward.forward_system.core.dto.ui.OrderUiDto;
-import by.forward.forward_system.core.dto.ui.ReviewDto;
+import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.model.ReviewEntity;
@@ -11,6 +10,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectio
 import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.ReviewService;
+import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
@@ -25,12 +25,14 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @AllArgsConstructor
 public class ReviewController {
 
     private final UserUiService userUiService;
+    private final AuthorUiService authorUiService;
     private final OrderUiService orderUiService;
     private final ReviewRepository reviewRepository;
     private final ReviewService reviewService;
@@ -75,28 +77,47 @@ public class ReviewController {
                 t.getAttachmentTime(),
                 false))
             .toList();
+
+        List<AuthorUiDto> authors = authorUiService.getAllAuthors().stream().filter(AuthorUiDto::getIsAuthor).toList();
+        List<UserSelectionUiDto> selection = authors.stream()
+            .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), false))
+            .sorted(Comparator.comparing(UserSelectionUiDto::getUsername))
+            .toList();
+
+        Optional<UserSelectionUiDto> first = selection.stream().findFirst();
+        if (first.isPresent()) {
+            first.get().setChecked(true);
+        }
+
+        model.addAttribute("experts", selection);
+
         model.addAttribute("menuName", "Выберите сообщение, которое хотите отправить на рассмотрение эксперта");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("orderId", orderId);
         model.addAttribute("files", chatAttachments);
+
         return "main/expert-review-order";
     }
 
     @GetMapping(value = "/expert-review-requests")
     public String expertReviewRequests(Model model) {
         List<ReviewProjectionDto> notReviewedByUser = reviewService.getNotReviewedByUser(userUiService.getCurrentUserId());
+
         model.addAttribute("menuName", "Выберите заказ, который хотите проверить");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("reviews", notReviewedByUser);
+
         return "main/expert-review-requests";
     }
 
     @GetMapping(value = "/expert-review-order-answer/{orderId}/{reviewId}")
     public String expertAnswer(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewDto reviewById = reviewService.getReviewById(reviewId);
+
         model.addAttribute("menuName", "Проверьте работу и напишите вердикт.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
+
         return "main/expert-review-order-answer";
     }
 
@@ -112,6 +133,7 @@ public class ReviewController {
 
         reviewService.saveVerdict(reviewId, verdict, verdictMark, attachmentEntity.getId());
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
+
         return new RedirectView("/main");
     }
 
@@ -129,18 +151,28 @@ public class ReviewController {
             ))
             .toList();
 
+        List<AuthorUiDto> authors = authorUiService.getAllAuthors().stream().filter(AuthorUiDto::getIsAuthor).toList();
+        List<UserSelectionUiDto> selection = authors.stream()
+            .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), reviewEntity.getReviewedBy().getId().equals(t.getId())))
+            .sorted(Comparator.comparing(UserSelectionUiDto::getUsername))
+            .toList();
+
+        model.addAttribute("experts", selection);
+
         model.addAttribute("menuName", "Выберите сообщение, которое хотите отправить на рассмотрение эксперта");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("orderId", orderId);
         model.addAttribute("reviewId", reviewId);
         model.addAttribute("messageText", reviewEntity.getReviewMessage());
         model.addAttribute("files", chatAttachments);
+
         return "main/expert-review-order";
     }
 
     @GetMapping(value = "/review-order-answers")
     public String reviewOrderAnswers(Model model) {
         List<ReviewProjectionDto> all = reviewService.getAllReviews();
+
         model.addAttribute("menuName", "Выберите заказ, который хотите посмотреть");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("reviews", all);
@@ -151,23 +183,26 @@ public class ReviewController {
     @GetMapping(value = "/expert-review-order-view/{orderId}/{reviewId}")
     public String expertReviewOrderView(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewDto reviewById = reviewService.getReviewById(reviewId);
+
         model.addAttribute("menuName", "Проверьте работу и напишите вердикт.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
+
         return "main/expert-review-order-view";
     }
 
     @PostMapping(value = "/expert-review-order/{orderId}")
     public RedirectView expertReviewOrder(@PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
         String reviewId = body.getFirst("reviewId");
+        Long expertId = Long.parseLong(body.getFirst("expertId"));
 
         Long attachmentId = Long.parseLong(body.getFirst("attachmentId"));
         String messageText = body.getFirst("reviewText");
 
         if (reviewId == null) {
-            reviewService.saveNewReviewRequest(orderId, attachmentId, messageText);
+            reviewService.saveNewReviewRequest(orderId, expertId, attachmentId, messageText);
         } else {
-            reviewService.updateReviewRequest(orderId, Long.parseLong(reviewId), attachmentId, messageText);
+            reviewService.updateReviewRequest(orderId, expertId, Long.parseLong(reviewId), attachmentId, messageText);
         }
 
         orderService.changeStatus(orderId, OrderStatus.REVIEW);

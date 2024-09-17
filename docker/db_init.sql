@@ -125,12 +125,23 @@ create table if not exists forward_system.chats
     last_message_date timestamp     not null
 );
 
+create table if not exists forward_system.chat_metadata
+(
+    id bigint primary key references forward_system.chats(id),
+    user_id bigint references forward_system.users(id),
+    manager_id bigint references forward_system.users(id),
+    owner_type_permission boolean
+);
+
 create table if not exists forward_system.chat_members
 (
     id      bigint primary key,
     chat_id bigint not null references forward_system.chats (id),
     user_id bigint not null references forward_system.users (id)
 );
+
+create index if not exists chat_member_chat_id_index on forward_system.chat_members(chat_id);
+create index if not exists chat_member_user_id_index on forward_system.chat_members(user_id);
 
 create table if not exists forward_system.chat_message_types
 (
@@ -148,6 +159,9 @@ create table if not exists forward_system.chat_messages
     created_at        timestamp    not null,
     content           varchar(65536)
 );
+
+create index if not exists chat_messages_chat_id_index on forward_system.chat_messages(chat_id);
+create index if not exists chat_messages_user_id_index on forward_system.chat_messages(from_user_id);
 
 create table if not exists forward_system.chat_message_options
 (
@@ -169,6 +183,10 @@ create table if not exists forward_system.chat_message_to_user
     is_viewed  boolean   not null
 );
 
+create index if not exists chat_message_to_user_chat_id_index on forward_system.chat_message_to_user(chat_id);
+create index if not exists chat_message_to_user_message_id_index on forward_system.chat_message_to_user(message_id);
+create index if not exists chat_message_to_user_user_id_index on forward_system.chat_message_to_user(user_id);
+
 create table if not exists forward_system.chat_message_attachments
 (
     id            bigint primary key,
@@ -183,7 +201,7 @@ create table if not exists forward_system.reviews
     attachment_id  bigint    not null references forward_system.attachments (id),
     review_message varchar(65536),
     review_verdict varchar(65536),
-    review_mark    varchar(16),
+    review_mark    varchar(255),
     review_file_id bigint references forward_system.attachments (id),
     is_reviewed    boolean   not null,
     is_accepted    boolean   not null,
@@ -240,6 +258,15 @@ values ('REQUEST_ORDER_CHAT'),
        ('ORDER_CHAT'),
        ('ADMIN_TALK_CHAT'),
        ('OTHER_CHAT');
+
+INSERT INTO forward_system.chats(id, chat_name, order_id, type, last_message_date)
+values (0, 'Новости', null, 'ADMIN_TALK_CHAT', now());
+
+INSERT INTO forward_system.chat_metadata(id, user_id, manager_id, owner_type_permission)
+values (0, null, null, true);
+
+insert into forward_system.chat_members(id, chat_id, user_id)
+values (0, 0, 0);
 
 insert into forward_system.chat_message_types
 values ('NEW_ORDER'),

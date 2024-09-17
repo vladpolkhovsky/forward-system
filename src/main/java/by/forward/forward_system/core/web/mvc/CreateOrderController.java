@@ -185,6 +185,17 @@ public class CreateOrderController {
         return "main/view-order-selector";
     }
 
+    @GetMapping(value = "/view-my-order-author")
+    public String viewMyOrderAuthor(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
+
+        model.addAttribute("menuName", "Выберите заказ для просмотра");
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("ordersList", allOrdersInStatus);
+
+        return "main/view-order-author-selector";
+    }
+
     @GetMapping(value = "/order-to-in-progress")
     public String orderToInProgress(Model model) {
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -265,6 +276,45 @@ public class CreateOrderController {
 
         return new RedirectView("/change-fee-in-order");
     }
+
+    @GetMapping(value = "/del-author-from-order")
+    public String delAuthorFromOrder(Model model) {
+        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.IN_PROGRESS.getName(),
+            OrderStatus.REVIEW.getName(),
+            OrderStatus.FINALIZATION.getName()
+        ));
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите заказ в которого хотите добавить автора");
+        model.addAttribute("ordersList", allOrdersInStatus);
+
+        return "main/del-author-from-order-selector";
+    }
+
+    @GetMapping(value = "/del-author-from-order/{orderId}")
+    public String delAuthorFromOrder(Model model, @PathVariable Long orderId) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
+        List<UserSelectionUiDto> allAuthors = orderUiService.getAuthorsByOrder(orderId);
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("menuName", "Выберите автора, которого хотите удалить из заказа");
+        model.addAttribute("isOneAuthor", orderUiService.countOrderAuthors(orderId) <= 1);
+        model.addAttribute("authors", allAuthors);
+
+        return "main/del-author-from-order";
+    }
+
+    @PostMapping(value = "/del-author-from-order/{orderId}")
+    public RedirectView delAuthorFromOrder(Model model, @PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+
+        Long authorId = Long.parseLong(body.getFirst("author"));
+        orderService.delMainAuthorFromOrder(orderId, authorId);
+
+        return new RedirectView("/main");
+    }
+
 
     @GetMapping(value = "/change-fee-in-order")
     public String changeFeeInOrder(Model model) {

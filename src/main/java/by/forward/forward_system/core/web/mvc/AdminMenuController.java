@@ -47,14 +47,12 @@ public class AdminMenuController {
         List<UserSelectionUiDto> authors = setChecked(orderUiService.getAuthorsByOrder(byId.getOrderId()), byId.getAuthors());
         List<UserSelectionUiDto> hosts = setChecked(orderUiService.getAllManagers(), byId.getHosts());
         List<UserSelectionUiDto> catchers = setChecked(orderUiService.getAllManagers(), byId.getCatchers());
-        List<UserSelectionUiDto> experts = setChecked(orderUiService.getAllAuthors(), byId.getExperts());
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("isViewed", byId.getIsViewed());
         model.addAttribute("requestId", requestId);
         model.addAttribute("menuName", "Укажите данные для перевода в статус \"В работе\"");
         model.addAttribute("authors", authors);
-        model.addAttribute("experts", experts);
         model.addAttribute("catchers", catchers);
         model.addAttribute("hosts", hosts);
         return "main/review-order";

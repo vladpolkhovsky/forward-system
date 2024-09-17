@@ -4,7 +4,7 @@ import by.forward.forward_system.core.dto.ui.MenuEntry;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
 import by.forward.forward_system.core.services.core.ReviewService;
-import by.forward.forward_system.core.services.core.UserService;
+import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.services.ui.menu.MenuComponent;
 import lombok.AllArgsConstructor;
@@ -17,11 +17,9 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class ExpertMenuComponent implements MenuComponent {
+public class AuthorMenuComponent implements MenuComponent {
 
-    private final ReviewService reviewService;
-
-    private final UserUiService userUiService;
+    private final OrderUiService orderUiService;
 
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
@@ -30,12 +28,10 @@ public class ExpertMenuComponent implements MenuComponent {
 
     @Override
     public MenuEntry getMenuEntry() {
-        List<ReviewProjectionDto> notReviewedByUser = reviewService.getNotReviewedByUser(userUiService.getCurrentUserId());
-
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Просмотреть запросы на проверку, если вы Эксперт", "/expert-review-requests", true, notReviewedByUser.size())
+            new MenuEntry.MenuItem("Мои заказы", "/view-my-order-author", true, orderUiService.countMyOrders())
         );
 
-        return new MenuEntry("Эксперт", list, 2);
+        return new MenuEntry("Автор", list, 2);
     }
 }

@@ -24,4 +24,9 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
     @Query(nativeQuery = true, value = "select chat.* from forward_system.chats chat " +
         "where chat.chat_name like 'Чат с Администрацией%'")
     List<ChatEntity> findAdminTalkChats();
+
+    @Query(nativeQuery = true, value = "select count(*) > 0 from forward_system.chats chat " +
+        "left join forward_system.chat_members chat_members on chat.id = chat_members.chat_id " +
+        "where chat.id = :chatId and chat_members.user_id = :userId")
+    boolean isChatMember(Long chatId, Long userId);
 }

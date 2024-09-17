@@ -14,8 +14,11 @@
     </div>
 </div>
 <div class="container">
-    <form class="row" th:action="|/add-author-to-order/| + ${orderId}" method="post">
-        <p class="mt-3">Укажите Автора, которого хотите добавить</p>
+    <div class="alert alert-danger" role="alert" th:if="${isOneAuthor}">
+        <strong>В заказе есть только один автор</strong>, чтобы удалить данного автора, добавьте в заказ ещё одного автора.
+    </div>
+    <form class="row" th:action="|/del-author-from-order/| + ${orderId}" method="post">
+        <p class="mt-3">Укажите Автора, которого хотите удалить</p>
         <div class="col-12">
             <ul class="list-group">
                 <li class="list-group-item" th:each="author, authorStat : ${authors}">
@@ -28,7 +31,7 @@
                 </li>
             </ul>
         </div>
-        <input class="form-control btn btn-primary mt-3" type="submit" value="Добавить автора">
+        <input th:disabled="${isOneAuthor}" class="form-control btn btn-primary mt-3" type="submit" value="Удалить автора">
     </form>
 </div>
 </body>

@@ -3,23 +3,17 @@ package by.forward.forward_system.core.services.core;
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
-import by.forward.forward_system.core.jpa.repository.AuthorDisciplineRepository;
-import by.forward.forward_system.core.jpa.repository.AuthorRepository;
-import by.forward.forward_system.core.jpa.repository.ChatTypeRepository;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.services.messager.ChatMemberService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.ChatNames;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -36,11 +30,14 @@ public class AuthorService {
     private final ChatMemberService chatMemberService;
     private final ChatTypeRepository chatTypeRepository;
     private final AuthorDisciplineRepository authorDisciplineRepository;
+    private final ChatMetadataRepository chatMetadataRepository;
+    private final ChatUtilsService chatUtilsService;
 
     public Optional<AuthorEntity> getById(Long id) {
         return authorRepository.findById(id);
     }
 
+    @Transactional
     public AuthorEntity save(UserEntity cratedByUser, AuthorEntity author) {
         UserEntity authorUser = author.getUser();
 
@@ -53,8 +50,12 @@ public class AuthorService {
             Collections.singletonList(authorUser),
             ChatNames.ADMINISTRATION_CHAT_NAME.formatted(author.getUser().getUsername()),
             "Чат для связи с администраторами!",
-            adminTalkChat
+            adminTalkChat,
+            null,
+            null
         );
+
+        chatUtilsService.addToNewsChat(authorUser.getId());
 
         List<UserEntity> allAdmins = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allAdmins) {
@@ -63,11 +64,16 @@ public class AuthorService {
 
         List<UserEntity> allManagers = userService.findUsersWithRole(Authority.MANAGER.getAuthority());
         for (UserEntity manager : allManagers) {
+            ArrayList<UserEntity> chatMembers = new ArrayList<>(allAdmins);
+            chatMembers.addAll(Arrays.asList(authorUser, manager));
+
             addChatToUser(
-                Arrays.asList(authorUser, manager),
+                chatMembers,
                 ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUser().getUsername(), manager.getUsername()),
                 "Здесь будут появляться новые заказы!",
-                requestOrderChat
+                requestOrderChat,
+                manager,
+                authorUser
             );
         }
 
@@ -81,8 +87,20 @@ public class AuthorService {
         return save;
     }
 
-    private ChatEntity addChatToUser(List<UserEntity> users, String chatName, String initMessage, ChatTypeEntity chatTypeEntity) {
-        return chatService.createChat(users, chatName, null, initMessage, chatTypeEntity);
+    @Transactional
+    public ChatEntity addChatToUser(List<UserEntity> users, String chatName, String initMessage, ChatTypeEntity chatTypeEntity, UserEntity manager, UserEntity author) {
+        ChatEntity chat = chatService.createChat(users, chatName, null, initMessage, chatTypeEntity);
+
+        if (manager != null && author != null) {
+            ChatMetadataEntity chatMetadataEntity = new ChatMetadataEntity();
+            chatMetadataEntity.setOwnerTypePermission(false);
+            chatMetadataEntity.setManager(manager);
+            chatMetadataEntity.setUser(author);
+            chatMetadataEntity.setChat(chat);
+            chatMetadataRepository.save(chatMetadataEntity);
+        }
+
+        return chat;
     }
 
     @Transactional

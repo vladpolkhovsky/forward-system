@@ -10,23 +10,27 @@
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container mt-3">
     <div class="row">
+        <div class="mt-1 grid nav nav-underline" style="height: 40px">
+            <a href="/messenger?tab=new-orders"
+               class="text-wrap text-decoration-none align-content-around nav-item g-col-4">
+                <div id="new-orders-tab" class="nav-link">
+                    Общее <strong><span id="new-orders-count" class="fs-5"></span></strong>
+                </div>
+            </a>
+            <a href="/messenger?tab=admin"
+               class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4">
+                <div id="admin-tab" class="nav-link">
+                    Администрация <strong><span id="admin-count" class="fs-5"></span></strong>
+                </div>
+            </a>
+            <a  href="/messenger?tab=orders"
+                class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4">
+                <div id="orders-tab" class="nav-link">
+                    Заказы в работе <strong><span id="orders-count" class="fs-5"></span></strong>
+                </div>
+            </a>
+        </div>
         <div class="col-5">
-            <div class="d-flex justify-content-between mt-1" style="height: 40px">
-                <a id="new-orders-tab" href="/messenger?tab=new-orders"
-                   class="badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Новые
-                    заказы
-                    <strong><span id="new-orders-count" class="fs-5"></span></strong>
-                </a>
-                <a id="admin-tab" href="/messenger?tab=admin"
-                   class="ms-1 badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Администрация
-                    <strong><span id="admin-count" class="fs-5"></span></strong>
-                </a>
-                <a id="orders-tab" href="/messenger?tab=orders"
-                   class="ms-1 badge text-bg-primary text-wrap text-decoration-none text-white align-content-around">Заказы
-                    в работе
-                    <strong><span id="orders-count" class="fs-5"></span></strong>
-                </a>
-            </div>
             <div class="row mt-2">
                 <input id="search" type="text" placeholder="Поиск чата">
             </div>
@@ -41,6 +45,7 @@
                     <!--                </li>-->
                 </ul>
             </div>
+            <a href="/messenger-all-viewed">Отметить все как прочитанные</a>
         </div>
         <div class="col-7">
             <h5><strong id="chat-header">Название чата</strong></h5>
@@ -54,9 +59,19 @@
                 </div>
                 <div class="row">
                     <div class="col-5">
-                        <strong>Срок сдачи: </strong><span id="orderDeadline">02.08.2024</span>
+                        <strong>Срок сдачи (СД): </strong><span id="orderDeadline">02.08.2024</span>
                     </div>
+                    <div class="col-5">
+                        <strong>Промежуточный СД: </strong><span id="orderIntermediateDeadline">02.08.2024</span>
+                    </div>
+                </div>
+                <div class="row">
                     <div class="col-7">
+                        <strong>Дополнительные этапы сдачи:</strong>
+                        <ul id="add-dates" class="list-group">
+                        </ul>
+                    </div>
+                    <div class="col-5 mt-3">
                         <a id="orderLink" href="">Просмотреть детали заказа</a>
                     </div>
                 </div>
@@ -75,7 +90,7 @@
                         <input id="msg-file" type="file" class="form-control mt-2">
                     </div>
                     <div class="row mt-1">
-                        <button type="button" class="btn btn-primary" onclick="sendMessage()">Отправить</button>
+                        <button id="sendButton" type="button" class="btn btn-primary" onclick="sendMessage()">Отправить</button>
                     </div>
                 </div>
             </div>
@@ -85,6 +100,7 @@
 
 <script th:inline="javascript">
     const textArea = document.getElementById("msg-text-area");
+    const sendButton = document.getElementById("sendButton");
     const file = document.getElementById("msg-file");
     const messageBox = document.getElementById("chat-messages");
     const chatHeader = document.getElementById("chat-header");
@@ -93,9 +109,11 @@
     const orderName = document.getElementById("orderName");
     const orderTechNumber = document.getElementById("orderTechNumber");
     const orderStatus = document.getElementById("orderStatus");
+    const orderIntermediateDeadline = document.getElementById("orderIntermediateDeadline");
     const orderDeadline = document.getElementById("orderDeadline");
     const orderLink = document.getElementById("orderLink");
     const searchBar = document.getElementById("search");
+    const addDates = document.getElementById("add-dates");
 
     const newOrdersTabCount = document.getElementById("new-orders-count");
     const adminTabCount = document.getElementById("admin-count");
@@ -103,6 +121,7 @@
 
     const userId = [[${userId}]];
     const isAdmin = [[${isAdmin}]];
+    const isOwner = [[${isOwner}]];
 
     const stompClient = new StompJs.Client({
         brokerURL: '/ws'
@@ -121,7 +140,7 @@
     }
 
     function updateTabColor() {
-        document.getElementById(`${getURLParam("tab")}-tab`).classList.add("text-bg-success");
+        document.getElementById(`${getURLParam("tab")}-tab`).classList.add("active");
     }
 
     updateTabColor();
@@ -156,7 +175,7 @@
 
     function drawDateWide(dateArray) {
         let format = (k) => (k < 10 ? "0" : "") + k;
-        return `${format(dateArray[2])}-${format(dateArray[1])}-${dateArray[0]}`
+        return `${format(dateArray[2])}-${format(dateArray[1])}-${dateArray[0]} ${format(dateArray[3])}:${format(dateArray[4])}`
     }
 
     function drawOrderInfo(chatId) {
@@ -167,9 +186,25 @@
 
         let intermediateDeadline = orderTable[chatTable[chatId].orderId].intermediateDeadline;
         if (intermediateDeadline != null) {
-            orderDeadline.innerText = drawDateWide(intermediateDeadline);
+            orderIntermediateDeadline.innerText = drawDateWide(intermediateDeadline);
+        } else {
+            orderIntermediateDeadline.innerText = "Не назначен";
+        }
+
+        let deadline = orderTable[chatTable[chatId].orderId].deadline;
+        if (deadline != null) {
+            orderDeadline.innerText = drawDateWide(deadline);
         } else {
             orderDeadline.innerText = "Не назначен";
+        }
+
+        let addDatesJson = orderTable[chatTable[chatId].orderId].additionalDates;
+        if (addDatesJson !== "") {
+            addDates.innerHTML = "";
+            let datesJson = JSON.parse(addDatesJson);
+            for (let date of datesJson) {
+                addDates.innerHTML = addDates.innerHTML + `<li class="list-group-item">${date.text} : ${date.time.replace('T', ' ')}</li>`
+            }
         }
 
         orderLink.setAttribute("href", `/order-info/${chatTable[chatId].orderId}`);
@@ -180,6 +215,16 @@
         chatNewMessages[chatId] = 0;
         chatHeader.innerText = chatTable[chatId].chatName;
         messageBox.innerHTML = '';
+
+        textArea.removeAttribute("disabled");
+        sendButton.removeAttribute("disabled");
+        file.removeAttribute("disabled");
+
+        if (chatTable[chatId].onlyOwnerChat && !isOwner) {
+            textArea.setAttribute("disabled", null);
+            sendButton.setAttribute("disabled", null);
+            file.setAttribute("disabled", null);
+        }
 
         if (chatTable[chatId].orderId !== null) {
             drawOrderInfo(chatId);
@@ -194,6 +239,8 @@
         }
 
         sendMessageViewed();
+
+        textArea.focus();
     }
 
     function drawNewChatInList(chatJson) {
@@ -369,7 +416,7 @@
     }
 
     function getTabByChatType(chatType) {
-        if (chatType === 'REQUEST_ORDER_CHAT') {
+        if (chatType === 'REQUEST_ORDER_CHAT' || chatType === "OTHER_CHAT") {
             return "new-orders";
         }
         if (chatType === 'ADMIN_TALK_CHAT') {
@@ -382,7 +429,7 @@
 
     function shouldShowInThisTab(tabName, chatType) {
         if (tabName === 'new-orders') {
-            return chatType === 'REQUEST_ORDER_CHAT';
+            return chatType === 'REQUEST_ORDER_CHAT' || chatType === 'OTHER_CHAT';
         }
         if (tabName === 'admin') {
             return chatType === 'ADMIN_TALK_CHAT'
@@ -550,6 +597,8 @@
             context.fileName = null;
             context.fileAttachmentId = null;
         }
+
+        textArea.focus();
     }
 
 

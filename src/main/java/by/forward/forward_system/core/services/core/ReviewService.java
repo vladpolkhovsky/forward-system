@@ -32,12 +32,12 @@ public class ReviewService {
     private final ChatRepository chatRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
 
-    public void saveNewReviewRequest(Long orderId, Long attachmentId, String messageText) {
+    public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText) {
         ReviewEntity reviewEntity = new ReviewEntity();
 
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
-        reviewEntity.setReviewedBy(getOrderExpert(orderId));
+        reviewEntity.setReviewedBy(userRepository.findById(expertId).orElseThrow(() -> new RuntimeException("Expert not found")));
 
         reviewEntity.setIsReviewed(false);
         reviewEntity.setIsAccepted(false);
@@ -48,17 +48,13 @@ public class ReviewService {
         reviewRepository.save(reviewEntity);
     }
 
-    public void updateReviewRequest(Long orderId, Long reviewId, Long attachmentId, String messageText) {
+    public void updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
-        reviewEntity.setReviewedBy(getOrderExpert(orderId));
+        reviewEntity.setReviewedBy(userRepository.findById(expertId).orElseThrow(() -> new RuntimeException("Expert not found")));
         reviewEntity.setReviewMessage(messageText);
         reviewRepository.save(reviewEntity);
-    }
-
-    public UserEntity getOrderExpert(Long orderId) {
-        return orderService.findExpert(orderId);
     }
 
     public ReviewEntity toEntity(ReviewDto reviewDto) {

@@ -37,7 +37,7 @@ public class UserService {
     public UserEntity save(UserEntity user) {
         user.setCreatedAt(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+        return userRepository.saveAndFlush(user);
     }
 
     public UserEntity update(Long id, UserEntity user) {

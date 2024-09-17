@@ -42,6 +42,7 @@ public class OrderActionMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Посмотреть ответы экспертов", "/review-order-answers", true, reviewService.getNotAcceptedCount()),
             new MenuEntry.MenuItem("Изменить статус заказа", "/change-order-status", true, orderService.countFinalStatusOrders()),
             new MenuEntry.MenuItem("Добавить автора в заказ", "/add-author-to-order", false, null),
+            new MenuEntry.MenuItem("Удалить автора из заказа", "/del-author-from-order", false, null),
             new MenuEntry.MenuItem("Изменение долей в заказе", "/change-fee-in-order", false, null)
         );
         return new MenuEntry("Заказы", list, 5);

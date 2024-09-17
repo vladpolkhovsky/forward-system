@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +28,9 @@ public class ChatEntity {
 
     @Column(name = "last_message_date", nullable = false)
     private LocalDateTime lastMessageDate;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "chat")
+    private ChatMetadataEntity chatMetadata;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "type", nullable = false)

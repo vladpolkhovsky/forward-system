@@ -81,6 +81,12 @@ public class UserUiService {
         return byUsername.get().getAuthorities().contains(Authority.ADMIN);
     }
 
+    public Boolean isCurrentUserOwner() {
+        UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+        Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
+        return byUsername.get().getAuthorities().contains(Authority.OWNER);
+    }
+
     public List<UserUiDto> getAllUsers() {
         return userService.getAllUsers().stream()
             .map(this::toDto)
@@ -105,13 +111,27 @@ public class UserUiService {
             chatUtilsService.createNewOrderChats(save.getId());
         }
 
+        chatUtilsService.addToNewsChat(save.getId());
+
         return toDto(save);
     }
 
     public UserUiDto updateUser(Long id, UserUiDto userUiDto) {
         UserEntity user = toEntity(userUiDto);
         UserEntity save = userService.update(id, user);
-        return toDto(save);
+        UserUiDto dto = toDto(save);
+
+        if (dto.getIsAdmin()) {
+            chatUtilsService.addAdminToAllChats(save.getId());
+        }
+
+        if (userUiDto.getIsManager()) {
+            chatUtilsService.createNewOrderChats(save.getId());
+        }
+
+        chatUtilsService.addToNewsChat(save.getId());
+
+        return dto;
     }
 
     public List<UserUiDto> findOnlyRole(Authority authority) {

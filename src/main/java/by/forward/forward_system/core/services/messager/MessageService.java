@@ -1,15 +1,15 @@
 package by.forward.forward_system.core.services.messager;
 
-import by.forward.forward_system.core.dto.messenger.*;
-import by.forward.forward_system.core.dto.websocket.WSChatMessage;
+import by.forward.forward_system.core.dto.messenger.MessageAttachmentDto;
+import by.forward.forward_system.core.dto.messenger.MessageDto;
+import by.forward.forward_system.core.dto.messenger.MessageOptionDto;
+import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
-import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
-import by.forward.forward_system.core.services.ui.UserUiService;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,6 +27,7 @@ public class MessageService {
     private final UserRepository userRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
 
+    @Transactional
     public ChatMessageEntity sendMessage(UserEntity fromUserEntity,
                                          ChatEntity chatEntity,
                                          String message,

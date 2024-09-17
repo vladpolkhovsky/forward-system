@@ -26,7 +26,7 @@ public class AdminMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Подтвердить заказы на расмотрении", "/order-review", true, updateRequestOrderService.countUpdateRequests())
+            new MenuEntry.MenuItem("Подтвердить заказы на рассмотрении", "/order-review", true, updateRequestOrderService.countUpdateRequests())
         );
         return new MenuEntry("Админ", list, 1);
     }

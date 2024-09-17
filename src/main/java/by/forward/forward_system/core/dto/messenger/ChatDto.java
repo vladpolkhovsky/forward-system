@@ -14,6 +14,7 @@ public class ChatDto {
     private Long orderId;
     private String chatType;
     private String chatTypeRus;
+    private Boolean onlyOwnerChat;
     private LocalDateTime lastMessageTime;
     private List<MessageDto> messages;
     private List<ChatMemberDto> chatMembers;

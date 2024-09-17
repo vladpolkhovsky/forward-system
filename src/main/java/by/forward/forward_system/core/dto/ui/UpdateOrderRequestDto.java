@@ -19,7 +19,6 @@ public class UpdateOrderRequestDto {
     private List<Long> catchers;
     private List<Long> hosts;
     private List<Long> authors;
-    private List<Long> experts;
     private Boolean isViewed;
     private Boolean isAccepted;
     private LocalDateTime createdAt;

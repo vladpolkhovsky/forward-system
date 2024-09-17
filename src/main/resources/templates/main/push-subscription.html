@@ -108,7 +108,7 @@
             applicationServerKey: window.applicationServerKey
         });
         httpRequest("POST", `/api/push/subscribe`, JSON.stringify({
-            notificationId: parseInt(getCookie("notificationId")),
+            notificationId: parseInt(getCookie("notification_id")),
             subscription: pushSubscription
         }), (resp) => {
             subscriptionStatusText.innerHTML = `<strong class="badge rounded-pill text-bg-success" >Подписан</strong>`;

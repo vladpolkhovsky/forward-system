@@ -48,17 +48,6 @@
                 </li>
             </ul>
         </div>
-        <p class="mt-3">Укажите Эксперта</p>
-        <div class="col-12">
-            <ul class="list-group">
-                <li class="list-group-item" th:each="expert, expertStat : ${experts}">
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" th:id="|expert-| + ${expert.getId()}" th:checked="${expert.getChecked()}" th:value="${expert.getId()}" name="expert">
-                        <label class="form-check-label" th:for="|expert-| + ${expert.getId()}" th:text="${expert.getFio()} + | (| + ${expert.getUsername()} + |)|"></label>
-                    </div>
-                </li>
-            </ul>
-        </div>
         <input class="form-control btn btn-primary mt-3" type="submit" value="Отправить на утверждение Администратора">
     </form>
 </div>

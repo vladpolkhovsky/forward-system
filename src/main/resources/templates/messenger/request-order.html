@@ -26,7 +26,8 @@
     <div class="row mb-3 mt-3">
         <label for="techNumber" class="col-sm-2 col-form-label">Номер ТЗ</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="techNumber" th:value="${order.getTechNumber()}">
+            <input type="text" readonly class="form-control-plaintext" id="techNumber"
+                   th:value="${order.getTechNumber()}">
         </div>
     </div>
     <div class="row mb-3 mt-3">
@@ -79,7 +80,8 @@
         <p class="col-sm-2 col-form-label">Файлы заказа:</p>
         <div class="col-sm-10">
             <div class="row mb-3" th:each="d : ${order.getAttachments()}">
-                <a target="_blank" th:href="|/load-file/| + ${d.getAttachmentId()}" th:text="${d.getAttachmentName()}"></a>
+                <a target="_blank" th:href="|/load-file/| + ${d.getAttachmentId()}"
+                   th:text="${d.getAttachmentName()}"></a>
             </div>
         </div>
     </div>
@@ -94,33 +96,11 @@
         <label for="authorCost" class="col-sm-2 col-form-label">Стоимость для автора</label>
         <div class="col-sm-10">
             <input readonly type="number" class="form-control-plaintext" id="authorCost"
-                      th:value="${order.getAuthorCost()}">
+                   th:value="${order.getAuthorCost()}">
         </div>
     </div>
-    <hr/>
-    <div class="row" th:if="${!orderClosed}">
-        <div class="col-5">
-            <div class="row">
-                <a class="btn btn-primary" th:href="|/accept-request/| + ${order.getId()}">Приступить к обсуждению</a>
-            </div>
-        </div>
-        <div class="col-2"></div>
-        <div class="col-5">
-            <form th:action="|/decline-request/|+${order.getId()}" th:object="${decline}" method="POST">
-                <p>Укажите причину, чтобы отказаться.</p>
-                <div class="row mt-3">
-                    <textarea id="decline-text" th:field="*{declineText}"></textarea>
-                </div>
-                <div class="row mt-3">
-                    <button type="submit" disabled class="btn btn-danger" id="decline-btn">Отказаться</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    <script>
-        let declineText = document.getElementById("decline-text");
-        let declineBtn = document.getElementById("decline-btn")
 
+    <script>
         let additionalDateDiv = document.getElementById(`additionalDatesDiv`);
         let additionalDate = document.getElementById(`additionalDates`);
         let additionalDateCount = 0;
@@ -134,10 +114,10 @@
             }
             div.innerHTML =
                 `<div class="col-6">
-                    <input readonly id="additional-date-text-${id}" type="text" class="form-control-plaintext" placeholder="Что сделать">
+                    <input readonly id="additional-date-text-${id}" type="text" class="form-control" placeholder="Что сделать">
                 </div>
                 <div class="col-6">
-                    <input readonly id="additional-date-time-${id}" type="datetime-local" class="form-control-plaintext">
+                    <input readonly id="additional-date-time-${id}" type="datetime-local" class="form-control">
                 </div>`
             additionalDateDiv.append(div);
         }
@@ -159,14 +139,6 @@
         }
 
         loadAdditionalDates();
-
-        declineText.addEventListener('change', ev => {
-            if (ev.target.value.length !== 0) {
-                declineBtn.removeAttribute("disabled");
-            } else {
-                declineBtn.setAttribute("disabled", "");
-            }
-        })
     </script>
 </div>
 </body>
