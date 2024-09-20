@@ -9,4 +9,7 @@ public class ChatNames {
 
     public static final String NEW_ORDER_CHAT_NAME = "НОВЫЕ ЗАКАЗЫ для %s от %s";
     public static final String ADMINISTRATION_CHAT_NAME = "Чат с Администрацией %s";
+
+    public static final Long NEWS_CHAT_ID = 0L;
+    public static final Long ERRORS_CHAT_ID = -1L;
 }

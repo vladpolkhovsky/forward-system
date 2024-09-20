@@ -93,6 +93,11 @@ public class BanService {
         return toDto(securityBlockEntity);
     }
 
+    public BanProjectionDto getBannedByUserId(Long userId) {
+        SecurityBlockEntity securityBlockEntity = securityBlockRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("SpamBlockEntity not found"));
+        return toDto(securityBlockEntity);
+    }
+
     public BanProjectionDto toDto(SecurityBlockEntity securityBlockEntity) {
         UserDto user = userService.getConverted(securityBlockEntity.getUser().getId());
 

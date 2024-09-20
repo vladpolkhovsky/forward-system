@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.services.ui;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
-import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.enums.OrderStatus;
@@ -11,15 +10,17 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
-import by.forward.forward_system.core.services.core.AuthorService;
-import by.forward.forward_system.core.services.core.OrderService;
-import by.forward.forward_system.core.services.core.UserService;
+import by.forward.forward_system.core.services.core.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.*;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -37,7 +38,14 @@ public class OrderUiService {
     private final UserUiService userUiService;
 
     private final UserRepository userRepository;
+
     private final DisciplineRepository disciplineRepository;
+
+    private final BanService banService;
+
+    private AIDetector aiDetector;
+
+    private final static ObjectMapper MAPPER = new ObjectMapper();
 
     public OrderUiDto getOrder(Long id) {
         Optional<OrderEntity> byId = orderService.getById(id);
@@ -145,7 +153,7 @@ public class OrderUiService {
             .collect(Collectors.toSet());
 
         return allAuthors.stream()
-            .sorted(Comparator.comparing(t -> calcOrder((AuthorEntity) t, order)).thenComparing(o -> ((AuthorEntity)o).getUser().getUsername()))
+            .sorted(Comparator.comparing(t -> calcOrder((AuthorEntity) t, order)).thenComparing(o -> ((AuthorEntity) o).getUser().getUsername()))
             .map(t -> new UserSelectionWithGradeDto(t.getId(), t.getUser().getFio(), t.getUser().getUsername(), authorIds.contains(t.getUser().getId()), calcBgColor(order, t)))
             .toList();
     }
@@ -328,6 +336,7 @@ public class OrderUiService {
         orderEntity.setTakingCost(orderUiDto.getTakingCost());
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
         orderEntity.setCreatedAt(orderUiDto.getCreatedAt());
+
         return orderEntity;
     }
 
@@ -365,5 +374,51 @@ public class OrderUiService {
         return (int) order.getParticipants().stream()
             .filter(t -> t.getParticipantsType().equals(ParticipantType.MAIN_AUTHOR.getName()))
             .count();
+    }
+
+    @SneakyThrows
+    public boolean checkOrderByAi(OrderUiDto orderInfo) {
+        UserShortUiDto currentUser = userUiService.getCurrentUser();
+
+        String orderText = getOrderData(orderInfo);
+        AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(orderText, currentUser.getUsername());
+
+        if (!checkResult.isOk()) {
+            return !banService.ban(currentUser.getId(), """
+                Создание/обновление заказа с указанием данных, котоые не прошли проверку.
+                Данные заказа:
+                %s
+                Лог проверки <a href="/ai-log/%d" target="_blank">Лог проверки</a>
+                """.formatted(orderText, checkResult.aiLogId()));
+        }
+
+        return true;
+    }
+
+    private String getOrderData(OrderUiDto orderUiDto) {
+        List<String> data = new ArrayList<>();
+
+        data.add("Название: " + orderUiDto.getName());
+        data.add("Номер ТЗ: " + orderUiDto.getTechNumber());
+        data.add("Тип работы: " + orderUiDto.getWorkType());
+        data.add("Дисциплина: " + orderUiDto.getDiscipline());
+        data.add("Предмет: " + orderUiDto.getSubject());
+        data.add("Оригинальность: " + orderUiDto.getOriginality().toString());
+        data.add("Система проверки: " + orderUiDto.getVerificationSystem());
+        data.add("Промежуточный срок сдачи: " + dateToString(orderUiDto.getIntermediateDeadline()));
+        data.add("Окончательный срок сдачи: " + dateToString(orderUiDto.getDeadline()));
+        data.add("Доп. информация: " + orderUiDto.getVerificationSystem());
+        data.add("Цена: " + orderUiDto.getAuthorCost().toString());
+        data.add("Дополнительные этапы сдачи: " + orderUiDto.getAdditionalDates());
+
+        return String.join("\n", data);
+    }
+
+    private String dateToString(LocalDateTime localDateTime) {
+        if (localDateTime == null) {
+            return "не указано";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return localDateTime.format(formatter);
     }
 }

@@ -23,10 +23,12 @@ public class BanFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        if (((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/logout")) {
+        if (((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/logout") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ban")) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }
+
         try {
             HttpServletRequest request = (HttpServletRequest) servletRequest;
             HttpSession session = request.getSession(false);
@@ -37,10 +39,11 @@ public class BanFilter implements Filter {
                 Optional<UserEntity> byUsername = userRepository.findByUsername(cud.getUsername());
                 if (byUsername.isPresent() && byUsername.get().getAuthorities().contains(Authority.BANNED)) {
                     HttpServletResponse response = (HttpServletResponse) servletResponse;
-                    response.sendRedirect("/logout");
+                    response.sendRedirect("/ban");
                 }
             }
         } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
 
         filterChain.doFilter(servletRequest, servletResponse);

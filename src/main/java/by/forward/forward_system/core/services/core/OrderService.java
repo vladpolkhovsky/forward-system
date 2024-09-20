@@ -46,6 +46,8 @@ public class OrderService {
     private final AttachmentService attachmentService;
     private final OrderAttachmentRepository orderAttachmentRepository;
     private final UserUiService userUiService;
+    private final AIDetector aiDetector;
+    private final BanService banService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -505,9 +507,11 @@ public class OrderService {
     public void checkOrderAccessEdit(Long orderId, Long currentUserId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+
         if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
             return;
         }
+
         if (orderEntity.getCreatedBy().getId().equals(userEntity.getId())) {
             return;
         }
@@ -527,9 +531,11 @@ public class OrderService {
     public void checkOrderAccessView(Long orderId, Long currentUserId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
+
         if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
             return;
         }
+
         if (orderEntity.getCreatedBy().getId().equals(userEntity.getId())) {
             return;
         }
@@ -550,13 +556,44 @@ public class OrderService {
     }
 
     @SneakyThrows
-    public void saveOrderFile(Long id, MultipartFile file) {
+    public boolean saveOrderFile(Long id, MultipartFile[] file) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
-        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());
-        OrderAttachmentEntity orderAttachmentEntity = new OrderAttachmentEntity();
-        orderAttachmentEntity.setOrder(orderEntity);
-        orderAttachmentEntity.setAttachment(attachmentEntity);
-        orderAttachmentRepository.save(orderAttachmentEntity);
+
+
+        List<AttachmentEntity> attachmentEntities = new ArrayList<>();
+        for (MultipartFile multipartFile : file) {
+            AttachmentEntity attachmentEntity = attachmentService.saveAttachment(multipartFile.getOriginalFilename(), multipartFile.getBytes());
+            attachmentEntities.add(attachmentEntity);
+        }
+
+        boolean iaApproved = true;
+        List<Long> logIds = new ArrayList<>();
+        for (AttachmentEntity attachmentEntity : attachmentEntities) {
+            AIDetector.AICheckResult checkResult = aiDetector.isValidFile(userUiService.getCurrentUser().getUsername(), attachmentEntity.getId());
+            if (!checkResult.isOk()) {
+                logIds.add(checkResult.aiLogId());
+            }
+            iaApproved &= checkResult.isOk();
+        }
+
+        if (!iaApproved) {
+            String aiLog = logIds.stream().map(t -> "<a href=\"/ai-log/%d\" target=\"_blank\">Лог проверки</a>".formatted(t)).collect(Collectors.joining(" "));
+            String urls = attachmentEntities.stream().map(AttachmentEntity::getId).map(t -> "<a href=\"/load-file/%d\" target=\"_blank\">Файл</a>".formatted(t)).collect(Collectors.joining(" "));
+            boolean isBanned = banService.ban(userUiService.getCurrentUserId(), "Файлы, прикреплённые к заказу, содержат личную информацию: %s \nЛог проверки: %s".formatted(urls, aiLog));
+            if (isBanned) {
+                return false;
+            }
+        }
+
+        for (AttachmentEntity attachmentEntity : attachmentEntities) {
+            OrderAttachmentEntity orderAttachmentEntity = new OrderAttachmentEntity();
+            orderAttachmentEntity.setOrder(orderEntity);
+            orderAttachmentEntity.setAttachment(attachmentEntity);
+
+            orderAttachmentRepository.save(orderAttachmentEntity);
+        }
+
+        return true;
     }
 
     public List<OrderAttachmentDto> getOrderAttachments(Long id) {

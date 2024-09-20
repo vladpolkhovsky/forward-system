@@ -127,9 +127,9 @@ create table if not exists forward_system.chats
 
 create table if not exists forward_system.chat_metadata
 (
-    id bigint primary key references forward_system.chats(id),
-    user_id bigint references forward_system.users(id),
-    manager_id bigint references forward_system.users(id),
+    id                    bigint primary key references forward_system.chats (id),
+    user_id               bigint references forward_system.users (id),
+    manager_id            bigint references forward_system.users (id),
     owner_type_permission boolean
 );
 
@@ -140,8 +140,8 @@ create table if not exists forward_system.chat_members
     user_id bigint not null references forward_system.users (id)
 );
 
-create index if not exists chat_member_chat_id_index on forward_system.chat_members(chat_id);
-create index if not exists chat_member_user_id_index on forward_system.chat_members(user_id);
+create index if not exists chat_member_chat_id_index on forward_system.chat_members (chat_id);
+create index if not exists chat_member_user_id_index on forward_system.chat_members (user_id);
 
 create table if not exists forward_system.chat_message_types
 (
@@ -160,8 +160,8 @@ create table if not exists forward_system.chat_messages
     content           varchar(65536)
 );
 
-create index if not exists chat_messages_chat_id_index on forward_system.chat_messages(chat_id);
-create index if not exists chat_messages_user_id_index on forward_system.chat_messages(from_user_id);
+create index if not exists chat_messages_chat_id_index on forward_system.chat_messages (chat_id);
+create index if not exists chat_messages_user_id_index on forward_system.chat_messages (from_user_id);
 
 create table if not exists forward_system.chat_message_options
 (
@@ -183,9 +183,9 @@ create table if not exists forward_system.chat_message_to_user
     is_viewed  boolean   not null
 );
 
-create index if not exists chat_message_to_user_chat_id_index on forward_system.chat_message_to_user(chat_id);
-create index if not exists chat_message_to_user_message_id_index on forward_system.chat_message_to_user(message_id);
-create index if not exists chat_message_to_user_user_id_index on forward_system.chat_message_to_user(user_id);
+create index if not exists chat_message_to_user_chat_id_index on forward_system.chat_message_to_user (chat_id);
+create index if not exists chat_message_to_user_message_id_index on forward_system.chat_message_to_user (message_id);
+create index if not exists chat_message_to_user_user_id_index on forward_system.chat_message_to_user (user_id);
 
 create table if not exists forward_system.chat_message_attachments
 (
@@ -228,6 +228,16 @@ create table if not exists forward_system.notification_data
     subscription_data varchar(8192) not null
 );
 
+create table if not exists forward_system.ai_integration
+(
+    id            bigint primary key,
+    request_json  varchar(65536),
+    file_id       bigint references forward_system.attachments,
+    response_json varchar(65536),
+    error_text    varchar(65536),
+    created_at    timestamp not null
+);
+
 INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
                                   other, payment, password, created_at)
 VALUES (0, 'admin', 'Админ', 'Админов', 'Админович', 'OWNER,ADMIN,MANAGER,HR', '+888888888', '+888888888',
@@ -262,11 +272,17 @@ values ('REQUEST_ORDER_CHAT'),
 INSERT INTO forward_system.chats(id, chat_name, order_id, type, last_message_date)
 values (0, 'Новости', null, 'ADMIN_TALK_CHAT', now());
 
+INSERT INTO forward_system.chats(id, chat_name, order_id, type, last_message_date)
+values (-1, 'Ошибки сервиса', null, 'OTHER_CHAT', now());
+
 INSERT INTO forward_system.chat_metadata(id, user_id, manager_id, owner_type_permission)
 values (0, null, null, true);
 
+INSERT INTO forward_system.chat_metadata(id, user_id, manager_id, owner_type_permission)
+values (-1, null, null, true);
+
 insert into forward_system.chat_members(id, chat_id, user_id)
-values (0, 0, 0);
+values (0, 0, 0), (-1, -1, 0);
 
 insert into forward_system.chat_message_types
 values ('NEW_ORDER'),

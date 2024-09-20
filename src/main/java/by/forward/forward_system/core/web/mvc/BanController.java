@@ -89,4 +89,11 @@ public class BanController {
 
         return new RedirectView("/main");
     }
+
+    @GetMapping(value = "/ban")
+    private String ban(Model model) {
+        BanProjectionDto bannedByUserId = banService.getBannedByUserId(userUiService.getCurrentUserId());
+        model.addAttribute("ban", bannedByUserId);
+        return "main/ban-info";
+    }
 }

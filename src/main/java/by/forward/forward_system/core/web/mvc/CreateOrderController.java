@@ -33,10 +33,13 @@ public class CreateOrderController {
     private final OrderService orderService;
 
     private final UpdateRequestOrderService updateRequestOrderService;
+
     private final DisciplineService disciplineService;
 
     @GetMapping("/create-order")
     public String createOrder(Model model) {
+        userUiService.checkAccessManager();
+
         model.addAttribute("menuName", "Создать заказ");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("order", new OrderUiDto());
@@ -49,6 +52,14 @@ public class CreateOrderController {
 
     @PostMapping(value = "/create-order", consumes = MediaType.ALL_VALUE)
     public RedirectView createOrder(@ModelAttribute("order") OrderUiDto order, Model model) {
+        userUiService.checkAccessManager();
+
+        boolean isValidData = orderUiService.checkOrderByAi(order);
+
+        if (!isValidData) {
+            return new RedirectView("/ban");
+        }
+
         order = orderUiService.createOrder(order);
 
         return new RedirectView("/files-order/" + order.getId());
@@ -56,6 +67,8 @@ public class CreateOrderController {
 
     @GetMapping("/update-order")
     public String updateOrder(Model model) {
+        userUiService.checkAccessManager();
+
         List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
             OrderStatus.CREATED.getName(),
             OrderStatus.DISTRIBUTION.getName()
@@ -85,6 +98,12 @@ public class CreateOrderController {
     @PostMapping(value = "/update-order/{id}", consumes = MediaType.ALL_VALUE)
     public RedirectView updateOrder(@PathVariable Long id, @ModelAttribute("order") OrderUiDto order, Model model) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
+
+        boolean isValidData = orderUiService.checkOrderByAi(order);
+
+        if (!isValidData) {
+            return new RedirectView("/ban");
+        }
 
         order = orderUiService.updateOrder(id, order);
 
@@ -121,7 +140,7 @@ public class CreateOrderController {
     }
 
     @PostMapping("/order-file-delete/{id}/{attId}")
-    public RedirectView saveOrderFile(@PathVariable Long id, @PathVariable Long attId) {
+    public RedirectView orderFileDelete(@PathVariable Long id, @PathVariable Long attId) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
         orderService.removeOrderFile(id, attId);
@@ -133,9 +152,7 @@ public class CreateOrderController {
     public String saveOrderFile(@PathVariable Long id, @RequestParam("file") MultipartFile[] file, Model model) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
-        for (MultipartFile multipartFile : file) {
-            orderService.saveOrderFile(id, multipartFile);
-        }
+        orderService.saveOrderFile(id, file);
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Файлы для заказа");
@@ -364,6 +381,8 @@ public class CreateOrderController {
 
     @GetMapping(value = "change-order-status")
     public String changeOrderStatusSelector(Model model) {
+        userUiService.checkAccessManager();
+
         List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),

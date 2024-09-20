@@ -127,7 +127,7 @@ public class ReviewService {
 
     private List<ReviewProjectionDto> getReviewProjectionDtos(List<ReviewEntity> all) {
         return all.stream()
-            .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
+            .sorted(Comparator.comparing(ReviewEntity::getReviewDate).reversed())
             .map(t -> {
                 ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
                 reviewProjectionDto.setReviewId(t.getId());

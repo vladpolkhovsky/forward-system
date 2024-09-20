@@ -32,8 +32,8 @@ public class ChatUtilsService {
     private final ChatMetadataRepository chatMetadataRepository;
 
     public void addToNewsChat(Long userId) {
-        if (!chatService.isMember(0L, userId)) {
-            chatService.addUserToChats(List.of(0L), userId);
+        if (!chatService.isMember(ChatNames.NEWS_CHAT_ID, userId)) {
+            chatService.addUserToChats(List.of(ChatNames.NEWS_CHAT_ID), userId);
         }
     }
 

@@ -15,10 +15,39 @@
 </div>
 <div class="container">
     <div class="row">
-        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + |(| + ${ban.getUser().getUsername()} + |) (| + ${ban.getUser().getRolesRus()} + |): |"></p>
-        <p class="mt-3 mb-3" th:text="|Причина блокировки: | + ${ban.getReason()}"></p>
-        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|" class="btn btn-danger mt-3">Заблокировать</a>
+        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getUsername()} + |) (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+        <pre class="mt-3 mb-3" th:utext="|Причина блокировки: | + ${ban.getReason()}"></pre>
+        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|"
+           class="btn btn-danger mt-3">Заблокировать</a>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=false|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
+        <div class="col-12" th:if="${ban.getMessage()}">
+            <p th:text="|Сообщение за которое забанили пользовтаеля | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+            <ul class="list-group mb-3">
+                <li class="list-group-item align-items-start">
+                    <!--/*@thymesVar id="msg" type="by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto"*/-->
+                    <div>
+                        <p th:id="|msg-| + ${ban.getMessage().getId()}" th:hidden="${!ban.getMessage().getIsHidden()}"
+                           style="color: indianred">
+                            <strong>Удалено</strong></p>
+                    </div>
+                    <div>
+                        <pre th:text="${ban.getMessage().getContent()}" style="white-space: pre-wrap"></pre>
+                    </div>
+                    <div th:each="att : ${ban.getMessage().getAttachments()}">
+                        <a th:href="|/load-file/| + ${att.getAttachmentId()}" th:text="${att.getAttachmentName()}"></a>
+                    </div>
+                    <div>
+                        <p th:text="${#temporals.format(ban.getMessage().getCreatedAt(), 'dd.MM.yyyy HH:mm:ss')}"></p>
+                    </div>
+                    <div>
+                        <button class="btn btn-secondary"
+                                th:onclick="|delMessage(| + ${ban.getMessage().getId()} + |)|">Удалить
+                            сообщение
+                        </button>
+                    </div>
+                </li>
+            </ul>
+        </div>
         <p th:text="|Список сообщений пользователя | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <div class="col-12">
             <ul class="list-group">
@@ -26,7 +55,8 @@
                 <li class="list-group-item align-items-start"
                     th:each="msg : ${ban.getLastMessages()}">
                     <div>
-                        <p th:id="|msg-| + ${msg.getId()}" th:hidden="${!msg.getIsHidden()}" style="color: indianred"><strong>Удалено</strong></p>
+                        <p th:id="|msg-| + ${msg.getId()}" th:hidden="${!msg.getIsHidden()}" style="color: indianred">
+                            <strong>Удалено</strong></p>
                     </div>
                     <div>
                         <pre th:text="${msg.getContent()}" style="white-space: pre-wrap"></pre>
@@ -38,7 +68,9 @@
                         <p th:text="${#temporals.format(msg.getCreatedAt(), 'dd.MM.yyyy HH:mm:ss')}"></p>
                     </div>
                     <div>
-                        <button class="btn btn-secondary" th:onclick="|delMessage(| + ${msg.getId()} + |)|">Удалить сообщение</button>
+                        <button class="btn btn-secondary" th:onclick="|delMessage(| + ${msg.getId()} + |)|">Удалить
+                            сообщение
+                        </button>
                     </div>
                 </li>
             </ul>

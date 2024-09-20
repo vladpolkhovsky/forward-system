@@ -2,6 +2,7 @@ package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
+import by.forward.forward_system.core.services.core.AttachmentService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,6 +15,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -26,15 +28,15 @@ public class FilesController {
 
     private final AttachmentRepository attachmentRepository;
 
+    private final AttachmentService attachmentService;
+
     @GetMapping(value = "/load-file/{fileId}")
     @SneakyThrows
     public void loadFile(@PathVariable("fileId") Long fileId, HttpServletResponse httpServletResponse) {
-        AttachmentEntity attachmentEntity = attachmentRepository.findById(fileId).orElseThrow(() -> new RuntimeException("File not found"));
+        AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(fileId);
 
-        Resource resource = new FileSystemResource(Path.of(attachmentEntity.getFilepath()));
-
-        String mimeType = Files.probeContentType(resource.getFile().toPath());
-        String filename = resource.getFilename().substring(resource.getFilename().indexOf(' ') + 1);
+        String mimeType = Files.probeContentType(Path.of(attachmentFile.filepath()));
+        String filename = attachmentFile.filename().substring(attachmentFile.filename().indexOf(' ') + 1);
 
         ContentDisposition attachment = ContentDisposition.builder("attachment")
             .filename(filename, StandardCharsets.UTF_8)
@@ -43,11 +45,11 @@ public class FilesController {
         httpServletResponse.setContentType(mimeType);
         httpServletResponse.setHeader("Content-Disposition", attachment.toString());
 
-        InputStream inputStream = resource.getInputStream();
+        ByteArrayInputStream fileBytesStream = new ByteArrayInputStream(attachmentFile.content());
         OutputStream outputStream = httpServletResponse.getOutputStream();
 
-        StreamUtils.copy(inputStream, outputStream);
-        inputStream.close();
+        StreamUtils.copy(fileBytesStream, outputStream);
+        fileBytesStream.close();
         outputStream.close();
     }
 

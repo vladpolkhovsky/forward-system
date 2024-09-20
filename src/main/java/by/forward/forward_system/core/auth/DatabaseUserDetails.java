@@ -43,7 +43,7 @@ public class DatabaseUserDetails implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return !authorities.contains(Authority.BANNED);
+        return true;
     }
 
     @Override

@@ -30,6 +30,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
 	implementation("org.apache.commons:commons-lang3:3.12.0")
 	implementation("org.apache.commons:commons-collections4:4.4")

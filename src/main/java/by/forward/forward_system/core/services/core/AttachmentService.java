@@ -6,6 +6,8 @@ import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
@@ -22,10 +24,12 @@ public class AttachmentService {
 
     public List<Long> getAttachment(List<WSAttachment> wsAttachment) {
         List<AttachmentEntity> attachmentEntities = new ArrayList<>();
+
         for (WSAttachment attachment : wsAttachment) {
             AttachmentEntity attachmentEntity = attachmentRepository.findById(attachment.getFileAttachmentId()).orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachment.getFileAttachmentId()));
             attachmentEntities.add(attachmentEntity);
         }
+
         return attachmentEntities.stream()
             .map(AttachmentEntity::getId)
             .toList();
@@ -68,4 +72,16 @@ public class AttachmentService {
         return filePath.toString();
     }
 
+    @SneakyThrows
+    public AttachmentFile loadAttachment(Long attachmentId) {
+        AttachmentEntity attachmentEntity = attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
+        Resource resource = new FileSystemResource(Path.of(attachmentEntity.getFilepath()));
+        return new AttachmentFile(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), resource.getContentAsByteArray());
+    }
+
+    public record AttachmentFile(String filename,
+                                 String filepath,
+                                 byte[] content) {
+
+    }
 }

@@ -26,5 +26,8 @@ vapid:
   private:
     key: ${VAPID_PRIVATE_KEY}
 
+ai:
+  url: ${AI_URL}
+
 server:
   port: 8081
