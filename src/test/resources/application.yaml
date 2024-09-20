@@ -15,5 +15,8 @@ vapid:
   private:
     key: 8sJ_vTLgtE9aMDJLH3HRO7yIriJ_L8fezN8fE-ZvV1g
 
+ai:
+  url: ${AI_URL:http://localhost:8001}
+
 server:
   port: 8081
