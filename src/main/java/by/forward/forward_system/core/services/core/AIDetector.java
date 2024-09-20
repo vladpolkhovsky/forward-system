@@ -17,6 +17,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
@@ -60,6 +61,7 @@ public class AIDetector {
             .build();
     }
 
+    @Transactional
     public AICheckResult isValidMessage(String message, String username) {
         MessageCheckRequest messageCheckRequest = new MessageCheckRequest(username, message);
 
@@ -73,6 +75,7 @@ public class AIDetector {
         return new AICheckResult(true, 0);
     }
 
+    @Transactional
     public AICheckResult isValidFile(String username, Long attachmentId) {
         AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(attachmentId);
 
