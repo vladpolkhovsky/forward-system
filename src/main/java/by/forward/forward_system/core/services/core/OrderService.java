@@ -48,6 +48,7 @@ public class OrderService {
     private final UserUiService userUiService;
     private final AIDetector aiDetector;
     private final BanService banService;
+    private final UserService userService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -414,9 +415,14 @@ public class OrderService {
             .map(OrderParticipantEntity::getUser)
             .toList();
 
+        ArrayList<UserEntity> withAdmins = new ArrayList<>(orderParticipants);
+
+        List<UserEntity> usersWithRoleAdmin = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
+        withAdmins.addAll(usersWithRoleAdmin);
+
         ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
         chatService.createChat(
-            orderParticipants,
+            withAdmins,
             ChatNames.ORDER_CHAT.formatted(orderEntity.getTechNumber()),
             orderEntity,
             "Заказ одобрен администратором. Можете начинать работу.",
