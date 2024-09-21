@@ -415,9 +415,10 @@ public class OrderService {
             .map(OrderParticipantEntity::getUser)
             .toList();
 
-        ArrayList<UserEntity> withAdmins = new ArrayList<>(orderParticipants);
 
         List<UserEntity> usersWithRoleAdmin = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
+
+        ArrayList<UserEntity> withAdmins = new ArrayList<>(orderParticipants);
         withAdmins.addAll(usersWithRoleAdmin);
 
         ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
