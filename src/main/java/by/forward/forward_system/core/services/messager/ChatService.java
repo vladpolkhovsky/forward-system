@@ -37,6 +37,9 @@ public class ChatService {
     private final UserService userService;
     private final ChatMemberRepository chatMemberRepository;
     private final ChatTypeRepository chatTypeRepository;
+    private final ChatMessageAttachmentRepository chatMessageAttachmentRepository;
+    private final ChatMessageOptionRepository chatMessageOptionRepository;
+    private final MessageRepository messageRepository;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -178,7 +181,7 @@ public class ChatService {
     public void createChat(String chatName, List<Long> chatMembers) {
         List<UserEntity> allById = userRepository.findAllById(chatMembers);
 
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.OTHER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
+        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.SPECIAL_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
 
         createChat(allById, chatName, null, "Чат создан.", chatTypeEntity);
     }
@@ -204,5 +207,25 @@ public class ChatService {
 
     public List<Long> getUsersWithNotViewedMessaged() {
         return chatMessageToUserRepository.getAllNotViewed();
+    }
+
+    @Transactional
+    public void deleteChat(Long chatId) {
+        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
+        chatMemberRepository.deleteAll(chatEntity.getChatMembers());
+
+        List<ChatMessageToUserEntity> messagesToUser = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageToUsers().stream()).toList();
+        chatMessageToUserRepository.deleteAll(messagesToUser);
+
+        List<ChatMessageAttachmentEntity> chatAttachments = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageAttachments().stream()).toList();
+        chatMessageAttachmentRepository.deleteAll(chatAttachments);
+
+        List<ChatMessageOptionEntity> chatMessageOptions = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageOptions().stream()).toList();
+        chatMessageOptionRepository.deleteAll(chatMessageOptions);
+
+        chatMessageToUserRepository.deleteAll(chatEntity.getChatMessageToUsers());
+        messageRepository.deleteAll(chatEntity.getChatMassages());
+
+        chatRepository.delete(chatEntity);
     }
 }

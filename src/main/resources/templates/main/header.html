@@ -12,7 +12,7 @@
             </li>
             <li><a class="nav-link px-2 link-primary" href="/push-subscription">Уведомления</a></li>
         </ul>
-        <div class="col-md-3 text-end d-flex">
+        <div class="col-md-5 text-end d-flex">
             <!--/*@thymesVar id="userShort" type="by.forward.forward_system.core.dto.ui.UserShortUiDto"*/-->
             <a th:href="@{/info}" class="btn" th:text="${userShort.getUsername()} + | (| + ${(userShort.getRolesRus())} + |)|"></a>
             <a th:href="@{/logout}" class="btn btn-primary align-self-center">Выйти</a>

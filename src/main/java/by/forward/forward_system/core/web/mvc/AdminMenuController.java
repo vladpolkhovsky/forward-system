@@ -33,15 +33,20 @@ public class AdminMenuController {
 
     @GetMapping(value = "/order-review")
     public String orderReview(Model model) {
+        userUiService.checkAccessAdmin();
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Выберите запрос на подтверждение");
         List<UpdateOrderRequestDto> notReviewedOrderRequests = updateRequestOrderService.getNotReviewedOrderRequests();
         model.addAttribute("requests", notReviewedOrderRequests);
+
         return "main/review-order-selector";
     }
 
     @GetMapping(value = "/review-order/{requestId}")
     public String reviewOrder(Model model, @PathVariable Long requestId) {
+        userUiService.checkAccessAdmin();
+
         UpdateOrderRequestDto byId = updateRequestOrderService.getById(requestId);
 
         List<UserSelectionUiDto> authors = setChecked(orderUiService.getAuthorsByOrder(byId.getOrderId()), byId.getAuthors());
@@ -55,11 +60,14 @@ public class AdminMenuController {
         model.addAttribute("authors", authors);
         model.addAttribute("catchers", catchers);
         model.addAttribute("hosts", hosts);
+
         return "main/review-order";
     }
 
     @PostMapping(value = "/review-order/{requestId}")
     public RedirectView reviewOrder(@PathVariable Long requestId, @RequestBody MultiValueMap<String, String> body) {
+        userUiService.checkAccessAdmin();
+
         UpdateOrderRequestDto byId = updateRequestOrderService.getById(requestId);
 
         if (byId.getIsViewed()) {

@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
             integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
             crossorigin="anonymous"></script>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -130,7 +131,7 @@
                 <div class="mb-3 mt-3 row">
                     <label for="payment" class="col-sm-2 col-form-label">Реквизиты оплаты</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="payment" th:field="*{payment}">
+                        <input type="text" class="form-control" id="payment" th:field="*{payment}">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">

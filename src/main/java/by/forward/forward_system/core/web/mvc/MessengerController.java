@@ -56,12 +56,14 @@ public class MessengerController {
     @GetMapping(value = "/order-info/{orderId}")
     public String orderInfo(Model model, @PathVariable Long orderId) {
         OrderDto order = orderService.getOrder(orderId);
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("order", order);
         model.addAttribute("decline", new DeclineDto());
         model.addAttribute("orderClosed", true);
         model.addAttribute("orderClosedShowError", false);
+
         return "messenger/request-order";
     }
 

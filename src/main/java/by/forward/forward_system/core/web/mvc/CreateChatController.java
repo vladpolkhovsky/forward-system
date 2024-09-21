@@ -64,8 +64,8 @@ public class CreateChatController {
 
         List<ChatDto> allChats = chatService.getAllChats();
 
-        List<ChatDto> createdChats = allChats.stream().sorted(Comparator.comparing(ChatDto::getChatName)).filter(t -> t.getChatType().equals(ChatType.OTHER_CHAT.getName())).toList();
-        List<ChatDto> systemChats = allChats.stream().sorted(Comparator.comparing(ChatDto::getChatName)).filter(t -> !t.getChatType().equals(ChatType.OTHER_CHAT.getName())).toList();
+        List<ChatDto> createdChats = allChats.stream().sorted(Comparator.comparing(ChatDto::getChatName)).filter(t -> t.getChatType().equals(ChatType.SPECIAL_CHAT.getName())).toList();
+        List<ChatDto> systemChats = allChats.stream().sorted(Comparator.comparing(ChatDto::getChatName)).filter(t -> !t.getChatType().equals(ChatType.SPECIAL_CHAT.getName())).toList();
 
         model.addAttribute("createdChats", createdChats);
         model.addAttribute("systemChats", systemChats);
@@ -92,6 +92,15 @@ public class CreateChatController {
         model.addAttribute("authors", authorUiService.getAllAuthors().stream().map(authorMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
 
         return "main/create-chat";
+    }
+
+    @GetMapping(value = "/delete-chat/{chatId}")
+    public RedirectView deleteChat(@PathVariable Long chatId) {
+        userUiService.checkAccessOwner();
+
+        chatService.deleteChat(chatId);
+
+        return new RedirectView("/update-chat");
     }
 
     @PostMapping(value = "/create-chat")

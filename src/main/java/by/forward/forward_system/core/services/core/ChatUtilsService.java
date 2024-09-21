@@ -39,10 +39,14 @@ public class ChatUtilsService {
 
     public void addAdminToAllChats(Long id) {
         List<ChatDto> adminTalkChats = chatService.getAllChats();
+
+        List<ChatType> noCheckChatTypes = ChatType.noModerationChatTypes;
+
         List<Long> chatIds = adminTalkChats.stream()
-            .filter(t -> !t.getChatType().equals(ChatType.OTHER_CHAT.getName()))
+            .filter(t -> !noCheckChatTypes.contains(ChatType.byName(t.getChatType())))
             .map(ChatDto::getId)
             .toList();
+
         for (Long chatId : chatIds) {
             if (!chatService.isMember(chatId, id)) {
                 chatService.addUserToChats(

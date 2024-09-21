@@ -60,7 +60,6 @@ public class WebsocketMassageService {
         boolean aiApproved = true;
         List<Long> logIds = new ArrayList<>();
 
-
         if (StringUtils.isNoneBlank(message)) {
             AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(message, username);
             if (!checkResult.isOk()) {

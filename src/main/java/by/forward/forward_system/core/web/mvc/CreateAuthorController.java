@@ -40,7 +40,7 @@ public class CreateAuthorController {
 
     @GetMapping("/update-author")
     public String updateAuthor(Model model) {
-        userUiService.checkAccessHR();
+        userUiService.checkAccessOwner();
 
         model.addAttribute("menuName", "Выберите автора для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -51,7 +51,7 @@ public class CreateAuthorController {
 
     @GetMapping("/update-author/{id}")
     public String updateAuthor(Model model, @PathVariable Long id) {
-        userUiService.checkAccessHR();
+        userUiService.checkAccessOwner();
 
         model.addAttribute("menuName", "Изменение автора");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -75,7 +75,7 @@ public class CreateAuthorController {
 
     @PostMapping(value = "update-author/{id}", consumes = MediaType.ALL_VALUE)
     public RedirectView updateAuthor(@PathVariable Long id, @ModelAttribute AuthorUiDto user) {
-        userUiService.checkAccessHR();
+        userUiService.checkAccessOwner();
 
         authorUiService.updateAuthor(id, user);
 

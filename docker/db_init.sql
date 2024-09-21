@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS forward_system.users
     contact_telegram varchar(512)        not null,
     email            varchar(512),
     other            varchar(65536),
-    payment          varchar(255)        not null,
+    payment          varchar(255),
     password         varchar(100)        not null,
     created_at       timestamp           not null
 );
@@ -267,7 +267,8 @@ insert into forward_system.chat_type
 values ('REQUEST_ORDER_CHAT'),
        ('ORDER_CHAT'),
        ('ADMIN_TALK_CHAT'),
-       ('OTHER_CHAT');
+       ('OTHER_CHAT'),
+       ('SPECIAL_CHAT');
 
 INSERT INTO forward_system.chats(id, chat_name, order_id, type, last_message_date)
 values (0, 'Новости', null, 'ADMIN_TALK_CHAT', now());
@@ -282,7 +283,8 @@ INSERT INTO forward_system.chat_metadata(id, user_id, manager_id, owner_type_per
 values (-1, null, null, true);
 
 insert into forward_system.chat_members(id, chat_id, user_id)
-values (0, 0, 0), (-1, -1, 0);
+values (0, 0, 0),
+       (-1, -1, 0);
 
 insert into forward_system.chat_message_types
 values ('NEW_ORDER'),

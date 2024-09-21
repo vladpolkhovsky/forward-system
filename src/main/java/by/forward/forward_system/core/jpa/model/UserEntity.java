@@ -44,13 +44,13 @@ public class UserEntity {
     @Column(name = "contact", nullable = false, length = 512)
     private String contact;
 
-    @Column(name = "payment", nullable = false, length = 255)
+    @Column(name = "payment", length = 255)
     private String payment;
 
     @Column(name = "contact_telegram", nullable = false, length = 512)
     private String contactTelegram;
 
-    @Column(name = "email", nullable = false, length = 512)
+    @Column(name = "email", length = 512)
     private String email;
 
     @Column(name = "other", length = 2048)
