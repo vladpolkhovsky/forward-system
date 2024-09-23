@@ -126,19 +126,19 @@ public class OrderService {
         if (!oldData.getOriginality().equals(newData.getOriginality())) {
             changes.put("Оригинальность", Arrays.asList(oldData.getOriginality().toString(), newData.getOriginality().toString()));
         }
-        if (!oldData.getVerificationSystem().equals(newData.getVerificationSystem())) {
+        if (!Objects.equals(oldData.getVerificationSystem(), newData.getVerificationSystem())) {
             changes.put("Система проверки", Arrays.asList(oldData.getVerificationSystem(), newData.getVerificationSystem()));
         }
-        if (!oldData.getAdditionalDates().equals(newData.getAdditionalDates())) {
+        if (!Objects.equals(oldData.getAdditionalDates(), newData.getAdditionalDates())) {
             changes.put("Дополнительные этапы сдачи", Collections.emptyList());
         }
-        if (!oldData.getIntermediateDeadline().equals(newData.getIntermediateDeadline())) {
+        if (!Objects.equals(oldData.getIntermediateDeadline(), newData.getIntermediateDeadline())) {
             changes.put("Промежуточный срок сдачи", Arrays.asList(dateToString(oldData.getIntermediateDeadline()), dateToString(newData.getIntermediateDeadline())));
         }
         if (!oldData.getDeadline().equals(newData.getDeadline())) {
             changes.put("Окончательный срок сдачи", Arrays.asList(dateToString(oldData.getDeadline()), dateToString(newData.getDeadline())));
         }
-        if (!oldData.getOther().equals(newData.getOther())) {
+        if (!Objects.equals(oldData.getOther(), newData.getOther())) {
             changes.put("Доп. информация", Arrays.asList(oldData.getVerificationSystem(), newData.getVerificationSystem()));
         }
         if (!oldData.getAuthorCost().equals(newData.getAuthorCost())) {
