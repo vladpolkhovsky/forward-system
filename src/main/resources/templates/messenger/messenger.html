@@ -256,7 +256,9 @@
             `<li id="chat-${chatJson.id}" class="list-group-item d-flex justify-content-between align-items-start" onclick="loadChat(${chatJson.id})">
                 <div class="ms-2 me-auto">
                     <div class="fw-bold"><small>${chatJson.chatName}</small></div>
-                    <p class="m-0"><small>${drawDate(chatJson.lastMessageTime)}</small></p>
+                    <div class="d-flex justify-content-between">
+                        <p class="m-0"><small>${drawDate(chatJson.lastMessageTime)}</small> <small>(chatId = ${chatJson.id})</small></p>
+                    </div>
                 </div>
                 <span class="badge rounded-pill" id="new-msg-chat-${chatJson.id}"></span>
             </li>`;

@@ -19,7 +19,7 @@
     <hr class="mt-3"/>
     <ul class="list-group">
         <li class="list-group-item d-flex justify-content-between" th:each="t : ${createdChats}">
-            <a class="align-content-center" th:href="|/update-chat/| + ${t.getId()}" th:text="${t.getChatName()}"></a>
+            <a class="align-content-center" th:href="|/update-chat/| + ${t.getId()}" th:text="${t.getChatName()}  + | (chatId=| + ${t.getId()} + |)|"></a>
             <a class="btn btn-danger" th:href="|/delete-chat/| + ${t.getId()}">Удалить чат</a>
         </li>
     </ul>
@@ -27,7 +27,7 @@
     <p>Системные чаты</p>
     <ul class="list-group">
         <li class="list-group-item" th:each="t : ${systemChats}">
-            <a th:href="|/update-chat/| + ${t.getId()}" th:text="${t.getChatName()}"></a>
+            <a th:href="|/update-chat/| + ${t.getId()}" th:text="${t.getChatName()} + | (chatId=| + ${t.getId()} + |)|"></a>
         </li>
     </ul>
 </div>
