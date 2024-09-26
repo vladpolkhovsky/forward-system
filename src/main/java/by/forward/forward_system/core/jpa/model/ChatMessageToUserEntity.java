@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Table(name = "chat_message_to_user", schema = "forward_system")
 public class ChatMessageToUserEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 

@@ -37,6 +37,10 @@ dependencies {
 	implementation("nl.martijndwars:web-push:5.1.1")
 	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
+
+	implementation(platform("com.amazonaws:aws-java-sdk-bom:1.12.529"))
+	implementation("com.amazonaws:aws-java-sdk-s3")
+
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("com.h2database:h2")
 

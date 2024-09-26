@@ -1,5 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS forward_system;
 
+create sequence if not exists forward_system.id_seq start 50 increment 50;
+
 CREATE TABLE IF NOT EXISTS forward_system.users
 (
     id               bigint primary key,
@@ -101,7 +103,8 @@ create table if not exists forward_system.attachments
 (
     id       bigint primary key,
     filename varchar(2048) not null,
-    filepath varchar(2048) not null
+    filepath varchar(2048) not null,
+    object_key varchar(512) not null
 );
 
 create table if not exists forward_system.order_attachments

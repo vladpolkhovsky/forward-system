@@ -11,7 +11,7 @@ import lombok.Setter;
 public class AttachmentEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 
@@ -20,4 +20,7 @@ public class AttachmentEntity {
 
     @Column(name = "filepath", nullable = false, length = 2048)
     private String filepath;
+
+    @Column(name = "object_key", nullable = false, length = 512)
+    private String objectKey;
 }

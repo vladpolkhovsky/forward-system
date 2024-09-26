@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "reviews", schema = "forward_system")
 public class ReviewEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 

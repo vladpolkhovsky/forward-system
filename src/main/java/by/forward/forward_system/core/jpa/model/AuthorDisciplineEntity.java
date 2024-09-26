@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "author_disciplines", schema = "forward_system")
 public class AuthorDisciplineEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 

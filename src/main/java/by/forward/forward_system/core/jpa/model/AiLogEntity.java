@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(name = "ai_integration", schema = "forward_system")
 public class AiLogEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 

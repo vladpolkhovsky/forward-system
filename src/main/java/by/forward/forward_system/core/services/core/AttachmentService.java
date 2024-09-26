@@ -4,12 +4,19 @@ import by.forward.forward_system.core.dto.rest.AttachmentDto;
 import by.forward.forward_system.core.dto.websocket.WSAttachment;
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.util.IOUtils;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -20,7 +27,11 @@ public class AttachmentService {
 
     private final AttachmentRepository attachmentRepository;
 
-    private final static Path filesDerictoryPath = Path.of("./files");
+    private final AmazonS3 amazonS3;
+
+    private final static String bucketName = "forward-system-file-storage";
+
+    private final static Path filesDerictoryPath = Path.of("cloud-yandex");
 
     public List<Long> getAttachment(List<WSAttachment> wsAttachment) {
         List<AttachmentEntity> attachmentEntities = new ArrayList<>();
@@ -38,45 +49,49 @@ public class AttachmentService {
     public List<Long> saveAttachment(List<AttachmentDto> attachmentDtos) {
         List<AttachmentEntity> attachmentEntities = new ArrayList<>();
         for (AttachmentDto attachmentDto : attachmentDtos) {
-            String filePath = saveWSAttachment(attachmentDto);
-            AttachmentEntity attachmentEntity = new AttachmentEntity();
-            attachmentEntity.setFilepath(filePath);
-            attachmentEntity.setFilename(attachmentDto.getFileName());
-            attachmentEntities.add(attachmentRepository.save(attachmentEntity));
+            AttachmentEntity attachmentEntity = saveWSAttachment(attachmentDto);
+            attachmentEntities.add(attachmentEntity);
         }
         return attachmentEntities.stream().map(AttachmentEntity::getId).toList();
     }
 
     @SneakyThrows
     public AttachmentEntity saveAttachment(String filename, byte[] content) {
-        filename = filename;
-        String filepath = UUID.randomUUID().toString() + " " + filename;
-        Path filePath = Path.of(filesDerictoryPath.toAbsolutePath().toString(), filepath);
-        Files.write(filePath, content);
+        UUID fileUUID = UUID.randomUUID();
+        String filepath = fileUUID + " " + filename;
+        Path filePath = Path.of(filesDerictoryPath.toString(), filepath);
+
+        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName,
+            fileUUID.toString(),
+            new ByteArrayInputStream(content),
+            new ObjectMetadata()
+        );
+
+        amazonS3.putObject(putObjectRequest);
+
         AttachmentEntity attachmentEntity = new AttachmentEntity();
         attachmentEntity.setFilename(filename);
+        attachmentEntity.setObjectKey(fileUUID.toString());
         attachmentEntity.setFilepath(filePath.toString());
+
         return attachmentRepository.save(attachmentEntity);
     }
 
     @SneakyThrows
-    private String saveWSAttachment(AttachmentDto attachment) {
+    private AttachmentEntity saveWSAttachment(AttachmentDto attachment) {
         byte[] decode = Base64.getDecoder().decode(attachment.getBase64content());
-        boolean exists = Files.exists(filesDerictoryPath);
-        if (!exists) {
-            Files.createDirectory(filesDerictoryPath);
-        }
-        String fileName = UUID.randomUUID().toString() + " " + attachment.getFileName();
-        Path filePath = Path.of(filesDerictoryPath.toAbsolutePath().toString(), fileName);
-        Files.write(filePath, decode);
-        return filePath.toString();
+        String fileName = attachment.getFileName();
+        return saveAttachment(fileName, decode);
     }
 
     @SneakyThrows
     public AttachmentFile loadAttachment(Long attachmentId) {
         AttachmentEntity attachmentEntity = attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
-        Resource resource = new FileSystemResource(Path.of(attachmentEntity.getFilepath()));
-        return new AttachmentFile(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), resource.getContentAsByteArray());
+
+        S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()));
+        byte[] byteArray = IOUtils.toByteArray(object.getObjectContent());
+
+        return new AttachmentFile(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), byteArray);
     }
 
     public record AttachmentFile(String filename,

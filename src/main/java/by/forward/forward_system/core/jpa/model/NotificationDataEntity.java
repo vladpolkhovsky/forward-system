@@ -10,7 +10,7 @@ import lombok.Setter;
 @Table(name = "notification_data", schema = "forward_system")
 public class NotificationDataEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 

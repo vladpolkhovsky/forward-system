@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "authors", schema = "forward_system")
 public class AuthorEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
     private Long id;
 
