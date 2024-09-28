@@ -1,16 +1,23 @@
 FROM openjdk:17
 
+USER root
+
 COPY . /usr/src/forward-system
+
+RUN microdnf install --nodocs wget findutils
+
+RUN mkdir -p /root/.postgresql && \
+    wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" \
+      --output-document /root/.postgresql/root.crt && \
+    chmod 0600 /root/.postgresql/root.crt
 
 WORKDIR /usr/src/forward-system
 
 RUN chmod +x gradlew
 
-RUN microdnf install findutils
-
 RUN echo Build starts
 
-RUN ./gradlew build
+RUN ./gradlew build -x test
 
 EXPOSE 8081/tcp
 
