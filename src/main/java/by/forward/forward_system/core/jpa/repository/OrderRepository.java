@@ -1,6 +1,5 @@
 package by.forward.forward_system.core.jpa.repository;
 
-import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -44,13 +44,13 @@ public class ChatMessageEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "message")
+    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
     private List<ChatMessageAttachmentEntity> chatMessageAttachments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "message")
+    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
     private List<ChatMessageOptionEntity> chatMessageOptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "message")
+    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
 
 }

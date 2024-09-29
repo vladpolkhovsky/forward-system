@@ -35,6 +35,11 @@ public class MessengerRestController {
         return ResponseEntity.ok(chatService.getUserChats(userId));
     }
 
+    @GetMapping(value = "/{userId}/chats/{chatId}")
+    public ResponseEntity<ChatDto> getUserChat(@PathVariable Long userId, @PathVariable Long chatId) {
+        return ResponseEntity.ok(chatService.getUserChat(userId, chatId));
+    }
+
     @GetMapping(value = "/{userId}/orders")
     public ResponseEntity<List<OrderDto>> getUserOrders(@PathVariable Long userId) {
         return ResponseEntity.ok(orderService.getUserOrders(userId));

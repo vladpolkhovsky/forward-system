@@ -16,6 +16,7 @@ public class ChatDto {
     private String chatTypeRus;
     private Boolean onlyOwnerChat;
     private LocalDateTime lastMessageTime;
+    private Long notViewedMessagesCount;
     private List<MessageDto> messages;
     private List<ChatMemberDto> chatMembers;
 }

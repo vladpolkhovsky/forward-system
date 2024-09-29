@@ -6,9 +6,12 @@ import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
+import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -124,8 +127,30 @@ public class ChatService {
     }
 
     public List<ChatDto> getUserChats(Long userId) {
-        List<ChatEntity> chatByUser = chatRepository.findChatByUser(userId);
-        return chatByUser.stream().map(this::getChat).toList();
+        List<ChatProjection> chatByUser = chatRepository.findChatByUserProjection(userId);
+        List<ChatNewMessageProjection> newMessageProjection = chatRepository.findNewMessageProjection(userId);
+
+        HashMap<Long, Long> idToMassages = new HashMap<>();
+        newMessageProjection.forEach(t -> idToMassages.put(t.getChatId(), t.getNotViewedMessageCount()));
+
+        return chatByUser.stream().map(t -> {
+            ChatDto chatDto = new ChatDto();
+            chatDto.setId(t.getId());
+            chatDto.setChatName(t.getChatName());
+            chatDto.setChatType(t.getType());
+            chatDto.setNotViewedMessagesCount(ObjectUtils.defaultIfNull(idToMassages.get(t.getId()), 0L));
+            chatDto.setLastMessageTime(t.getLastMessageDate());
+            return chatDto;
+        }).toList();
+    }
+
+    public ChatDto getUserChat(Long userId, Long chatId) {
+        List<ChatEntity> chatByUser = chatRepository.findChatByUserAndChatId(userId, chatId);
+        if (chatByUser.isEmpty()) {
+            return null;
+        } else {
+            return getChat(chatByUser.get(0));
+        }
     }
 
     public List<ChatDto> getAdminTalkChats() {
@@ -170,7 +195,13 @@ public class ChatService {
     }
 
     public List<ChatDto> getAllChats() {
-        return chatRepository.findAll().stream().map(this::getChat).toList();
+        return chatRepository.findAllChatsProjection().stream().map(t -> {
+            ChatDto chatDto = new ChatDto();
+            chatDto.setId(t.getId());
+            chatDto.setChatName(t.getChatName());
+            chatDto.setChatType(t.getType());
+            return chatDto;
+        }).toList();
     }
 
     public void hideMessage(Long messageId) {
@@ -228,4 +259,5 @@ public class ChatService {
 
         chatRepository.delete(chatEntity);
     }
+
 }

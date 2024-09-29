@@ -15,7 +15,7 @@ public class ChatMetadataEntity {
     private Long id;
 
     @MapsId
-    @OneToOne(fetch = FetchType.EAGER, optional = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id", nullable = false)
     private ChatEntity chat;
 

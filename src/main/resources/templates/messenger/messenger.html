@@ -218,6 +218,15 @@
         orderLink.setAttribute("href", `/order-info/${chatTable[chatId].orderId}`);
     }
 
+    function preloadChat(chatId) {
+        httpRequest('GET', `/api/messenger/${context.userId}/chats/${chatId}`, null, (resp) => {
+            let json = JSON.parse(resp);
+            chatTable[json.id] = json;
+            messagesTable[json.id] = json.messages;
+            loadChat(chatId);
+        });
+    }
+
     function loadChat(chatId) {
         context.chatId = chatId;
         chatNewMessages[chatId] = 0;
@@ -253,7 +262,7 @@
 
     function drawNewChatInList(chatJson) {
         let chatListItemHtml =
-            `<li id="chat-${chatJson.id}" class="list-group-item d-flex justify-content-between align-items-start" onclick="loadChat(${chatJson.id})">
+            `<li id="chat-${chatJson.id}" class="list-group-item d-flex justify-content-between align-items-start" onclick="preloadChat(${chatJson.id})">
                 <div class="ms-2 me-auto">
                     <div class="fw-bold"><small>${chatJson.chatName}</small></div>
                     <div class="d-flex justify-content-between">
@@ -374,6 +383,10 @@
         chatNewMessages[chatId]++;
     }
 
+    function setChatNewMessageCount(chatId, value) {
+        chatNewMessages[chatId] = value;
+    }
+
     function incTabNewMessagesCount(tab) {
         if (!tabChatNewMessages[tab]) {
             tabChatNewMessages[tab] = 0;
@@ -480,10 +493,14 @@
         for (const chatJsonElement of chatListJson) {
             console.log(chatJsonElement);
             chatNewMessages[chatJsonElement.id] = 0;
+
             chatTable[chatJsonElement.id] = chatJsonElement;
+            chatTable[chatJsonElement.id].messages = [];
+
             messagesTable[chatJsonElement.id] = chatJsonElement.messages;
 
-            let hasMessages = processChatNewMsgCount(chatJsonElement);
+            let hasMessages = chatListJson.notViewedMessagesCount > 0;
+            setChatNewMessageCount(chatJsonElement.id, chatJsonElement.notViewedMessagesCount);
 
             if (hasMessages) {
                 incTabNewMessagesCount(getTabByChatType(chatJsonElement.chatType));
@@ -680,7 +697,6 @@
         })
         for (let i = 0; i < fndChats.length; i++) {
             drawNewChatInList(fndChats[i]);
-            processChatNewMsgCount(fndChats[i])
             drawChatNewMessageCount(fndChats[i].id);
         }
     }

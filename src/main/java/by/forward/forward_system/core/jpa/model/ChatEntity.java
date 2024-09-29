@@ -29,20 +29,20 @@ public class ChatEntity {
     @Column(name = "last_message_date", nullable = false)
     private LocalDateTime lastMessageDate;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "chat")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "chat")
     private ChatMetadataEntity chatMetadata;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "type", nullable = false)
     private ChatTypeEntity chatType;
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     private List<ChatMessageEntity> chatMassages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     private List<ChatMemberEntity> chatMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat")
+    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
 
 }
