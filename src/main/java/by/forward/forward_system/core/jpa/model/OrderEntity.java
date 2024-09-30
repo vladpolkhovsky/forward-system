@@ -48,13 +48,13 @@ public class OrderEntity {
     @Column(name = "intermediate_deadline")
     private LocalDateTime intermediateDeadline;
 
-    @Column(name = "additional_dates")
+    @Column(name = "additional_dates", length = 65536)
     private String additionalDates;
 
     @Column(name = "deadline", nullable = false)
     private LocalDateTime deadline;
 
-    @Column(name = "other")
+    @Column(name = "other", length = 65536)
     private String other;
 
     @Column(name = "taking_cost", nullable = false)
