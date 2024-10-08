@@ -368,7 +368,9 @@ public class OrderUiService {
     }
 
     public Integer countMyOrders() {
-        return getAllMyOrders(userUiService.getCurrentUserId()).size();
+        Long currentUserId = userUiService.getCurrentUserId();
+        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
+        return orderService.getOrdersCount(currentUserId, participantTypes);
     }
 
     public int countOrderAuthors(Long orderId) {

@@ -21,6 +21,7 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
+    show-sql: false
 
 aws:
   aws_access_key_id: ${aws_access_key_id}

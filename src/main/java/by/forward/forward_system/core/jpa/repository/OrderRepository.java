@@ -39,8 +39,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(nativeQuery = true, value = "select count(distinct o.id) from forward_system.orders o " +
         "inner join forward_system.order_participants op on o.id = op.order_id " +
-        "where op.user_id = :userId")
-    Integer countMyOrders(Long userId);
+        "where op.user_id = :userId and op.type in :types")
+    Integer countMyOrders(Long userId, List<String> types);
 
     @Query(value = "select MAX(o.techNumber) from OrderEntity o")
     Optional<String> maxTechNumber();

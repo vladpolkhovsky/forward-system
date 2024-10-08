@@ -4,6 +4,7 @@ import by.forward.forward_system.core.dto.messenger.OrderAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
+import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
@@ -560,10 +561,6 @@ public class OrderService {
         throw new IllegalStateException("У вас нет доступа к данному заказу.");
     }
 
-    public Integer countMyOrders(Long currentUserId) {
-        return orderRepository.countMyOrders(currentUserId);
-    }
-
     @SneakyThrows
     public boolean saveOrderFile(Long id, MultipartFile[] file) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
@@ -654,4 +651,8 @@ public class OrderService {
         chatService.setMessageViewed(chat.getId(), authorId);
     }
 
+    public Integer getOrdersCount(Long currentUserId, List<ParticipantType> participantTypes) {
+        List<String> list = participantTypes.stream().map(ParticipantType::getName).toList();
+        return orderRepository.countMyOrders(currentUserId, list);
+    }
 }
