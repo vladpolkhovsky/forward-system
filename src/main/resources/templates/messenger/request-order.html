@@ -57,6 +57,13 @@
                    th:value="${order.getOriginality()}">
         </div>
     </div>
+    <div class="mb-3 mt-3 row">
+        <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
+        <div class="col-sm-10">
+            <input readonly id="amount" type="text" class="form-control-plaintext"
+                   th:value="${order.getAmount()}">
+        </div>
+    </div>
     <div class="row mb-3 mt-3">
         <label for="verificationSystem" class="col-sm-2 col-form-label">Система проверки</label>
         <div class="col-sm-10">
@@ -67,14 +74,21 @@
     <div class="row mb-3 mt-3">
         <label for="intermediateDeadline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
         <div class="col-sm-10">
-            <input type="date" readonly class="form-control-plaintext" id="intermediateDeadline"
-                   th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd')}">
+            <input type="datetime-local" readonly class="form-control-plaintext" id="intermediateDeadline"
+                   th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
         </div>
     </div>
     <div class="mb-3 mt-3 row">
         <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
         <input id="additionalDates" type="text" hidden th:value="${order.getAdditionalDates()}">
         <div id="additionalDatesDiv" class="col-sm-9">
+        </div>
+    </div>
+    <div class="row mb-3 mt-3">
+        <label for="deadline" class="col-sm-2 col-form-label">Окончательный срок сдачи</label>
+        <div class="col-sm-10">
+            <input type="datetime-local" readonly class="form-control-plaintext" id="deadline"
+                   th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}">
         </div>
     </div>
     <div class="row mb-3 mt-3">

@@ -19,7 +19,7 @@ public class OrderEntity {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 2048)
+    @Column(name = "name", length = 2048)
     private String name;
 
     @Column(name = "tech_number", nullable = false)
@@ -44,6 +44,9 @@ public class OrderEntity {
 
     @Column(name = "verification_system")
     private String verificationSystem;
+
+    @Column(name = "amount")
+    private String amount;
 
     @Column(name = "intermediate_deadline")
     private LocalDateTime intermediateDeadline;

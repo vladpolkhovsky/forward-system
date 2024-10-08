@@ -20,6 +20,7 @@ public class OrderUiDto {
     private String discipline;
     private Long disciplineId;
     private String subject;
+    private String amount;
     private Integer originality;
     private String orderStatus;
     private String orderStatusRus;

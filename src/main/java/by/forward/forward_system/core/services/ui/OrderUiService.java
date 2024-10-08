@@ -269,6 +269,7 @@ public class OrderUiService {
             orderEntity.getDiscipline().getName(),
             orderEntity.getDiscipline().getId(),
             orderEntity.getSubject(),
+            orderEntity.getAmount(),
             orderEntity.getOriginality(),
             orderEntity.getOrderStatus().getStatus().getName(),
             orderEntity.getOrderStatus().getStatus().getRusName(),
@@ -326,6 +327,7 @@ public class OrderUiService {
         orderEntity.setTechNumber(orderUiDto.getTechNumber().toString());
         orderEntity.setWorkType(orderUiDto.getWorkType());
         orderEntity.setDiscipline(discipline);
+        orderEntity.setAmount(orderUiDto.getAmount());
         orderEntity.setSubject(orderUiDto.getSubject());
         orderEntity.setOriginality(orderUiDto.getOriginality());
         orderEntity.setVerificationSystem(orderUiDto.getVerificationSystem());
@@ -403,6 +405,7 @@ public class OrderUiService {
         data.add("Тип работы: " + orderUiDto.getWorkType());
         data.add("Дисциплина: " + orderUiDto.getDiscipline());
         data.add("Предмет: " + orderUiDto.getSubject());
+        data.add("Объём работы: " + orderUiDto.getAmount());
         data.add("Оригинальность: " + orderUiDto.getOriginality().toString());
         data.add("Система проверки: " + orderUiDto.getVerificationSystem());
         data.add("Промежуточный срок сдачи: " + dateToString(orderUiDto.getIntermediateDeadline()));

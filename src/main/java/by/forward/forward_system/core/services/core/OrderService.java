@@ -88,6 +88,7 @@ public class OrderService {
         orderEntity.setTechNumber(order.getTechNumber());
         orderEntity.setWorkType(order.getWorkType());
         orderEntity.setDiscipline(order.getDiscipline());
+        orderEntity.setAmount(order.getAmount());
         orderEntity.setSubject(order.getSubject());
         orderEntity.setOriginality(order.getOriginality());
         orderEntity.setVerificationSystem(order.getVerificationSystem());
@@ -337,6 +338,7 @@ public class OrderService {
         orderDto.setWorkType(orderEntity.getWorkType());
         orderDto.setDiscipline(orderEntity.getDiscipline().getName());
         orderDto.setSubject(orderEntity.getSubject());
+        orderDto.setAmount(orderEntity.getAmount());
         orderDto.setOriginality(orderEntity.getOriginality());
         orderDto.setVerificationSystem(orderEntity.getVerificationSystem());
         orderDto.setAdditionalDates(orderEntity.getAdditionalDates());

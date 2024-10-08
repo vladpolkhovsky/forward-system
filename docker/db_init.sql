@@ -451,3 +451,8 @@ values (1, 'Бух. учет'),
        (149, 'Экологическое право'),
        (150, 'Медицинское право'),
        (151, 'Логопедия');
+
+alter table forward_system.orders alter column name drop not null;
+alter table forward_system.orders add amount varchar(255);
+
+alter table forward_system.security_block alter column

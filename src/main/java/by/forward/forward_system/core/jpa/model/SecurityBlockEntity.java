@@ -27,7 +27,7 @@ public class SecurityBlockEntity {
     @JoinColumn(name = "message_id")
     private ChatMessageEntity chatMessage;
 
-    @Column(name = "reason")
+    @Column(name = "reason", length = 65536)
     private String reason;
 
     @Column(name = "created_at", nullable = false)

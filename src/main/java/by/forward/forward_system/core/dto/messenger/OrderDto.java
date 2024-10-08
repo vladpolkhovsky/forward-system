@@ -18,6 +18,7 @@ public class OrderDto {
     private String workType;
     private String discipline;
     private String subject;
+    private String amount;
     private String verificationSystem;
     private String additionalDates;
     private Integer originality;
