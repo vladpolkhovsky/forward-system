@@ -311,11 +311,14 @@ public class OrderService {
 
     public List<OrderDto> getUserOrders(Long userId) {
         List<OrderEntity> orderEntities = orderRepository.findOrdersWithUserInParticipant(userId);
-        List<OrderDto> orderDtos = orderEntities.stream().map(this::toDto)
+        return orderEntities.stream().map(this::toDto)
             .toList();
-        return orderDtos;
     }
 
+    public OrderDto getSingleOrder(Long orderId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+        return toDto(orderEntity);
+    }
 
     public List<OrderDto> getAllOrders() {
         List<OrderEntity> orderEntities = orderRepository.findAll();

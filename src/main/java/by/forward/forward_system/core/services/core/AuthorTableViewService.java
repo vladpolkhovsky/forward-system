@@ -5,16 +5,15 @@ import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.AuthorDisciplineEntity;
 import by.forward.forward_system.core.jpa.model.AuthorEntity;
+import by.forward.forward_system.core.jpa.repository.AuthorDisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.AuthorRepository;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
+import by.forward.forward_system.core.jpa.repository.projections.DisciplineProjection;
 import by.forward.forward_system.core.jpa.repository.projections.table.AuthorTableViewDto;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Service
@@ -25,15 +24,38 @@ public class AuthorTableViewService {
 
     private final OrderRepository orderRepository;
 
+    private final AuthorDisciplineRepository authorDisciplineRepository;
+
     public List<AuthorTableViewDto> get(String selectedDiscipline, String col, String order) {
         boolean isAllDisciplines = selectedDiscipline.equals("all");
         Predicate<AuthorEntity> filterDiscipline = (t) -> true;
 
+        List<DisciplineProjection> allDisciplines = authorDisciplineRepository.getAllDisciplines();
+        HashMap<Long, Set<Long>> authorIdToDisciplinesSet = new HashMap<>();
+        HashMap<Long, List<DisciplineProjection>> authorToDisciplines = new HashMap<>();
+
+        for (DisciplineProjection allDiscipline : allDisciplines) {
+            List<DisciplineProjection> allAuthorDisciplines = authorToDisciplines.getOrDefault(
+                allDiscipline.getAuthorId(),
+                new ArrayList<>()
+            );
+            Set<Long> authorDisciplinesSet = authorIdToDisciplinesSet.getOrDefault(
+                allDiscipline.getAuthorId(),
+                new HashSet<>()
+            );
+
+            authorDisciplinesSet.add(allDiscipline.getDisciplineId());
+            allAuthorDisciplines.add(allDiscipline);
+
+            authorIdToDisciplinesSet.put(allDiscipline.getAuthorId(), authorDisciplinesSet);
+            authorToDisciplines.put(allDiscipline.getAuthorId(), allAuthorDisciplines);
+        }
+
         if (!isAllDisciplines) {
             Long disciplineId = Long.parseLong(selectedDiscipline);
             filterDiscipline = (t) -> {
-                Optional<AuthorDisciplineEntity> any = t.getAuthorDisciplines().stream().filter(d -> d.getDiscipline().getId().equals(disciplineId)).findAny();
-                return any.isPresent();
+                Set<Long> disciplineIds = authorIdToDisciplinesSet.get(t.getId());
+                return disciplineIds != null && disciplineIds.contains(disciplineId);
             };
         }
 
@@ -46,26 +68,26 @@ public class AuthorTableViewService {
             comparator = comparator.reversed();
         }
 
-        return authorRepository.findAll().stream()
+        return authorRepository.getAuthorsFast().stream()
             .filter(filterDiscipline)
-            .map(this::toViewDto)
+            .map(authorEntity -> toViewDto(authorEntity, authorToDisciplines))
             .sorted(comparator)
             .toList();
     }
 
-    private AuthorTableViewDto toViewDto(AuthorEntity authorEntity) {
+    private AuthorTableViewDto toViewDto(AuthorEntity authorEntity, HashMap<Long, List<DisciplineProjection>> authorToDisciplines) {
         String username = authorEntity.getUser().getUsername();
         AuthorTableViewDto authorTableViewDto = new AuthorTableViewDto(username);
 
-        for (AuthorDisciplineEntity authorDiscipline : authorEntity.getAuthorDisciplines()) {
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.EXCELLENT)) {
-                authorTableViewDto.excellent().add(authorDiscipline.getDiscipline().getName());
+        for (DisciplineProjection disciplineProjection : authorToDisciplines.getOrDefault(authorEntity.getId(), Collections.emptyList())) {
+            if (disciplineProjection.getDisciplineQuality().equals(DisciplineQualityType.EXCELLENT.getName())) {
+                authorTableViewDto.excellent().add(disciplineProjection.getDisciplineName());
             }
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.GOOD)) {
-                authorTableViewDto.good().add(authorDiscipline.getDiscipline().getName());
+            if (disciplineProjection.getDisciplineQuality().equals(DisciplineQualityType.GOOD.getName())) {
+                authorTableViewDto.good().add(disciplineProjection.getDisciplineName());
             }
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.MAYBE)) {
-                authorTableViewDto.maybe().add(authorDiscipline.getDiscipline().getName());
+            if (disciplineProjection.getDisciplineQuality().equals(DisciplineQualityType.MAYBE.getName())) {
+                authorTableViewDto.maybe().add(disciplineProjection.getDisciplineName());
             }
         }
 

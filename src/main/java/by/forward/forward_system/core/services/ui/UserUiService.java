@@ -93,6 +93,12 @@ public class UserUiService {
             .toList();
     }
 
+    public List<UserUiDto> getAllUsersFast() {
+        return userService.getAllUsersFast().stream()
+            .map(this::toDto)
+            .toList();
+    }
+
     public UserUiDto getUser(Long id) {
         Optional<UserEntity> byId = userService.getById(id);
         UserEntity userEntity = byId.orElseThrow(() -> new UsernameNotFoundException("User not found with id " + id));

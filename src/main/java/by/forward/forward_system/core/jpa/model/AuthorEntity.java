@@ -26,6 +26,6 @@ public class AuthorEntity {
     @JoinColumn(name = "created_by", nullable = false)
     private UserEntity createdByUser;
 
-    @OneToMany(mappedBy = "author", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<AuthorDisciplineEntity> authorDisciplines = new ArrayList<>();
 }

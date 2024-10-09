@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -85,5 +86,9 @@ public class UserService {
         userDto.setRoles(userEntity.getAuthorities().stream().map(Authority::getAuthority).collect(Collectors.joining(", ")));
         userDto.setRolesRus(userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", ")));
         return userDto;
+    }
+
+    public Collection<UserEntity> getAllUsersFast() {
+        return userRepository.getUsersFast();
     }
 }

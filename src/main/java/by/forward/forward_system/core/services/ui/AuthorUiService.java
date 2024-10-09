@@ -41,6 +41,12 @@ public class AuthorUiService {
             .toList();
     }
 
+    public List<AuthorUiDto> getAllAuthorsFast() {
+        return authorService.getAllAuthorsFast().stream()
+            .map(this::toDtoWithoutDisciplines)
+            .toList();
+    }
+
     @Transactional
     public AuthorUiDto createAuthor(AuthorUiDto user) {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
@@ -61,14 +67,46 @@ public class AuthorUiService {
         return toDto(entity);
     }
 
+    private AuthorUiDto toDtoWithoutDisciplines(AuthorEntity authorEntity) {
+        String fioFull = authorEntity.getUser().getLastname() + " " +
+            authorEntity.getUser().getFirstname() + " " +
+            StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
+
+        return new AuthorUiDto(
+            authorEntity.getId(),
+            authorEntity.getUser().getUsername(),
+            authorEntity.getUser().getPassword(),
+            authorEntity.getUser().getFio(),
+            fioFull,
+            authorEntity.getUser().getFirstname(),
+            authorEntity.getUser().getLastname(),
+            authorEntity.getUser().getSurname(),
+            authorEntity.getUser().getContact(),
+            authorEntity.getUser().getContactTelegram(),
+            authorEntity.getUser().getEmail(),
+            authorEntity.getUser().getPayment(),
+            authorEntity.getUser().getOther(),
+            null,
+            null,
+            null,
+            authorEntity.getUser().getAuthorities().contains(Authority.ADMIN),
+            authorEntity.getUser().getAuthorities().contains(Authority.MANAGER),
+            authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
+            authorEntity.getUser().getAuthorities().contains(Authority.HR),
+            authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
+            authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+        );
+    }
 
     private AuthorUiDto toDto(AuthorEntity authorEntity) {
         String fioFull = authorEntity.getUser().getLastname() + " " +
             authorEntity.getUser().getFirstname() + " " +
             StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
+
         String excellentSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.EXCELLENT);
         String goodSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.GOOD);
         String maybeSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.MAYBE);
+
         return new AuthorUiDto(
             authorEntity.getId(),
             authorEntity.getUser().getUsername(),

@@ -220,10 +220,22 @@
 
     function preloadChat(chatId) {
         httpRequest('GET', `/api/messenger/${context.userId}/chats/${chatId}`, null, (resp) => {
-            let json = JSON.parse(resp);
-            chatTable[json.id] = json;
-            messagesTable[json.id] = json.messages;
-            loadChat(chatId);
+            let chatJson = JSON.parse(resp);
+
+            chatTable[chatJson.id] = chatJson;
+            messagesTable[chatJson.id] = chatJson.messages;
+
+            if (chatJson.orderId) {
+                httpRequest('GET', `/api/messenger/orders/${chatJson.orderId}`, null, (resp) => {
+                    let orderJson = JSON.parse(resp);
+
+                    orderTable[orderJson.id] = orderJson;
+
+                    loadChat(chatId);
+                });
+            } else {
+                loadChat(chatId);
+            }
         });
     }
 
@@ -499,7 +511,7 @@
 
             messagesTable[chatJsonElement.id] = chatJsonElement.messages;
 
-            let hasMessages = chatListJson.notViewedMessagesCount > 0;
+            let hasMessages = chatJsonElement.notViewedMessagesCount > 0;
             setChatNewMessageCount(chatJsonElement.id, chatJsonElement.notViewedMessagesCount);
 
             if (hasMessages) {
@@ -600,15 +612,15 @@
         processInitChatJson(JSON.parse(resp))
     });
 
-    if (isAdmin) {
-        httpRequest('GET', `/api/messenger/orders`, null, (resp) => {
-            processInitOrderJson(JSON.parse(resp))
-        });
-    } else {
-        httpRequest('GET', `/api/messenger/${context.userId}/orders`, null, (resp) => {
-            processInitOrderJson(JSON.parse(resp))
-        });
-    }
+    // if (isAdmin) {
+    //     httpRequest('GET', `/api/messenger/orders`, null, (resp) => {
+    //         processInitOrderJson(JSON.parse(resp))
+    //     });
+    // } else {
+    //     httpRequest('GET', `/api/messenger/${context.userId}/orders`, null, (resp) => {
+    //         processInitOrderJson(JSON.parse(resp))
+    //     });
+    // }
 
     httpRequest('GET', `/api/messenger/users`, null, (resp) => {
         processInitUserJson(JSON.parse(resp))

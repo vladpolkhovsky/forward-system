@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -44,13 +45,16 @@ public class CreateChatController {
         Function<UserUiDto, UserSelectionUiDto> userMap = t -> new UserSelectionUiDto(t.getId(), namePattern.formatted(t.getFio(), t.getRolesRus()), t.getUsername(), false);
         Function<AuthorUiDto, UserSelectionUiDto> authorMap = t -> new UserSelectionUiDto(t.getId(), namePattern.formatted(t.getFio(), t.getRolesRus()), t.getUsername(), false);
 
+        List<UserSelectionUiDto> usersList = userUiService.getAllUsersFast().stream().map(userMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList();
+        List<UserSelectionUiDto> authorsList = authorUiService.getAllAuthorsFast().stream().map(authorMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList();
+
         model.addAttribute("menuName", "Создать чат");
         model.addAttribute("userShort", userUiService.getCurrentUser());
 
         model.addAttribute("chatId", null);
         model.addAttribute("chatName", null);
-        model.addAttribute("users", userUiService.getAllUsers().stream().map(userMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
-        model.addAttribute("authors", authorUiService.getAllAuthors().stream().map(authorMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
+        model.addAttribute("users", usersList);
+        model.addAttribute("authors", authorsList);
 
         return "main/create-chat";
     }

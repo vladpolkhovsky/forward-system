@@ -50,6 +50,11 @@ public class MessengerRestController {
         return ResponseEntity.ok(orderService.getAllOrders());
     }
 
+    @GetMapping(value = "/orders/{orderId}")
+    public ResponseEntity<OrderDto> getSingleOrder(@PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.getSingleOrder(orderId));
+    }
+
     @GetMapping(value = "/users")
     public ResponseEntity<List<UserDto>> getUsers() {
         return ResponseEntity.ok(userService.getAllUsersConverted());
