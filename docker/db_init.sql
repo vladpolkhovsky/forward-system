@@ -455,4 +455,4 @@ values (1, 'Бух. учет'),
 alter table forward_system.orders alter column name drop not null;
 alter table forward_system.orders add amount varchar(255);
 
-alter table forward_system.security_block alter column
+alter table forward_system.security_block alter column reason type varchar(65536);
