@@ -32,6 +32,7 @@ public class AIDetector {
     @Value("${ai.url}")
     private String aiUrl;
 
+
     @Autowired
     private AttachmentService attachmentService;
 
@@ -39,7 +40,10 @@ public class AIDetector {
     private AiLogRepository aiLogRepository;
 
     private static final String FILE_CHECK_PATH = "/check_file";
+
     private static final String MESSAGE_CHECK_PATH = "/check_message";
+
+    private static final boolean ENABLE_FILE_CHECK = false;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -77,6 +81,10 @@ public class AIDetector {
 
     @Transactional
     public AICheckResult isValidFile(String username, Long attachmentId) {
+        if (!ENABLE_FILE_CHECK) {
+            return new AICheckResult(true, 0);
+        }
+
         AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(attachmentId);
 
         int i = attachmentFile.filename().lastIndexOf(".");
