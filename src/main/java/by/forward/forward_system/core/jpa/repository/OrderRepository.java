@@ -28,7 +28,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         "inner join forward_system.chat_message_attachments cma on cma.message_id = cm.id " +
         "inner join forward_system.attachments a on cma.attachment_id = a.id " +
         "where c.type = 'ORDER_CHAT' and c.order_id = :orderId " +
-        "order by cm.created_at")
+        "order by cm.created_at limit 256")
     List<ChatAttachmentProjection> findChatAttachmentsByOrderId(Long orderId);
 
     @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status != :orderStatus")
@@ -42,7 +42,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         "where op.user_id = :userId and op.type in :types")
     Integer countMyOrders(Long userId, List<String> types);
 
-    @Query(value = "select MAX(o.techNumber) from OrderEntity o")
+    @Query(nativeQuery = true, value = "select max(o.tech_number::int)::varchar from forward_system.orders o")
     Optional<String> maxTechNumber();
 
     @Query(nativeQuery = true, value = """
