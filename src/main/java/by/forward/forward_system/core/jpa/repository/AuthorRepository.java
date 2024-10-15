@@ -6,11 +6,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.List;
 
 @Repository
 public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
 
     @Query(value = "select distinct a from AuthorEntity a join fetch a.user join fetch a.createdByUser")
-    Collection<AuthorEntity> getAuthorsFast();
+    List<AuthorEntity> getAuthorsFast();
 
 }

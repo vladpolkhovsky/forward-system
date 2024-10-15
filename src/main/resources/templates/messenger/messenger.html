@@ -218,7 +218,28 @@
         orderLink.setAttribute("href", `/order-info/${chatTable[chatId].orderId}`);
     }
 
+    function unselectChatInList(chatId) {
+        if (chatId === null || chatId === undefined) {
+            return
+        }
+        let element = document.getElementById(`chat-${chatId}`);
+        element.classList.remove("bg-info-subtle");
+    }
+
+    function selectChatInList(chatId) {
+        if (chatId === null || chatId === undefined) {
+            return
+        }
+        let element = document.getElementById(`chat-${chatId}`);
+        element.classList.add("bg-info-subtle");
+    }
+
     function preloadChat(chatId) {
+        unselectChatInList(context.chatId);
+
+        context.chatId = chatId;
+        selectChatInList(chatId);
+
         httpRequest('GET', `/api/messenger/${context.userId}/chats/${chatId}`, null, (resp) => {
             let chatJson = JSON.parse(resp);
 
@@ -240,7 +261,6 @@
     }
 
     function loadChat(chatId) {
-        context.chatId = chatId;
         chatNewMessages[chatId] = 0;
         chatHeader.innerText = chatTable[chatId].chatName;
         messageBox.innerHTML = '';

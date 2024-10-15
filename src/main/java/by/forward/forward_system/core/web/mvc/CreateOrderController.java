@@ -237,7 +237,6 @@ public class CreateOrderController {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Укажите данные для перевода в статус \"В работе\"");
         model.addAttribute("authors", orderUiService.getAuthorsByOrder(order.getId()));
-        model.addAttribute("experts", orderUiService.getAllAuthors());
         model.addAttribute("catchers", orderUiService.getUserListWithCatcherMark(order.getId()));
         model.addAttribute("hosts", orderUiService.getAllManagers());
         model.addAttribute("orderId", orderId);

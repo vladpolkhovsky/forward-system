@@ -19,7 +19,7 @@
          class="alert alert-primary"
          role="alert">
     </div>
-    <h3 th:text="|Заказ №| + ${order.getTechNumber()} + |. Выбор авторов и кэтчера.|"></h3>
+    <h3 th:text="|Заказ №| + ${order.getTechNumber()} + |. Выбор авторов и кетчера.|"></h3>
     <div class="row">
         <div class="col-6">
             <div class="container g-3 border">
@@ -35,7 +35,7 @@
                     <label class="form-check-label" th:for="|user-| + ${user.getId()}"
                            th:text="${user.getFio()} + | (| + ${user.getUsername()} + |)|"></label>
                 </div>
-                <button id="catcher-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">Назначить кэтчера</button>
+                <button id="catcher-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">Назначить кетчера</button>
             </div>
         </div>
         <div class="col-6">

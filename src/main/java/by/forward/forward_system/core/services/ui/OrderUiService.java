@@ -145,8 +145,9 @@ public class OrderUiService {
 
         List<OrderParticipantEntity> orderParticipants = order.getOrderParticipants();
         List<OrderParticipantEntity> authorsParticipants = orderParticipants.stream()
-            .filter(t -> isAssignedAuthor(t))
+            .filter(this::isAssignedAuthor)
             .toList();
+
         Set<Long> authorIds = authorsParticipants.stream()
             .map(OrderParticipantEntity::getUser)
             .map(UserEntity::getId)
@@ -206,7 +207,7 @@ public class OrderUiService {
     }
 
     public List<UserSelectionUiDto> getAuthorsByOrder(Long orderId) {
-        List<AuthorEntity> allAuthors = authorService.getAllAuthors();
+        List<AuthorEntity> allAuthors = authorService.getAllAuthorsFast();
 
         OrderEntity order = orderService.getById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));

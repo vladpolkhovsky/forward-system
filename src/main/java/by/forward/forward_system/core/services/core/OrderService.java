@@ -263,7 +263,7 @@ public class OrderService {
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(
                 null,
                 newOrdersChatByUser.get(),
-                "Поступил новый заказ №%s.\nНазвание работы \"%s\".\nТема \"%s\".\nДисциплина \"%s\".".formatted(techNumber, name, subject, discipline),
+                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, name, discipline, subject),
                 true,
                 chatMessageType.get(),
                 Collections.emptyList(),

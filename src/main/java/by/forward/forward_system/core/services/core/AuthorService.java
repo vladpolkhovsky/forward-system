@@ -134,7 +134,7 @@ public class AuthorService {
         return authorRepository.findAll();
     }
 
-    public Collection<AuthorEntity> getAllAuthorsFast() {
+    public List<AuthorEntity> getAllAuthorsFast() {
         return authorRepository.getAuthorsFast();
     }
 }
