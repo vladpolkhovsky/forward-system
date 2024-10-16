@@ -230,6 +230,9 @@
             return
         }
         let element = document.getElementById(`chat-${chatId}`);
+        if (element === null || element === undefined) {
+            return;
+        }
         element.classList.remove("bg-info-subtle");
     }
 
