@@ -20,6 +20,7 @@ public class WebPushController {
 
         model.addAttribute("menu", menuUiService.getMenuEntries());
         model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("userId", userUiService.getCurrentUserId());
 
         return "main/push-subscription";
     }

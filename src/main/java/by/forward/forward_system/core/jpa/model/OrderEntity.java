@@ -45,7 +45,7 @@ public class OrderEntity {
     @Column(name = "verification_system")
     private String verificationSystem;
 
-    @Column(name = "amount")
+    @Column(name = "amount", length = 2048)
     private String amount;
 
     @Column(name = "intermediate_deadline")

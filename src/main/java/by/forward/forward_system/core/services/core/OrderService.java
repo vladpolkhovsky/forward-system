@@ -226,7 +226,7 @@ public class OrderService {
                 userId,
                 orderEntity.getId(),
                 new BigDecimal(orderEntity.getTechNumber()),
-                orderEntity.getName(),
+                orderEntity.getWorkType(),
                 orderEntity.getDiscipline().getName(),
                 orderEntity.getSubject()
             );
@@ -242,7 +242,7 @@ public class OrderService {
             || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
-    private void sendNewOrderRequest(Long userId, Long orderId, BigDecimal techNumber, String name, String discipline, String subject) {
+    private void sendNewOrderRequest(Long userId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
         Long currentUserId = userUiService.getCurrentUserId();
@@ -263,7 +263,7 @@ public class OrderService {
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(
                 null,
                 newOrdersChatByUser.get(),
-                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, name, discipline, subject),
+                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
                 true,
                 chatMessageType.get(),
                 Collections.emptyList(),

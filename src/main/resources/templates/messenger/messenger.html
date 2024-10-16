@@ -58,27 +58,29 @@
             <h5><strong id="chat-header">Название чата</strong></h5>
             <div id="orderInfo" hidden="">
                 <div class="row">
-                    <div class="col-5"><strong>Название:</strong> <span id="orderName">Терминология, основополагающие моменты и особенности занятости и безработицы</span>
-                    </div>
-                    <div class="col-4"><strong>Номер ТЗ:</strong> <span id="orderTechNumber">123</span></div>
+                    <div class="col-3"><strong>Номер ТЗ:</strong> <span id="orderTechNumber">123</span></div>
+                    <div class="col-3"><strong>Тип работы:</strong> <span id="workType">123</span></div>
+                    <div class="col-3"><strong>Дисциплина:</strong> <span id="discipline">123</span></div>
                     <div class="col-3"><span id="orderStatus"><a class="btn btn-primary">На распределении</a></span>
                     </div>
                 </div>
+                <hr class="mt-1 mb-1"/>
                 <div class="row">
-                    <div class="col-5">
+                    <div class="col-6">
                         <strong>Срок сдачи (СД): </strong><span id="orderDeadline">02.08.2024</span>
                     </div>
-                    <div class="col-5">
+                    <div class="col-6">
                         <strong>Промежуточный СД: </strong><span id="orderIntermediateDeadline">02.08.2024</span>
                     </div>
                 </div>
+                <hr class="mt-1 mb-1"/>
                 <div class="row">
                     <div class="col-7">
                         <strong>Дополнительные этапы сдачи:</strong>
                         <ul id="add-dates" class="list-group">
                         </ul>
                     </div>
-                    <div class="col-5 mt-3">
+                    <div class="col-5">
                         <a id="orderLink" href="">Просмотреть детали заказа</a>
                     </div>
                 </div>
@@ -113,7 +115,8 @@
     const chatHeader = document.getElementById("chat-header");
     const chatBox = document.getElementById("chat-list-box");
     const orderInfoBox = document.getElementById("orderInfo");
-    const orderName = document.getElementById("orderName");
+    const workType = document.getElementById("workType");
+    const discipline = document.getElementById("discipline");
     const orderTechNumber = document.getElementById("orderTechNumber");
     const orderStatus = document.getElementById("orderStatus");
     const orderIntermediateDeadline = document.getElementById("orderIntermediateDeadline");
@@ -126,6 +129,8 @@
     const adminTabCount = document.getElementById("admin-count");
     const ordersTabCount = document.getElementById("orders-count");
     const specialTabCount = document.getElementById("special-count");
+
+    const notificationAudio = new Audio("/static/notification.mp3");
 
     const userId = [[${userId}]];
     const isAdmin = [[${isAdmin}]];
@@ -188,7 +193,9 @@
 
     function drawOrderInfo(chatId) {
         orderInfoBox.removeAttribute("hidden");
-        orderName.innerText = orderTable[chatTable[chatId].orderId].name;
+
+        workType.innerText = orderTable[chatTable[chatId].orderId].workType;
+        discipline.innerText = orderTable[chatTable[chatId].orderId].discipline;
         orderTechNumber.innerText = orderTable[chatTable[chatId].orderId].techNumber;
         orderStatus.innerHTML = drawOrderStatus(orderTable[chatTable[chatId].orderId].orderStatus, orderTable[chatTable[chatId].orderId].orderStatusRus);
 
@@ -560,6 +567,7 @@
     }
 
     function processWsNotification(notification) {
+        notificationAudio.play();
         if (notification.type === "message") {
             processWsMessage(notification.value);
         }
