@@ -17,7 +17,7 @@ public class NotificationJob {
 
     private final WebPushNotification webPushNotification;
 
-    @Scheduled(fixedDelay = 90, timeUnit = TimeUnit.MINUTES)
+    //@Scheduled(fixedDelay = 90, timeUnit = TimeUnit.MINUTES)
     public void notifyNotViewedMessages() {
         List<Long> userIds = chatService.getUsersWithNotViewedMessaged();
         for (Long userId : userIds) {

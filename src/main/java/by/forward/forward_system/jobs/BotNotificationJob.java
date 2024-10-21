@@ -1,0 +1,140 @@
+package by.forward.forward_system.jobs;
+
+import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
+import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
+import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+@Component
+@AllArgsConstructor
+public class BotNotificationJob {
+
+    private final BotNotificationService botNotificationService;
+    private final NotificationOutboxRepository notificationOutboxRepository;
+    private final ChatMetadataRepository chatMetadataRepository;
+    private final ChatRepository chatRepository;
+
+    @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+    @Transactional
+    public void notifyBot() {
+        LocalDateTime time = LocalDateTime.now().minusMinutes(15);
+        List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
+
+        Map<UserEntity, List<NotificationOutboxEntity>> userToOutbox = new HashMap<>();
+        for (NotificationOutboxEntity notificationOutboxEntity : allMessagesOlderThen) {
+            userToOutbox.putIfAbsent(notificationOutboxEntity.getUser(), new ArrayList<>());
+            userToOutbox.get(notificationOutboxEntity.getUser()).add(notificationOutboxEntity);
+        }
+
+        for (Map.Entry<UserEntity, List<NotificationOutboxEntity>> userEntityListEntry : userToOutbox.entrySet()) {
+            try {
+                computeAndSendNotification(userEntityListEntry.getKey(), userEntityListEntry.getValue());
+            } catch (Exception ignored) {
+
+            }
+        }
+
+        notificationOutboxRepository.deleteAll(allMessagesOlderThen);
+    }
+
+    private void computeAndSendNotification(UserEntity user, List<NotificationOutboxEntity> notification) {
+        Map<Long, Integer> chatIdToMessageCount = new HashMap<>();
+
+        for (NotificationOutboxEntity notificationOutboxEntity : notification) {
+            Boolean isViewed = notificationOutboxEntity.getMessageToUser().getIsViewed();
+            if (!isViewed) {
+                chatIdToMessageCount.putIfAbsent(notificationOutboxEntity.getChat().getId(), 0);
+                chatIdToMessageCount.put(
+                    notificationOutboxEntity.getChat().getId(),
+                    chatIdToMessageCount.get(notificationOutboxEntity.getChat().getId()) + 1
+                );
+            }
+        }
+
+        for (Map.Entry<Long, Integer> chatIdToMessageCountEntry : chatIdToMessageCount.entrySet()) {
+            if (chatIdToMessageCountEntry.getValue() == 0) {
+                continue;
+            }
+            ChatEntity chatEntity = chatRepository.findById(chatIdToMessageCountEntry.getKey()).get();
+            String chatName = chatEntity.getChatName();
+            ChatType chatType = chatEntity.getChatType().getType();
+            sendIfNeeded(user, chatType, chatName, chatEntity.getId(), chatIdToMessageCountEntry.getValue());
+        }
+    }
+
+    private void sendIfNeeded(UserEntity user, ChatType chatType, String chatName, Long chatId, Integer newMessageCount) {
+        if (chatType.equals(ChatType.REQUEST_ORDER_CHAT)) {
+            ChatMetadataEntity chatMetadataEntity = chatMetadataRepository.findById(chatId).get();
+            if (chatMetadataEntity.getUser().getId().equals(user.getId()) || chatMetadataEntity.getManager().getId().equals(user.getId())) {
+                sendRequestOrderNotification(user, chatName, newMessageCount);
+            }
+        } else if (chatType.equals(ChatType.ADMIN_TALK_CHAT)) {
+            sendAdminTalkNotification(user, chatName, newMessageCount);
+        } else if (chatType.equals(ChatType.ORDER_CHAT)) {
+            ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));
+            String techNumber = "Не определён";
+            boolean isNeedToSend = false;
+            if (chatEntity.getOrder() != null) {
+                OrderEntity orderEntity = chatEntity.getOrder();
+                techNumber = orderEntity.getTechNumber();
+                Optional<OrderParticipantEntity> any = orderEntity.getOrderParticipants().stream()
+                    .filter(t -> t.getUser().getId().equals(user.getId()))
+                    .findAny();
+                isNeedToSend = any.isPresent();;
+            }
+            if (isNeedToSend) {
+                sendOrderNotification(user, techNumber, chatName, newMessageCount);
+            }
+        } else if (chatType.equals(ChatType.SPECIAL_CHAT)) {
+            sendSpecialAndOtherNotification(user, chatName, newMessageCount);
+        } else if (chatType.equals(ChatType.OTHER_CHAT)) {
+            sendSpecialAndOtherNotification(user, chatName, newMessageCount);
+        }
+    }
+
+    private void sendAdminTalkNotification(UserEntity userEntity, String chatName, Integer newMessageCount) {
+        String text = """
+            Здравствуйте, %s.
+            У вас новые непрочитанное сообщения (%d шт.) в чате:
+            "%s".
+            """.formatted(userEntity.getUsername(), newMessageCount, chatName);
+        botNotificationService.sendBotNotification(userEntity.getId(), text);
+    }
+
+    private void sendRequestOrderNotification(UserEntity userEntity, String chatName, Integer newMessageCount) {
+        String text = """
+            Здравствуйте, %s.
+            У вас новые непрочитанное сообщения (%d шт.) в чате:
+            "%s".
+            """.formatted(userEntity.getUsername(), newMessageCount, chatName);
+        botNotificationService.sendBotNotification(userEntity.getId(), text);
+    }
+
+    private void sendOrderNotification(UserEntity userEntity, String techNumber, String chatName, Integer newMessageCount) {
+        String text = """
+            Здравствуйте, %s.
+            У вас новые непрочитанное сообщения (%d шт.) в чате:
+            "%s" по заказу #%s.
+            """.formatted(userEntity.getUsername(), newMessageCount, chatName, techNumber);
+        botNotificationService.sendBotNotification(userEntity.getId(), text);
+    }
+
+    private void sendSpecialAndOtherNotification(UserEntity userEntity, String chatName, Integer newMessageCount) {
+        String text = """
+            Здравствуйте, %s.
+            У вас новые непрочитанное сообщения (%d шт.) в чате:
+            "%s".
+            """.formatted(userEntity.getUsername(), newMessageCount, chatName);
+        botNotificationService.sendBotNotification(userEntity.getId(), text);
+    }
+}

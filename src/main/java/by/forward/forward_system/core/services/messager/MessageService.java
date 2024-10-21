@@ -26,6 +26,7 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
+    private final NotificationOutboxRepository notificationOutboxRepository;
 
     @Transactional
     public ChatMessageEntity sendMessage(UserEntity fromUserEntity,
@@ -50,7 +51,7 @@ public class MessageService {
         chatEntity.setLastMessageDate(now);
         chatEntity.getChatMassages().add(chatMessageEntity);
 
-        chatRepository.save(chatEntity);
+        chatEntity = chatRepository.save(chatEntity);
 
         for (ChatMessageOptionEntity option : options) {
             option.setMessage(chatMessageEntity);
@@ -78,10 +79,21 @@ public class MessageService {
             chatMessageToUserEntity.setIsViewed(false);
             chatMessageToUserEntity.setCreatedAt(now);
             chatMessageToUserEntity = chatMessageToUserRepository.save(chatMessageToUserEntity);
+
             chatMessageEntity.getChatMessageToUsers().add(chatMessageToUserEntity);
+            chatMessageEntity = messageRepository.save(chatMessageEntity);
+
+            NotificationOutboxEntity notificationOutboxEntity = new NotificationOutboxEntity();
+            notificationOutboxEntity.setChat(chatEntity);
+            notificationOutboxEntity.setMessage(chatMessageEntity);
+            notificationOutboxEntity.setMessageToUser(chatMessageToUserEntity);
+            notificationOutboxEntity.setUser(chatMember.getUser());
+            notificationOutboxEntity.setCreatedAt(now);
+
+            notificationOutboxRepository.save(notificationOutboxEntity);
         }
 
-        return messageRepository.save(chatMessageEntity);
+        return chatMessageEntity;
     }
 
     @Transactional
@@ -107,6 +119,7 @@ public class MessageService {
             chatMessageAttachmentEntities,
             Collections.emptyList()
         );
+
         return convertChatMessage(chatMessageEntity);
     }
 

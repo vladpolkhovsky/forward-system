@@ -441,6 +441,10 @@
             return;
         }
 
+        if (message.fromUserId !== context.userId) {
+            notificationAudio.play();
+        }
+
         chatTable[message.chatId].messages.push(message);
 
         if (context.chatId !== message.chatId) {
@@ -570,7 +574,6 @@
     }
 
     function processWsNotification(notification) {
-        notificationAudio.play();
         if (notification.type === "message") {
             processWsMessage(notification.value);
         }

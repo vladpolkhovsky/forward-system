@@ -37,6 +37,9 @@ dependencies {
 	implementation("nl.martijndwars:web-push:5.1.1")
 	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
+	implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.2.1")
+	implementation("org.telegram:telegrambots-longpolling:7.10.0")
+	implementation("org.telegram:telegrambots-client:7.2.1")
 
 	implementation(platform("com.amazonaws:aws-java-sdk-bom:1.12.529"))
 	implementation("com.amazonaws:aws-java-sdk-s3")

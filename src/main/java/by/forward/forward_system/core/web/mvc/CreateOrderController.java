@@ -3,9 +3,13 @@ package by.forward.forward_system.core.web.mvc;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.services.core.DisciplineService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
+import by.forward.forward_system.core.services.core.UserService;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
@@ -35,6 +39,8 @@ public class CreateOrderController {
     private final UpdateRequestOrderService updateRequestOrderService;
 
     private final DisciplineService disciplineService;
+    private final BotNotificationService botNotificationService;
+    private final UserService userService;
 
     @GetMapping("/create-order")
     public String createOrder(Model model) {
@@ -252,6 +258,11 @@ public class CreateOrderController {
         UpdateOrderRequestDto updateOrderRequestDto = updateRequestOrderService.create(body, orderId, order.getTechNumber(), OrderStatus.ADMIN_REVIEW);
         updateRequestOrderService.save(updateOrderRequestDto);
         orderService.changeStatus(orderId, OrderStatus.DISTRIBUTION, OrderStatus.ADMIN_REVIEW);
+
+        List<UserEntity> adminUsers = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
+        for (UserEntity userEntity : adminUsers) {
+            botNotificationService.sendBotNotification(userEntity.getId(), "Заказ #%s ожидает подтверждения Администратора".formatted(order.getTechNumber()));
+        }
 
         return new RedirectView("/order-to-in-progress");
     }

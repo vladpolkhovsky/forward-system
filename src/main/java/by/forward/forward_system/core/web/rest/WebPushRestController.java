@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.web.rest;
 
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.WebPushNotification;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,8 @@ public class WebPushRestController {
 
     private final UserUiService userUiService;
 
+    private final BotNotificationService botNotificationService;
+
     @GetMapping(value = "/get-subscription-status/{notificationId}")
     private ResponseEntity<SubscriptionResult> subscriptionStatus(@PathVariable Long notificationId) {
         Long currentUserId = userUiService.getCurrentUserId();
@@ -32,6 +35,15 @@ public class WebPushRestController {
     private ResponseEntity<SubscriptionResult> subscribe(@RequestBody SubscriptionRequest subscriptionRequest) {
         webPushNotification.subscribe(userUiService.getCurrentUserId(), subscriptionRequest.notificationId(),  subscriptionRequest.subscription());
         return ResponseEntity.ok(new SubscriptionResult(true));
+    }
+
+    @GetMapping(value = "/get-bot-code", consumes = MediaType.ALL_VALUE)
+    private ResponseEntity<BotCode> getBotCode() {
+        return ResponseEntity.ok(new BotCode(botNotificationService.getCode(userUiService.getCurrentUserId())));
+    }
+
+    public record BotCode(String botCode) {
+
     }
 
     public record SubscriptionRequest(Long notificationId, Subscription subscription) {

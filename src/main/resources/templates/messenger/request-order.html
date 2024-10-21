@@ -57,18 +57,19 @@
                    th:value="${order.getOriginality()}">
         </div>
     </div>
-    <div class="mb-3 mt-3 row">
-        <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
-        <div class="col-sm-10">
-            <input readonly id="amount" type="text" class="form-control-plaintext"
-                   th:value="${order.getAmount()}">
-        </div>
-    </div>
     <div class="row mb-3 mt-3">
         <label for="verificationSystem" class="col-sm-2 col-form-label">Система проверки</label>
         <div class="col-sm-10">
             <input type="text" readonly class="form-control-plaintext" id="verificationSystem"
                    th:value="${order.getVerificationSystem()}">
+        </div>
+    </div>
+
+    <div class="mb-3 mt-3 row">
+        <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
+        <div class="col-sm-10">
+            <input readonly id="amount" type="text" class="form-control-plaintext"
+                   th:value="${order.getAmount()}">
         </div>
     </div>
     <div class="row mb-3 mt-3">

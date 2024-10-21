@@ -8,7 +8,9 @@ import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.SecurityBlockRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +31,9 @@ public class BanService {
 
     private UserRepository userRepository;
 
+    private BotNotificationService botNotificationService;
+
+    @Transactional
     public boolean ban(Long userId, String reason) {
         Optional<SecurityBlockEntity> byId = securityBlockRepository.findByUserId(userId);
 
@@ -48,6 +53,8 @@ public class BanService {
             securityBlockEntity.setUser(userEntity);
             securityBlockEntity.setReason(reason);
             securityBlockRepository.save(securityBlockEntity);
+
+            sendNotificationToAdmins(userEntity);
         }
 
         return true;
@@ -129,5 +136,22 @@ public class BanService {
             .map(userService::convertUserToDto)
             .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))
             .toList();
+    }
+
+
+    private void sendNotificationToAdmins(UserEntity userEntity) {
+        String text = """
+           СРОЧНО!
+           
+           Срочное сообщение для %s.
+           Система заблокировала пользоавтеля: %s.
+           Проверьте правильность блокировки пользователя.
+           
+           СРОЧНО!
+           """;
+        List<UserEntity> allUserWithoutRole = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
+        for (UserEntity admin : allUserWithoutRole) {
+            botNotificationService.sendBotNotification(admin.getId(), text.formatted(admin.getUsername(), userEntity.getUsername()));
+        }
     }
 }

@@ -101,10 +101,10 @@ create table if not exists forward_system.order_participants
 
 create table if not exists forward_system.attachments
 (
-    id       bigint primary key,
-    filename varchar(2048) not null,
-    filepath varchar(2048) not null,
-    object_key varchar(512) not null
+    id         bigint primary key,
+    filename   varchar(2048) not null,
+    filepath   varchar(2048) not null,
+    object_key varchar(512)  not null
 );
 
 create table if not exists forward_system.order_attachments
@@ -452,7 +452,44 @@ values (1, 'Бух. учет'),
        (150, 'Медицинское право'),
        (151, 'Логопедия');
 
-alter table forward_system.orders alter column name drop not null;
-alter table forward_system.orders add amount varchar(255);
-alter table forward_system.security_block alter column reason type varchar(65536);
-alter table forward_system.orders alter column amount type varchar(2048);
+alter table forward_system.orders
+    alter column name drop not null;
+alter table forward_system.orders
+    add amount varchar(255);
+alter table forward_system.security_block
+    alter column reason type varchar(65536);
+alter table forward_system.orders
+    alter column amount type varchar(2048);
+
+create table if not exists forward_system.bot_notification_code
+(
+    id   bigint primary key references forward_system.users (id),
+    code varchar(32) not null
+);
+
+create table if not exists forward_system.bot_type
+(
+    name varchar(255) primary key
+);
+
+insert into forward_system.bot_type(name)
+values ('TELEGRAM_BOT');
+
+create table if not exists forward_system.bot_integration_data
+(
+    id               bigint primary key,
+    user_id          bigint       not null references forward_system.users (id),
+    bot_type         varchar(255) not null references forward_system.bot_type (name),
+    telegram_chat_id bigint,
+    telegram_user_id bigint
+);
+
+create table if not exists forward_system.notification_outbox
+(
+    id                 bigint primary key,
+    user_id            bigint       not null references forward_system.users (id),
+    chat_id            bigint       not null references forward_system.chats (id),
+    message_id         bigint       not null references forward_system.chat_messages (id),
+    message_to_user_id bigint       not null references forward_system.chat_message_to_user (id),
+    created_at         timestamp    not null
+)

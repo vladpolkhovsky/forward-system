@@ -13,7 +13,10 @@
 <div class="container">
     <div class="display-6">Подписка на рассылку сообщений.</div>
     <div class="alert alert-warning col-12 mt-3 mb-3" role="alert">
-        <p class="mt-3">Для того, чтобы подписаться на рассылку сообщений, ознакомьтесь с инструкцией, как настроить браузер, чтобы он мог получать сообщения: <a target="_blank" href="https://docs.google.com/document/d/1gVFKNFaxZYJ7dpgxiLqDaixI3FP1AL4ywe7pSiDglzc/edit?usp=sharing">Google документ с инструкцией.</a></p>
+        <p class="mt-3">Для того, чтобы подписаться на рассылку сообщений, ознакомьтесь с инструкцией, как настроить
+            браузер, чтобы он мог получать сообщения: <a target="_blank"
+                                                         href="https://docs.google.com/document/d/1gVFKNFaxZYJ7dpgxiLqDaixI3FP1AL4ywe7pSiDglzc/edit?usp=sharing">Google
+                документ с инструкцией.</a></p>
     </div>
     <p class="mt-3">Статус подписки: <span id="subscription-status-text"></span></p>
     <button id="subscription-button" class="mt-1 btn btn-primary" onclick="main()">Подписаться</button>
@@ -21,6 +24,15 @@
         и обновите страницу. <a target="_blank"
                                 href="https://support.google.com/chrome/answer/3220216?hl=ru&co=GENIE.Platform%3DDesktop&oco=0">Как
             включить?</a></p>
+
+    <div class="alert alert-success col-12 mt-3 mb-3" role="alert">
+        <p>Так же вы можете подписаться на рассылку сообщений в <a target="_blank"
+                                                                   href="https://t.me/forward_system_notification_bot">Telegram</a>,
+            используя следующий персональный код подтверждения:</p>
+    </div>
+    <blockquote class="blockquote">
+        <p>Код подтверждения: <mark class="p-1 border" id="bot-code"></mark></p>
+    </blockquote>
 </div>
 <script th:inline="javascript">
     const userId = [[${userId}]];
@@ -32,6 +44,7 @@
     let subscriptionStatusText = document.getElementById("subscription-status-text");
     let subscriptionButton = document.getElementById("subscription-button");
     let subscriptionDeniedText = document.getElementById("denied-text");
+    let botCode = document.getElementById("bot-code");
 
     function httpRequest(method, requestUrl, body, callback) {
         let xhr = new XMLHttpRequest();
@@ -69,6 +82,10 @@
 
     httpRequest('GET', `/api/push/public-key`, null, (resp) => {
         window.applicationServerKey = JSON.parse(resp).publicKey;
+    });
+
+    httpRequest('GET', '/api/push/get-bot-code', null, (resp) => {
+        botCode.innerText = JSON.parse(resp).botCode;
     });
 
     navigator.serviceWorker.register('/static/sw.js').then(() => {
@@ -125,7 +142,7 @@
     function setCookie(cname, cvalue, exdays) {
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        let expires = "expires="+d.toUTCString();
+        let expires = "expires=" + d.toUTCString();
         document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     }
 

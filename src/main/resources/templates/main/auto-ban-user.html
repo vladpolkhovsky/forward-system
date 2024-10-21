@@ -16,7 +16,7 @@
 </div>
 <div class="container">
     <div class="row">
-        <p class="mt-3" th:text="|Заблокированный пользователь: | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getUsername()} + |) (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+        <p class="mt-3" th:text="|Заблокированный пользователь:  | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <pre class="mt-3 mb-3" th:utext="|Причина блокировки: | + ${ban.getReason()}"></pre>
         <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|"
            class="btn btn-danger mt-3">Заблокировать</a>

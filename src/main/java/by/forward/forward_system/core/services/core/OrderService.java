@@ -1,8 +1,6 @@
 package by.forward.forward_system.core.services.core;
 
-import by.forward.forward_system.core.dto.messenger.OrderAttachmentDto;
-import by.forward.forward_system.core.dto.messenger.OrderDto;
-import by.forward.forward_system.core.dto.messenger.OrderParticipantDto;
+import by.forward.forward_system.core.dto.messenger.*;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
 import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
@@ -16,6 +14,7 @@ import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
@@ -35,6 +34,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final WebsocketMassageService websocketMassageService;
     private final OrderStatusRepository orderStatusRepository;
     private final OrderParticipantsTypeRepository orderParticipantsTypeRepository;
     private final UserRepository userRepository;
@@ -269,6 +269,11 @@ public class OrderService {
                 Collections.emptyList(),
                 Collections.singletonList(chatMessageOptionEntity)
             );
+
+            MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
+            List<Long> list = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
+
+            websocketMassageService.sendMessageToUsers(list, messageDto);
         }
     }
 

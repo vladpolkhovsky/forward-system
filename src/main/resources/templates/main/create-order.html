@@ -74,13 +74,6 @@
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
-                    <div class="col-sm-10">
-                        <input id="amount" type="text" class="form-control"
-                               th:field="*{amount}">
-                    </div>
-                </div>
-                <div class="mb-3 mt-3 row">
                     <label for="discipline" class="col-sm-2 col-form-label">Система проверки<strong class="text-danger">*</strong></label>
                     <div class="col-sm-10">
                         <input required id="verificationSystem" type="text" class="form-control"
@@ -88,6 +81,13 @@
                         <div class="row">
                             <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVerificationSystem">Выбрать систему проверки</button>
                         </div>
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
+                    <div class="col-sm-10">
+                        <input id="amount" type="text" class="form-control"
+                               th:field="*{amount}">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">

@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long> {
-    @Query(nativeQuery = true, value = "select count(*) from forward_system.chat_message_to_user c" +
+    @Query(nativeQuery = true, value = "select count(distinct c.chat_id) from forward_system.chat_message_to_user c" +
         " where c.user_id = :currentUserId and c.is_viewed = false;")
     Integer getNewMessageByUserId(Long currentUserId);
 
