@@ -10,6 +10,9 @@ import java.util.List;
 
 @Repository
 public interface NotificationOutboxRepository extends JpaRepository<NotificationOutboxEntity, Long> {
+    @Query(nativeQuery = true, value = "select * from forward_system.notification_outbox no where no.chat_id = :chatId")
+    List<NotificationOutboxEntity> findAllByChatId(Long chatId);
+
     @Query(nativeQuery = true, value = "select * from forward_system.notification_outbox no where no.created_at < :time;")
     List<NotificationOutboxEntity> getAllMessagesOlderThen(LocalDateTime time);
 }

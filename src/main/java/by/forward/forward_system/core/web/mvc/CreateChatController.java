@@ -20,10 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 @Controller
@@ -113,7 +110,8 @@ public class CreateChatController {
 
         String chatId = body.getFirst("chatId");
         String chatName = body.getFirst("chatName");
-        List<Long> chatMembers = body.get("users").stream().map(Long::valueOf).toList();
+        List<Long> chatMembers = Optional.of(body.get("users")).orElse(Collections.emptyList())
+            .stream().map(Long::valueOf).toList();
 
         if (StringUtils.isBlank(chatId)) {
             chatService.createChat(chatName, chatMembers);

@@ -27,7 +27,7 @@ public class BotNotificationJob {
     @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
     @Transactional
     public void notifyBot() {
-        LocalDateTime time = LocalDateTime.now().minusMinutes(15);
+        LocalDateTime time = LocalDateTime.now().minusMinutes(5);
         List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
 
         Map<UserEntity, List<NotificationOutboxEntity>> userToOutbox = new HashMap<>();

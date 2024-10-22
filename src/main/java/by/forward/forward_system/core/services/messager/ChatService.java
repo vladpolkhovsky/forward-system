@@ -43,6 +43,7 @@ public class ChatService {
     private final ChatMessageAttachmentRepository chatMessageAttachmentRepository;
     private final ChatMessageOptionRepository chatMessageOptionRepository;
     private final MessageRepository messageRepository;
+    private final NotificationOutboxRepository notificationOutboxRepository;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -244,6 +245,9 @@ public class ChatService {
     public void deleteChat(Long chatId) {
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
         chatMemberRepository.deleteAll(chatEntity.getChatMembers());
+
+        List<NotificationOutboxEntity> notificationOutbox = notificationOutboxRepository.findAllByChatId(chatId);
+        notificationOutboxRepository.deleteAll(notificationOutbox);
 
         List<ChatMessageToUserEntity> messagesToUser = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageToUsers().stream()).toList();
         chatMessageToUserRepository.deleteAll(messagesToUser);
