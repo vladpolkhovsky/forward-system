@@ -8,13 +8,17 @@ import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepositor
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class BotNotificationJob {
@@ -27,6 +31,8 @@ public class BotNotificationJob {
     @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
     @Transactional
     public void notifyBot() {
+        LocalDateTime startTime = LocalDateTime.now();
+
         LocalDateTime time = LocalDateTime.now().minusMinutes(5);
         List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
 
@@ -36,20 +42,24 @@ public class BotNotificationJob {
             userToOutbox.get(notificationOutboxEntity.getUser()).add(notificationOutboxEntity);
         }
 
+        int sandedMessageCount = 0;
         for (Map.Entry<UserEntity, List<NotificationOutboxEntity>> userEntityListEntry : userToOutbox.entrySet()) {
             try {
-                computeAndSendNotification(userEntityListEntry.getKey(), userEntityListEntry.getValue());
+                sandedMessageCount += computeAndSendNotification(userEntityListEntry.getKey(), userEntityListEntry.getValue());
             } catch (Exception ignored) {
 
             }
         }
 
         notificationOutboxRepository.deleteAll(allMessagesOlderThen);
+
+        long execTime = Duration.between(startTime, LocalDateTime.now()).getSeconds();
+        log.info("Отправка оповещений завершена. Заняло {} сек. Отправлено {} сообщений.", execTime, sandedMessageCount);
     }
 
-    private void computeAndSendNotification(UserEntity user, List<NotificationOutboxEntity> notification) {
+    private int computeAndSendNotification(UserEntity user, List<NotificationOutboxEntity> notification) {
         Map<Long, Integer> chatIdToMessageCount = new HashMap<>();
-
+        int sandedMessageCount = 0;
         for (NotificationOutboxEntity notificationOutboxEntity : notification) {
             Boolean isViewed = notificationOutboxEntity.getMessageToUser().getIsViewed();
             if (!isViewed) {
@@ -68,18 +78,22 @@ public class BotNotificationJob {
             ChatEntity chatEntity = chatRepository.findById(chatIdToMessageCountEntry.getKey()).get();
             String chatName = chatEntity.getChatName();
             ChatType chatType = chatEntity.getChatType().getType();
-            sendIfNeeded(user, chatType, chatName, chatEntity.getId(), chatIdToMessageCountEntry.getValue());
+            sandedMessageCount += sendIfNeeded(user, chatType, chatName, chatEntity.getId(), chatIdToMessageCountEntry.getValue());
         }
+        return sandedMessageCount;
     }
 
-    private void sendIfNeeded(UserEntity user, ChatType chatType, String chatName, Long chatId, Integer newMessageCount) {
+    private int sendIfNeeded(UserEntity user, ChatType chatType, String chatName, Long chatId, Integer newMessageCount) {
+        int sandedMessageCount = 0;
         if (chatType.equals(ChatType.REQUEST_ORDER_CHAT)) {
             ChatMetadataEntity chatMetadataEntity = chatMetadataRepository.findById(chatId).get();
             if (chatMetadataEntity.getUser().getId().equals(user.getId()) || chatMetadataEntity.getManager().getId().equals(user.getId())) {
                 sendRequestOrderNotification(user, chatName, newMessageCount);
+                sandedMessageCount++;
             }
         } else if (chatType.equals(ChatType.ADMIN_TALK_CHAT)) {
             sendAdminTalkNotification(user, chatName, newMessageCount);
+            sandedMessageCount++;
         } else if (chatType.equals(ChatType.ORDER_CHAT)) {
             ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));
             String techNumber = "Не определён";
@@ -94,12 +108,16 @@ public class BotNotificationJob {
             }
             if (isNeedToSend) {
                 sendOrderNotification(user, techNumber, chatName, newMessageCount);
+                sandedMessageCount++;
             }
         } else if (chatType.equals(ChatType.SPECIAL_CHAT)) {
             sendSpecialAndOtherNotification(user, chatName, newMessageCount);
+            sandedMessageCount++;
         } else if (chatType.equals(ChatType.OTHER_CHAT)) {
             sendSpecialAndOtherNotification(user, chatName, newMessageCount);
+            sandedMessageCount++;
         }
+        return sandedMessageCount;
     }
 
     private void sendAdminTalkNotification(UserEntity userEntity, String chatName, Integer newMessageCount) {

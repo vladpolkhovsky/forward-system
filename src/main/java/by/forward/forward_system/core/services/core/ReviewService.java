@@ -6,6 +6,7 @@ import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import lombok.AllArgsConstructor;
@@ -31,6 +32,7 @@ public class ReviewService {
     private final ChatService chatService;
     private final ChatRepository chatRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
+    private final BotNotificationService botNotificationService;
 
     public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText) {
         ReviewEntity reviewEntity = new ReviewEntity();
@@ -46,15 +48,20 @@ public class ReviewService {
         reviewEntity.setReviewMessage(messageText);
 
         reviewRepository.save(reviewEntity);
+
+        botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
     }
 
     public void updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
+
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
         reviewEntity.setReviewedBy(userRepository.findById(expertId).orElseThrow(() -> new RuntimeException("Expert not found")));
         reviewEntity.setReviewMessage(messageText);
         reviewRepository.save(reviewEntity);
+
+        botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
     }
 
     public ReviewEntity toEntity(ReviewDto reviewDto) {
