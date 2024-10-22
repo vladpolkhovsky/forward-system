@@ -3,7 +3,8 @@ spring:
     multipart:
       max-request-size: 128MB
       max-file-size: 128MB
-
+  session:
+    timeout: 3h
   mvc:
     async:
       request-timeout: 60s
