@@ -18,7 +18,7 @@ public class StartResolver implements CommandResolver {
     public void resolve(TelegramClient telegramClient, Update update) throws TelegramApiException {
         telegramClient.execute(SendMessage.builder()
             .chatId(update.getMessage().getChatId())
-            .text("Спасибо за то что пользуетесь ботом. \nПожалуста зарегеистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+            .text("Спасибо за то что пользуетесь ботом. \nПожалуста зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
             .build());
     }
 }
