@@ -4,6 +4,7 @@ import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.jpa.repository.projections.AuthorWithDisciplineProjection;
 import by.forward.forward_system.core.services.messager.ChatMemberService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.ChatNames;
@@ -128,6 +129,10 @@ public class AuthorService {
         authorDisciplineRepository.saveAll(authorSaved.getAuthorDisciplines());
 
         return authorSaved;
+    }
+
+    public List<AuthorWithDisciplineProjection> getAllAuthorsWithDiscipline() {
+        return authorRepository.findAllWithDisciplines();
     }
 
     public List<AuthorEntity> getAllAuthors() {

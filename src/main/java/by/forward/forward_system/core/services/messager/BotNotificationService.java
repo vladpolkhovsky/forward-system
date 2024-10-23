@@ -9,7 +9,6 @@ import by.forward.forward_system.core.jpa.repository.BotIntegrationDataRepositor
 import by.forward.forward_system.core.jpa.repository.BotNotificationCodeRepository;
 import by.forward.forward_system.core.jpa.repository.BotTypeRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
-import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

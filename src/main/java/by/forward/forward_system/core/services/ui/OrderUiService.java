@@ -9,6 +9,7 @@ import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.jpa.repository.projections.AuthorWithDisciplineProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.services.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -138,7 +139,25 @@ public class OrderUiService {
     }
 
     public List<UserSelectionWithGradeDto> getAuthorListWithAuthorMark(Long orderId) {
-        List<AuthorEntity> allAuthors = authorService.getAllAuthors();
+        List<AuthorWithDisciplineProjection> allAuthors = authorService.getAllAuthorsWithDiscipline();
+
+        Set<String> usernames = new HashSet<>();
+        Map<String, Long> usernameToId = new HashMap<>();
+        Map<Long, List<AuthorWithDisciplineProjection>> idToDisciplines = new HashMap<>();
+        Map<Long, String> idToFio = new HashMap<>();
+        for (AuthorWithDisciplineProjection author : allAuthors) {
+            idToDisciplines.putIfAbsent(author.getId(), new ArrayList<>());
+            idToDisciplines.get(author.getId()).add(author);
+            usernames.add(author.getUsername());
+            usernameToId.put(author.getUsername(), author.getId());
+        }
+
+        for (AuthorEntity authorEntity : authorService.getAllAuthorsFast()) {
+            idToDisciplines.putIfAbsent(authorEntity.getId(), new ArrayList<>());
+            usernames.add(authorEntity.getUser().getUsername());
+            usernameToId.put(authorEntity.getUser().getUsername(), authorEntity.getId());
+            idToFio.put(authorEntity.getId(), authorEntity.getUser().getFio());
+        }
 
         OrderEntity order = orderService.getById(orderId)
             .orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
@@ -153,28 +172,29 @@ public class OrderUiService {
             .map(UserEntity::getId)
             .collect(Collectors.toSet());
 
-        return allAuthors.stream()
-            .sorted(Comparator.comparing(t -> calcOrder((AuthorEntity) t, order)).thenComparing(o -> ((AuthorEntity) o).getUser().getUsername()))
-            .map(t -> new UserSelectionWithGradeDto(t.getId(), t.getUser().getFio(), t.getUser().getUsername(), authorIds.contains(t.getUser().getId()), calcBgColor(order, t)))
+        return usernames.stream()
+            .sorted(Comparator.comparing(t -> calcOrder(idToDisciplines, usernameToId.get((String) t), order)).thenComparing(o -> ((String) o).toLowerCase()))
+            .map(t -> new UserSelectionWithGradeDto(usernameToId.get(t), idToFio.get(usernameToId.get(t)), t, authorIds.contains(usernameToId.get(t)), calcBgColor(idToDisciplines, usernameToId.get(t), order)))
             .toList();
     }
 
-    private int calcOrder(AuthorEntity authorEntity, OrderEntity order) {
+    private int calcOrder(Map<Long, List<AuthorWithDisciplineProjection>> idToDisciplines, Long authorId, OrderEntity order) {
         boolean hasExcellent = false;
         boolean hasGood = false;
         boolean hasMaybe = false;
 
-        for (AuthorDisciplineEntity authorDiscipline : authorEntity.getAuthorDisciplines()) {
-            if (!order.getDiscipline().getId().equals(authorDiscipline.getDiscipline().getId())) {
+        List<AuthorWithDisciplineProjection> disciplines = idToDisciplines.get(authorId);
+        for (AuthorWithDisciplineProjection discipline : disciplines) {
+            if (order.getDiscipline().getId().equals(discipline.getDisciplineId())) {
                 continue;
             }
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.EXCELLENT)) {
+            if (discipline.getDisciplineQuality().equals(DisciplineQualityType.EXCELLENT.getName())) {
                 hasExcellent = true;
             }
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.GOOD)) {
+            if (discipline.getDisciplineQuality().equals(DisciplineQualityType.GOOD.getName())) {
                 hasGood = true;
             }
-            if (authorDiscipline.getDisciplineQuality().getType().equals(DisciplineQualityType.MAYBE)) {
+            if (discipline.getDisciplineQuality().equals(DisciplineQualityType.MAYBE.getName())) {
                 hasMaybe = true;
             }
         }
@@ -191,8 +211,8 @@ public class OrderUiService {
         return 3;
     }
 
-    private String calcBgColor(OrderEntity order, AuthorEntity t) {
-        int comp = calcOrder(t, order);
+    private String calcBgColor(Map<Long, List<AuthorWithDisciplineProjection>> idToDisciplines, Long authorId, OrderEntity order) {
+        int comp = calcOrder(idToDisciplines, authorId, order);
         if (comp == 0) {
             return "text-bg-success";
         }
