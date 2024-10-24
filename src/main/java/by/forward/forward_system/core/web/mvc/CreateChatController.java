@@ -78,7 +78,7 @@ public class CreateChatController {
     public String updateChat(Model model, @PathVariable Long chatId) {
         userUiService.checkAccessOwner();
 
-        model.addAttribute("menuName", "Создать пользователя");
+        model.addAttribute("menuName", "Изменить чат");
         model.addAttribute("userShort", userUiService.getCurrentUser());
 
         Set<Long> chatMembers = chatService.getChatMembers(chatId);
@@ -89,8 +89,8 @@ public class CreateChatController {
 
         model.addAttribute("chatId", chatId);
         model.addAttribute("chatName", chatName);
-        model.addAttribute("users", userUiService.getAllUsers().stream().map(userMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
-        model.addAttribute("authors", authorUiService.getAllAuthors().stream().map(authorMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
+        model.addAttribute("users", userUiService.getAllUsersFast().stream().map(userMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
+        model.addAttribute("authors", authorUiService.getAllAuthorsFast().stream().map(authorMap).sorted(Comparator.comparing(UserSelectionUiDto::getUsername)).toList());
 
         return "main/create-chat";
     }
