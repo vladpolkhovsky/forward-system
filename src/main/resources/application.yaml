@@ -12,6 +12,8 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 20
+      max-lifetime: 600000
+      validationTimeout: 100000
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:localDB}
     password: ${DB_PASSWORD:localPS}
