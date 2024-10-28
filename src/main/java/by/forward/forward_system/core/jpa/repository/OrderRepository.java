@@ -51,4 +51,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             where op.user_id = :userId and op.type in :participantType and o.order_status not in :excludeStatus
         """)
     List<String> getAllTechNumberByParticipant(Long userId, List<String> participantType, List<String> excludeStatus);
+
+    @Query(nativeQuery = true, value = "select count(*) > 0 from forward_system.orders where tech_number = :techNumber")
+    boolean isTechNumberExists(String techNumber);
+
+    List<OrderEntity> findByTechNumberEquals(String techNumber);
+
+    @Query(nativeQuery = true, value = "select * from forward_system.orders o order by o.tech_number::int desc limit :limit offset :offset")
+    List<OrderEntity> findOrderPage(int limit, int offset);
 }

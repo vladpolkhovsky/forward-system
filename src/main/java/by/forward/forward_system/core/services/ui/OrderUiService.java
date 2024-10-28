@@ -54,6 +54,16 @@ public class OrderUiService {
         return toDto(orderEntity);
     }
 
+    public int getOrdersPageCount() {
+        return orderService.getOrdersPageCount();
+    }
+
+    public List<OrderUiDto> getAllOrdersPage(int page) {
+        return orderService.findOrdersPage(page).stream()
+            .map(this::toDto)
+            .toList();
+    }
+
     public List<OrderUiDto> getAllOrders() {
         return orderService.findAllOrder().stream()
             .map(this::toDto)
@@ -414,7 +424,9 @@ public class OrderUiService {
                 Данные заказа:
                 %s
                 Лог проверки <a href="/ai-log/%d" target="_blank">Лог проверки</a>
-                """.formatted(orderText, checkResult.aiLogId()));
+                """.formatted(orderText, checkResult.aiLogId()),
+                List.of(checkResult.aiLogId())
+            );
         }
 
         return true;
@@ -446,5 +458,15 @@ public class OrderUiService {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         return localDateTime.format(formatter);
+    }
+
+    public boolean isTechNumberExists(BigDecimal techNumber) {
+        return orderService.isTechNumberExists(techNumber);
+    }
+
+    public List<OrderUiDto> getOrderByTechNumber(String techNumber) {
+        return orderService.findByTechNumber(techNumber).stream()
+            .map(this::toDto)
+            .toList();
     }
 }

@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.web;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,6 +21,7 @@ public class GlobalExceptionHandlerController {
 
         model.addAttribute("error", ExceptionUtils.getStackTrace(ex));
         model.addAttribute("code", code);
+        model.addAttribute("message", StringUtils.substringAfter(ExceptionUtils.getMessage(ex), ": "));
 
         httpServletResponse.setStatus(code);
 

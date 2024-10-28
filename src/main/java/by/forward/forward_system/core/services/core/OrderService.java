@@ -17,6 +17,7 @@ import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.utils.ChatNames;
+import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
@@ -593,7 +594,11 @@ public class OrderService {
         if (!iaApproved) {
             String aiLog = logIds.stream().map(t -> "<a href=\"/ai-log/%d\" target=\"_blank\">Лог проверки</a>".formatted(t)).collect(Collectors.joining(" "));
             String urls = attachmentEntities.stream().map(AttachmentEntity::getId).map(t -> "<a href=\"/load-file/%d\" target=\"_blank\">Файл</a>".formatted(t)).collect(Collectors.joining(" "));
-            boolean isBanned = banService.ban(userUiService.getCurrentUserId(), "Файлы, прикреплённые к заказу, содержат личную информацию: %s \nЛог проверки: %s".formatted(urls, aiLog));
+            boolean isBanned = banService.ban(
+                userUiService.getCurrentUserId(),
+                "Файлы, прикреплённые к заказу, содержат личную информацию: %s \nЛог проверки: %s".formatted(urls, aiLog),
+                logIds
+            );
             if (isBanned) {
                 return false;
             }
@@ -662,5 +667,22 @@ public class OrderService {
     public Integer getOrdersCount(Long currentUserId, List<ParticipantType> participantTypes) {
         List<String> list = participantTypes.stream().map(ParticipantType::getName).toList();
         return orderRepository.countMyOrders(currentUserId, list);
+    }
+
+    public boolean isTechNumberExists(BigDecimal techNumber) {
+        return orderRepository.isTechNumberExists(techNumber.toString());
+    }
+
+    public int getOrdersPageCount() {
+        int count = (int) orderRepository.count();
+        return count / Constants.ORDER_PAGE_SIZE + (count % Constants.ORDER_PAGE_SIZE == 0 ? 0 : 1);
+    }
+
+    public List<OrderEntity> findByTechNumber(String techNumber) {
+        return orderRepository.findByTechNumberEquals(techNumber);
+    }
+
+    public List<OrderEntity> findOrdersPage(int page) {
+        return orderRepository.findOrderPage(Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1));
     }
 }

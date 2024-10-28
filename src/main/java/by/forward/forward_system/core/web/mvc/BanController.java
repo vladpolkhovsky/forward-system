@@ -11,6 +11,8 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Collections;
+
 @Controller
 @AllArgsConstructor
 public class BanController {
@@ -85,7 +87,7 @@ public class BanController {
 
         Long userId = Long.parseLong(body.getFirst("userId"));
         String reason = body.getFirst("reason");
-        banService.ban(userId, reason);
+        banService.ban(userId, reason, true, Collections.emptyList());
 
         return new RedirectView("/main");
     }

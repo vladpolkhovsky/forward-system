@@ -78,7 +78,7 @@ public class ReviewController {
                 false))
             .toList();
 
-        List<AuthorUiDto> authors = authorUiService.getAllAuthors().stream().filter(AuthorUiDto::getIsAuthor).toList();
+        List<AuthorUiDto> authors = authorUiService.getAllAuthorsFast().stream().filter(AuthorUiDto::getIsAuthor).toList();
         List<UserSelectionUiDto> selection = authors.stream()
             .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), false))
             .sorted(Comparator.comparing(UserSelectionUiDto::getUsername))
@@ -151,7 +151,7 @@ public class ReviewController {
             ))
             .toList();
 
-        List<AuthorUiDto> authors = authorUiService.getAllAuthors().stream().filter(AuthorUiDto::getIsAuthor).toList();
+        List<AuthorUiDto> authors = authorUiService.getAllAuthorsFast().stream().filter(AuthorUiDto::getIsAuthor).toList();
         List<UserSelectionUiDto> selection = authors.stream()
             .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), reviewEntity.getReviewedBy().getId().equals(t.getId())))
             .sorted(Comparator.comparing(UserSelectionUiDto::getUsername))

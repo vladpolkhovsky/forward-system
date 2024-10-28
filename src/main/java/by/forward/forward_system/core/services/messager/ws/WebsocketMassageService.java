@@ -43,7 +43,7 @@ public class WebsocketMassageService {
         Long userId = chatMessage.getUserId();
 
         if (spamDetectorService.isSpam(chatId)) {
-            if (banService.ban(userId, "Превышен лимит сообщений в чате.")) {
+            if (banService.ban(userId, "Превышен лимит сообщений в чате.", true, Collections.emptyList())) {
                 notifyBanned(Collections.singletonList(userId), chatId);
                 return;
             }
@@ -80,7 +80,7 @@ public class WebsocketMassageService {
 
         boolean isBanned = false;
         if (!aiApproved) {
-            isBanned = banService.ban(userId, formatBanReasonString(message, attachmentIds, logIds));
+            isBanned = banService.ban(userId, formatBanReasonString(message, attachmentIds, logIds), logIds);
         }
 
         if (isBanned) {

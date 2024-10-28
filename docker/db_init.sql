@@ -487,9 +487,18 @@ create table if not exists forward_system.bot_integration_data
 create table if not exists forward_system.notification_outbox
 (
     id                 bigint primary key,
-    user_id            bigint       not null references forward_system.users (id),
-    chat_id            bigint       not null references forward_system.chats (id),
-    message_id         bigint       not null references forward_system.chat_messages (id),
-    message_to_user_id bigint       not null references forward_system.chat_message_to_user (id),
-    created_at         timestamp    not null
+    user_id            bigint    not null references forward_system.users (id),
+    chat_id            bigint    not null references forward_system.chats (id),
+    message_id         bigint    not null references forward_system.chat_messages (id),
+    message_to_user_id bigint    not null references forward_system.chat_message_to_user (id),
+    created_at         timestamp not null
+);
+
+create table if not exists forward_system.ai_violations
+(
+    id                bigint primary key,
+    user_id           bigint    not null references forward_system.users (id),
+    ai_integration_id bigint    not null references forward_system.ai_integration (id),
+    is_old_violation  boolean   not null,
+    created_at        timestamp not null
 )

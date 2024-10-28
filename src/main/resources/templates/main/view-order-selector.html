@@ -20,12 +20,41 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" th:href="|/view-order?page=| + ${page - 1}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li th:each="cPage : ${pages}" th:class="|page-item | + ${cPage == page ? 'active' : ''}">
+                        <a class="page-link" th:href="|/view-order?page=| + ${cPage}" th:text="${cPage}"></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" th:href="|/view-order?page=| + ${page + 1}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-sm-6">
+            <form class="d-flex" method="get" action="/view-order">
+                <input class="form-control" name="techNumber" type="number" placeholder="Поиск по номеру ТЗ">
+                <button class="btn btn-warning ms-2" type="submit">&#128270;</button>
+            </form>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-12">
             <ul class="list-group">
                 <li class="list-group-item" th:each="order, orderStat : ${ordersList}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="ms-2 me-0">
                             <div class="fw-bold">
-                                <a th:text="|Заказ №| + ${order.getTechNumber()}" th:href="|/view-order/| + ${order.getId()}"></a>
+                                <a th:text="|Заказ (ТЗ) № | + ${order.getTechNumber()}" th:href="|/view-order/| + ${order.getId()}"></a>
                             </div>
                             <p class="mt-1 mb-0" th:text="|Название заказа: | + ${order.getName()}"></p>
                             <p class="mt-1 mb-0" th:text="|Дисциплина: | + ${order.getDiscipline()}"></p>

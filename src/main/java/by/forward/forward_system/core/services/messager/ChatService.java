@@ -3,7 +3,6 @@ package by.forward.forward_system.core.services.messager;
 import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
-import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
@@ -13,7 +12,6 @@ import by.forward.forward_system.core.services.messager.ws.WebsocketMassageServi
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -162,7 +160,7 @@ public class ChatService {
 
     @Transactional
     public void setMessageViewed(Long chatId, Long userId) {
-        List<ChatMessageToUserEntity> allByUserAndOrder = chatMessageToUserRepository.getAllByUserAndOrder(userId, chatId);
+        List<ChatMessageToUserEntity> allByUserAndOrder = chatMessageToUserRepository.getAllByUserAndChat(userId, chatId);
         for (ChatMessageToUserEntity chatMessageToUserEntity : allByUserAndOrder) {
             chatMessageToUserEntity.setIsViewed(true);
         }

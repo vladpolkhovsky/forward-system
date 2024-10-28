@@ -13,6 +13,8 @@ import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.mapping.Collection;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,10 +23,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Controller
 @AllArgsConstructor
@@ -59,6 +60,10 @@ public class CreateOrderController {
     @PostMapping(value = "/create-order", consumes = MediaType.ALL_VALUE)
     public RedirectView createOrder(@ModelAttribute("order") OrderUiDto order, Model model) {
         userUiService.checkAccessManager();
+
+        if (orderUiService.isTechNumberExists(order.getTechNumber())) {
+            throw new RuntimeException("Данный номер ТЗ [%s] уже существует.".formatted(order.getTechNumber()));
+        }
 
         boolean isValidData = orderUiService.checkOrderByAi(order);
 
@@ -169,12 +174,31 @@ public class CreateOrderController {
     }
 
     @GetMapping(value = "/view-order")
-    public String viewOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.getAllOrders();
+    public String viewOrder(Model model, @RequestParam(value = "page", required = false, defaultValue = "1") int page, @RequestParam(value = "techNumber", required = false) String techNumber) {
+        List<OrderUiDto> allOrdersInStatus = Collections.emptyList();
+
+        int pageCount;
+
+        if (!StringUtils.isBlank(techNumber)) {
+            pageCount = 1;
+            page = 1;
+
+            allOrdersInStatus = orderUiService.getOrderByTechNumber(techNumber);
+        } else {
+            pageCount = orderUiService.getOrdersPageCount();
+            page = Math.max(Math.min(pageCount, page), 0);
+
+            allOrdersInStatus = orderUiService.getAllOrdersPage(page);
+            pageCount = orderUiService.getOrdersPageCount();
+        }
+
+        List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
 
         model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("ordersList", allOrdersInStatus);
+        model.addAttribute("page", page);
+        model.addAttribute("pages", pages);
 
         return "main/view-order-selector";
     }
