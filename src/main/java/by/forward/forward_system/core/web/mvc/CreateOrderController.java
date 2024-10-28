@@ -186,7 +186,7 @@ public class CreateOrderController {
             allOrdersInStatus = orderUiService.getOrderByTechNumber(techNumber);
         } else {
             pageCount = orderUiService.getOrdersPageCount();
-            page = Math.max(Math.min(pageCount, page), 0);
+            page = Math.max(Math.min(pageCount, page), 1);
 
             allOrdersInStatus = orderUiService.getAllOrdersPage(page);
             pageCount = orderUiService.getOrdersPageCount();
