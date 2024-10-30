@@ -685,7 +685,7 @@ public class OrderService {
         return orderRepository.findOrderPage(Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1));
     }
 
-    public List<OrderEntity> findAllMyOrder(Long currentUserId) {
+    public List<OrderEntity> findAllOrdersByUserInParticipant(Long currentUserId) {
         return orderRepository.findOrdersWithUserInParticipant(currentUserId);
     }
 }

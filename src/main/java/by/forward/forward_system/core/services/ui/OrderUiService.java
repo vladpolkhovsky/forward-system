@@ -85,7 +85,7 @@ public class OrderUiService {
             return false;
         };
 
-        return orderService.findAllMyOrder(currentUserId).stream()
+        return orderService.findAllOrdersByUserInParticipant(currentUserId).stream()
             .filter(isParticipant)
             .map(this::toDto)
             .sorted(Comparator.comparing(OrderUiDto::getTechNumber).reversed())
