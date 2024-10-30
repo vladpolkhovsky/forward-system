@@ -2,7 +2,6 @@ package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.dto.messenger.*;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
-import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
@@ -20,7 +19,6 @@ import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -685,5 +683,9 @@ public class OrderService {
 
     public List<OrderEntity> findOrdersPage(int page) {
         return orderRepository.findOrderPage(Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1));
+    }
+
+    public List<OrderEntity> findAllMyOrder(Long currentUserId) {
+        return orderRepository.findOrdersWithUserInParticipant(currentUserId);
     }
 }

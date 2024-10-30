@@ -85,10 +85,10 @@ public class OrderUiService {
             return false;
         };
 
-        return orderService.findAllOrder().stream()
+        return orderService.findAllMyOrder(currentUserId).stream()
             .filter(isParticipant)
             .map(this::toDto)
-            .sorted(Comparator.comparing(OrderUiDto::getId).reversed())
+            .sorted(Comparator.comparing(OrderUiDto::getTechNumber).reversed())
             .toList();
     }
 

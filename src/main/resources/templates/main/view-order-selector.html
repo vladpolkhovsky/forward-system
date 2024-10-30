@@ -18,7 +18,7 @@
     </div>
 </div>
 <div class="container">
-    <div class="row">
+    <div class="row" th:if="${showPages}">
         <div class="col-12">
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
@@ -39,7 +39,7 @@
             </nav>
         </div>
     </div>
-    <div class="row">
+    <div class="row" th:if="${showSearch}">
         <div class="col-12 col-sm-6">
             <form class="d-flex" method="get" action="/view-order">
                 <input class="form-control" name="techNumber" type="number" step="0.1" placeholder="Поиск по номеру ТЗ">

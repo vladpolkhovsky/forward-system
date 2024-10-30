@@ -199,6 +199,8 @@ public class CreateOrderController {
         model.addAttribute("ordersList", allOrdersInStatus);
         model.addAttribute("page", page);
         model.addAttribute("pages", pages);
+        model.addAttribute("showPages", true);
+        model.addAttribute("showSearch", true);
 
         return "main/view-order-selector";
     }
@@ -228,6 +230,8 @@ public class CreateOrderController {
         model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("ordersList", allOrdersInStatus);
+        model.addAttribute("showPages", false);
+        model.addAttribute("showSearch", false);
 
         return "main/view-order-selector";
     }
