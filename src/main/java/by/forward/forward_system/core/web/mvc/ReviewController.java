@@ -117,6 +117,7 @@ public class ReviewController {
         model.addAttribute("menuName", "Проверьте работу и напишите вердикт.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
+        model.addAttribute("orderId", orderId);
 
         return "main/expert-review-order-answer";
     }

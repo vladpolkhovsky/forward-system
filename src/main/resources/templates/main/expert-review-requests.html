@@ -23,7 +23,7 @@
                     th:each="order, orderStat : ${reviews}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:text="|Заказ №| + ${order.getOrderTechNumber()}"
+                            <a th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}"
                                th:href="|/expert-review-order-answer/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}">
                             </a>
                         </div>
