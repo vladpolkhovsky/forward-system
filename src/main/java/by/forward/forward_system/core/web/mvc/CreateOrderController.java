@@ -283,7 +283,14 @@ public class CreateOrderController {
         orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
 
         OrderUiDto order = orderUiService.getOrder(orderId);
-        UpdateOrderRequestDto updateOrderRequestDto = updateRequestOrderService.create(body, orderId, order.getTechNumber(), OrderStatus.ADMIN_REVIEW);
+
+        UpdateOrderRequestDto updateOrderRequestDto = updateRequestOrderService.create(
+            body,
+            orderId,
+            order.getTechNumber(),
+            OrderStatus.ADMIN_REVIEW
+        );
+
         updateRequestOrderService.save(updateOrderRequestDto);
         orderService.changeStatus(orderId, OrderStatus.DISTRIBUTION, OrderStatus.ADMIN_REVIEW);
 

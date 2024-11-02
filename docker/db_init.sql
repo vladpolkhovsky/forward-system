@@ -501,4 +501,14 @@ create table if not exists forward_system.ai_violations
     ai_integration_id bigint    not null references forward_system.ai_integration (id),
     is_old_violation  boolean   not null,
     created_at        timestamp not null
-)
+);
+
+create index if not exists chat_messages_created_at_index on forward_system.chat_messages (created_at);
+
+create index if not exists chat_last_message_date_index on forward_system.chats (last_message_date);
+
+alter table forward_system.reviews
+    alter column review_message type varchar(65536);
+
+alter table forward_system.reviews
+    alter column review_verdict type varchar(65536);

@@ -95,7 +95,7 @@ public class OrderUiService {
     public List<OrderUiDto> findAllOrdersInStatus(List<String> statuses) {
         return orderService.findAllOrdersInStatus(statuses)
             .stream().map(this::toDto)
-            .sorted(Comparator.comparing(OrderUiDto::getId).reversed())
+            .sorted(Comparator.comparing(OrderUiDto::getTechNumber).reversed())
             .toList();
     }
 

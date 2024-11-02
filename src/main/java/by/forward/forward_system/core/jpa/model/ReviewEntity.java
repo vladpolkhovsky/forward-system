@@ -24,10 +24,10 @@ public class ReviewEntity {
     @JoinColumn(name = "attachment_id", nullable = false)
     private AttachmentEntity attachment;
 
-    @Column(name = "review_message")
+    @Column(name = "review_message", length = 65536)
     private String reviewMessage;
 
-    @Column(name = "review_verdict")
+    @Column(name = "review_verdict", length = 65536)
     private String reviewVerdict;
 
     @Column(name = "review_mark")
