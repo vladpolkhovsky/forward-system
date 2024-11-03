@@ -2,7 +2,6 @@ package by.forward.forward_system.core.services.newchat.handlers;
 
 import by.forward.forward_system.core.dto.messenger.fast.FastChatDto;
 import by.forward.forward_system.core.dto.messenger.fast.LoadChatByIdsDto;
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatRequestDto;
 import by.forward.forward_system.core.services.newchat.QueryHandler;
 import lombok.AllArgsConstructor;
 import org.intellij.lang.annotations.Language;
@@ -11,7 +10,6 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

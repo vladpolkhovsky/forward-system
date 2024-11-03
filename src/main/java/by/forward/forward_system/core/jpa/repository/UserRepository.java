@@ -19,5 +19,8 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     List<UserEntity> findByRolesNotContains(String roleName);
 
     @Query(nativeQuery = true, value = "select * from forward_system.users u where u.roles not like '%AUTHOR%'")
-    Collection<UserEntity> getUsersFast();
+    List<UserEntity> getUsersFast();
+
+    @Query(nativeQuery = true, value = "select u.username from forward_system.bot_integration_data bid inner join forward_system.users u on bid.user_id = u.id order by u.username")
+    List<String> findAllUsernamesRegisteredInBot();
 }
