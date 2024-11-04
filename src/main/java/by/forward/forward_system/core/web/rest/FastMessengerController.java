@@ -1,9 +1,6 @@
 package by.forward.forward_system.core.web.rest;
 
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatByIdRequestDto;
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatRequestDto;
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatResponseDto;
-import by.forward.forward_system.core.dto.messenger.fast.SearchChatRequestDto;
+import by.forward.forward_system.core.dto.messenger.fast.*;
 import by.forward.forward_system.core.services.newchat.FastChatService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -32,5 +29,20 @@ public class FastMessengerController {
     @PostMapping(value = "/chat-by-id", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
     public ResponseEntity<LoadChatResponseDto> loadChatById(@RequestBody LoadChatByIdRequestDto loadChatByIdRequestDto) {
         return ResponseEntity.ok(fastChatService.loadChatById(loadChatByIdRequestDto));
+    }
+
+    @PostMapping(value = "/load-chat-info", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<LoadChatInfoResponseDto> loadChatInfo(@RequestBody LoadChatInfoRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.loadChatInfo(requestDto));
+    }
+
+    @PostMapping(value = "/messages", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<LoadChatMessagesResponseDto> loadChatMessages(@RequestBody LoadChatMessagesRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.loadChatMessages(requestDto));
+    }
+
+    @PostMapping(value = "/new-message-info", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<NewMessageCountResponseDto> loadNewMessageCount(NewMessageCountRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.loadNewMessageCount(requestDto));
     }
 }

@@ -6,6 +6,7 @@ import by.forward.forward_system.core.dto.messenger.fast.LoadChatRequestDto;
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import by.forward.forward_system.core.services.newchat.QueryHandler;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
 import org.intellij.lang.annotations.Language;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
@@ -36,7 +37,7 @@ public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, Fa
 
     @Override
     public String getQuery(LoadChatRequestDto request) {
-        if (request.getLoaded().isEmpty()) {
+        if (CollectionUtils.isEmpty(request.getLoaded())) {
             return QUERY.replace(QUERY_IN, "");
         }
         String collect = Stream.generate(() -> "?").limit(request.getLoaded().size()).collect(Collectors.joining(","));

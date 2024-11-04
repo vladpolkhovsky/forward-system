@@ -32,6 +32,15 @@ public class MessengerController {
         return "messenger/messenger";
     }
 
+    @GetMapping(value = "/new-messenger")
+    public String newMessenger(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("userId", userUiService.getCurrentUserId());
+        model.addAttribute("isAdmin", userUiService.isCurrentUserAdmin());
+        model.addAttribute("isOwner", userUiService.isCurrentUserOwner());
+        return "messenger/new-messenger";
+    }
+
     @GetMapping(value = "/messenger-all-viewed")
     public RedirectView messengerAllViewed() {
         chatService.setAllMessagesViewed(userUiService.getCurrentUserId());

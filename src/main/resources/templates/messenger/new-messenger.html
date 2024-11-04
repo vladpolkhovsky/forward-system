@@ -1,0 +1,251 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Мессенджер</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&amp;display=swap"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link rel="stylesheet" href="/static/chat-style.css">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container mt-3">
+    <div class="row main-font">
+        <ul class="nav nav-underline">
+            <li class="nav-item">
+                <a id="nav-new-orders-tab" class="nav-link" href="/new-messenger?tab=new-orders">Новые заказы<span
+                        class="fs-5" id="nav-new-orders-tab-count"></span></a>
+            </li>
+            <li class="nav-item">
+                <a id="nav-admin-tab" class="nav-link" href="/new-messenger?tab=admin">Администрация<span
+                        class="fs-5" id="nav-admin-tab-count"></span></a>
+            </li>
+            <li class="nav-item">
+                <a id="nav-orders-tab" class="nav-link" href="/new-messenger?tab=orders">Заказы в работе<span
+                        class="fs-5" id="nav-orders-tab-count"></span></a>
+            </li>
+            <li class="nav-item">
+                <a id="nav-special-tab" class="nav-link" href="/new-messenger?tab=special">Спец. чаты<span
+                        class="fs-5" id="nav-special-tab-count"></span></a>
+            </li>
+        </ul>
+    </div>
+    <hr/>
+    <div class="row mt-3">
+        <div class="col-12 col-md-5 mb-2">
+            <div class="input-group">
+                <input id="search-input" type="text" class="form-control" placeholder="Поиск в чате">
+                <button id="search-input-clear" class="btn btn-outline-secondary" type="button"
+                        onclick="onSearchBarClearBtnClick()">&#10060;
+                </button>
+                <button id="search-input-search" class="btn btn-outline-secondary" type="button"
+                        onclick="onSearchBarBtnClick()">&#128269;
+                </button>
+            </div>
+            <div style="min-height: 600px; max-height: 600px; overflow: scroll">
+                <ul id="chat-window" class="list-group mt-2 mb-2">
+                </ul>
+                <div id="chat-loader-spin" class="d-flex justify-content-center mt-2">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="chat-load-more" class="d-flex justify-content-center mt-2">
+                    <button id="chat-load-more-btn" type="button" class="btn btn-primary"
+                            onclick="onLoadNewChatsBtnClick()">Загрузить ещё
+                    </button>
+                </div>
+            </div>
+            <hr/>
+            <a href="#">Отметить все как прочитанные</a>
+        </div>
+        <div class="col-12 col-md-7">
+            <div id="chat-windows" class="card">
+                <div id="chat-name" class="card-header fw-bold main-font">
+                    Выберите чат для загрузки
+                </div>
+                <div id="chat-additional-info" class="row p-2 main-font">
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Номер ТЗ:</span> <span
+                            id="additional-tech-number"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span id="additional-order-status"><button
+                            class="btn btn-success">В работе</button></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Тип работы:</span> <span
+                            id="additional-work-type"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Дисциплина:</span> <span
+                            id="additional-discipline"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Срок сдачи (СД):</span> <span
+                            id="additional-deadline"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Промежуточный СД: </span> <span
+                            id="additional-intermediate-deadline"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><span class="fw-bold">Дополнительные этапы сдачи:</span> <span
+                            id="additional-dates"></span></div>
+                    <div class="col-12 col-sm-6 mt-2"><a id="additional-view-full" target="_blank" href="#">Просмотреть
+                        детали заказа</a></div>
+                </div>
+                <hr/>
+                <div id="scroll-window" class="card-body"
+                     style="min-height: 550px; max-height: 550px; overflow: scroll;">
+                    <div>
+                        <div id="message-load-more" class="d-flex justify-content-center mb-2">
+                            <button type="button" class="btn btn-primary" onclick="onLoadMoreMessagesBtnClick()">
+                                Загрузить ещё
+                            </button>
+                        </div>
+                        <div id="message-loader-spin" class="d-flex justify-content-center mb-2">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="messages-window">
+                    </div>
+                </div>
+                <div id="message-div" class="row p-3">
+                    <div class="col-12 col-sm-6 mt-2">
+                        <textarea id="message-area" class="form-control" style="min-height: 100%; min-width: 100%"></textarea>
+                    </div>
+                    <div class="col-12 col-sm-6 mt-2">
+                        <div class="row">
+                            <input id="file-area" type="file" class="form-control col-6 col-sm-12 mt-2">
+                            <button id="send-btn" class="btn btn-primary col-6 col-sm-12 mt-2" onclick="sendMessage()">Отправить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/static/jquery-3.7.1.min.js"></script>
+<script th:inline="javascript">
+    const notificationAudio = new Audio("/static/notification.mp3");
+
+    const userId = [[${userId}]];
+    const isAdmin = [[${isAdmin}]];
+    const isOwner = [[${isOwner}]];
+
+    const context = {
+        userId: userId,
+        chatTab: null,
+        chatId: null,
+        isAdmin: isAdmin,
+        isOwner: isOwner
+    }
+</script>
+<script src="/static/new-chat-script.js"></script>
+<script>
+    function processWsNotification(body) {
+        console.log(body)
+        if (body.type === "message") {
+            appendWSMessage(body.value);
+        }
+        if (body.type === "new-chat") {
+            notificationAudio.play();
+            alert("Вас добавили в новый чат. Обновите страницу.")
+        }
+        if (body.type === "banned") {
+            alert("Вы заблокированы.")
+        }
+    }
+</script>
+<script src="/static/websocket.js"></script>
+<script>
+    let file = document.getElementById("file-area");
+    let textArea = document.getElementById("message-area");
+
+    context.chatTab = getTab();
+
+    activateTab();
+    hideAdditionalOrderData();
+    hideChatNewMessagesSpinner();
+    hideMessageLoadMoreBtn();
+    loadNewMessageInfo();
+
+    if (getUrlChatId() !== null) {
+        onLoadChatById(parseInt(getUrlChatId()));
+    } else {
+        onLoadNewChatsBtnClick();
+    }
+
+    if (window.File && window.FileReader && window.FileList && window.Blob) {
+        file.addEventListener('change', handleFileSelect, false);
+    } else {
+        alert('Данный браузер не поддерживает загрузку файлов!');
+    }
+
+    function handleFileSelect(evt) {
+        console.log(evt)
+        let f = evt.target.files[0];
+        let reader = new FileReader();
+        alert("Згрузка файла. Не отправляйте сообщение пока файл не загрузится!")
+        reader.onload = (function (theFile) {
+            return function (e) {
+                let binaryData = e.target.result;
+                let base64String = window.btoa(binaryData);
+
+                context.fileBase64 = base64String;
+                context.fileName = theFile.name;
+                context.fileLoaded = false;
+
+                fetch("/api/messenger/file-save", {
+                    method: "POST",
+                    headers: {
+                        'Content-type': 'application/json; charset=UTF-8',
+                    },
+                    body: JSON.stringify({
+                        fileName: context.fileName,
+                        base64content: context.fileBase64
+                    })
+                }).then(r => r.json()).then(r => {
+                    context.fileLoaded = true;
+                    context.fileAttachmentId = parseInt(r)
+                    alert('Файл успешно загружен!');
+                })
+            };
+        })(f);
+        reader.readAsBinaryString(f);
+    }
+
+    document.getElementById("send-btn").addEventListener("click", e => {
+        stomp.publish()
+    });
+
+    stomp = connectToWebSocket();
+
+    function sendMessage() {
+        let attachments = [];
+        if (context.fileLoaded === true) {
+            attachments.push({
+                fileAttachmentId: context.fileAttachmentId
+            });
+        }
+        if (textArea.value.length > 0 || context.fileLoaded) {
+            stomp.publish({
+                destination: "/app/chat",
+                body: JSON.stringify({
+                    userId: context.userId,
+                    chatId: context.chatId,
+                    message: textArea.value,
+                    attachments: attachments
+                })
+            });
+
+            file.value = '';
+            textArea.value = '';
+            context.fileLoaded = false;
+            context.fileBase64 = null;
+            context.fileName = null;
+            context.fileAttachmentId = null;
+            context.fileLoaded = false;
+        }
+
+        textArea.focus();
+    }
+</script>
+</body>
+</html>

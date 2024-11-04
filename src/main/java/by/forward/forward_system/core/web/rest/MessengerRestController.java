@@ -72,7 +72,7 @@ public class MessengerRestController {
         return ResponseEntity.ok(true);
     }
 
-    @PostMapping(value = "/file-save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/file-save", consumes = "application/json; charset=UTF-8")
     public ResponseEntity<Long> saveFile(@RequestBody AttachmentDto attachment) {
         List<Long> longs = attachmentService.saveAttachment(Arrays.asList(attachment));
         return ResponseEntity.ok(longs.get(0));

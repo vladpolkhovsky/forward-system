@@ -30,7 +30,7 @@ public class SubscribedUserListCommandResolver implements CommandResolver {
         StringBuilder text = new StringBuilder();
         for (int i = 0; i < allUsernamesRegisteredInBot.size(); i++) {
             text.append(allUsernamesRegisteredInBot.get(i)).append("\n");
-            if (i % 100 == 0) {
+            if ((i + 1) % 100 == 0) {
                 telegramClient.execute(SendMessage.builder()
                     .text(text.toString())
                     .chatId(chatId)

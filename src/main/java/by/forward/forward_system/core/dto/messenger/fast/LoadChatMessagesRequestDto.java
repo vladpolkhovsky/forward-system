@@ -5,14 +5,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FastChatDto {
-    private String chatName;
-    private String lastMessageDate;
-    private String type;
-    private long newMessageCount;
-    private long id;
+public class LoadChatMessagesRequestDto {
+    private long chatId;
+    private long userId;
+    private List<Long> loaded;
+    private long size;
 }

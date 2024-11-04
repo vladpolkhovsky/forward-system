@@ -9,10 +9,8 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FastChatDto {
-    private String chatName;
-    private String lastMessageDate;
+public class OrderParticipantDto {
+    private long userId;
     private String type;
-    private long newMessageCount;
-    private long id;
+    private String typeRus;
 }
