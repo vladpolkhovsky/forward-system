@@ -16,4 +16,5 @@ public class SimpleChatMessageDto {
     private Long fromUserId;
     private String date;
     private boolean isViewed;
+    private boolean isHidden;
 }

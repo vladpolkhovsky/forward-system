@@ -211,6 +211,7 @@ public class FastChatService {
             fastChatMessageDto.setViewed(message.isViewed());
             fastChatMessageDto.setCreatedAt(message.getDate());
             fastChatMessageDto.setSystemMessage(message.isSystem());
+            fastChatMessageDto.setHidden(message.isHidden());
 
             fastChatMessageDto.setAttachments(emptyIfNull(messageIdToAttachments.get(message.getId())).stream().map(t ->
                 new FastChatMessageAttachmentDto(t.getFilename(), t.getAttachmentId())

@@ -24,7 +24,7 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
 
     @Language("SQL")
     private final static String QUERY = """
-        select distinct cm.id as id, cm.from_user_id as fromUserId, cm.is_system_message as isSystem, cm."content" as text, cm.created_at as date, cmtu.is_viewed as viewed from forward_system.chat_messages cm
+        select distinct cm.id as id, cm.from_user_id as fromUserId, cm.is_system_message as isSystem, cm."content" as text, cm.created_at as date, cmtu.is_viewed as viewed, cm.is_hidden as isHidden from forward_system.chat_messages cm
             left join forward_system.chat_message_to_user cmtu on cm.id = cmtu.message_id and cmtu.user_id = ?
             where cm.chat_id = ? :IN:
             order by cm.created_at desc
@@ -68,6 +68,7 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
             dto.setText(rs.getString("text"));
             dto.setDate(rs.getTimestamp("date").toLocalDateTime().format(dateTimeFormatter));
             dto.setViewed(isViewed == null ? true : BooleanUtils.toBoolean(isViewed));
+            dto.setHidden(rs.getBoolean("isHidden"));
 
             return dto;
         };

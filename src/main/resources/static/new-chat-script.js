@@ -399,9 +399,16 @@ function createMessageElement(fromUserId, isSystemMessage, attachments, options,
 function prependChatMessages(messages) {
     for (let message of messages) {
         context.loadedMessages.add(message.id);
+
+        if (message.hidden) {
+            continue;
+        }
+
         $("#messages-window").prepend(createMessageElement(message.fromUserId, message.systemMessage, message.attachments, message.options, message.text, message.createdAt, message.viewed));
     }
+
     hideChatNewMessagesSpinner();
+
     if (messages.length < context.loadNewMessagesCount) {
         hideMessageLoadMoreBtn();
     } else {

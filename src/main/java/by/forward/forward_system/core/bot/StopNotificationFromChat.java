@@ -62,8 +62,8 @@ public class StopNotificationFromChat implements CommandResolver {
             Long chatId = Long.parseLong(s[1]);
             Long exactUserId = userId.get();
 
-            UserEntity userEntity = userRepository.findById(exactUserId).orElseThrow(() -> new RuntimeException("User with id not found + " + userId));
-            ChatEntity chatEntity = chatRepository.findById(exactUserId).orElseThrow(() -> new RuntimeException("Chat with id not found + " + chatId));
+            UserEntity userEntity = userRepository.findById(exactUserId).orElseThrow(() -> new RuntimeException("User with id not found + " + exactUserId));
+            ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat with id not found + " + chatId));
 
             SkipChatNotificationEntity skipChatNotificationEntity = new SkipChatNotificationEntity();
             skipChatNotificationEntity.setChat(chatEntity);

@@ -18,6 +18,7 @@ public class FastChatMessageDto {
     private String createdAt;
     private String text;
     private boolean isViewed;
+    private boolean isHidden;
     private List<FastChatMessageAttachmentDto> attachments;
     private List<FastChatMessageOptionDto> options;
 }
