@@ -11,7 +11,7 @@ import java.util.Map;
 
 @Component
 @AllArgsConstructor
-public class NewMessageCountQueryHandler implements QueryHandler<Long, Map<String, Integer>> {
+public class LoadNewMessageCountQueryHandler implements QueryHandler<Long, Map<String, Integer>> {
 
     @Language("SQL")
     private final static String QUERY = """

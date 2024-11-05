@@ -11,6 +11,7 @@ import java.util.List;
 public class MessageDto {
     private Long id;
     private Long chatId;
+    private String chatName;
     private Long fromUserId;
     private String chatMessageType;
     private Boolean isSystemMessage;

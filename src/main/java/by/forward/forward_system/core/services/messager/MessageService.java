@@ -145,6 +145,7 @@ public class MessageService {
     public MessageDto convertChatMessage(ChatMessageEntity chatMessage) {
         MessageDto messageDto = new MessageDto();
         messageDto.setId(chatMessage.getId());
+        messageDto.setChatName(chatMessage.getChat().getChatName());
         messageDto.setChatId(chatMessage.getChat().getId());
         messageDto.setChatMessageType(chatMessage.getChatMessageType().getType().getName());
         messageDto.setFromUserId(Optional.ofNullable(chatMessage.getFromUser()).map(UserEntity::getId).orElse(null));

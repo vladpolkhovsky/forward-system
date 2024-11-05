@@ -20,6 +20,10 @@ public interface ChatMessageToUserRepository extends JpaRepository<ChatMessageTo
     @Query(nativeQuery = true, value = "update forward_system.chat_message_to_user set is_viewed = true where user_id = :userId")
     void setAllViewed(Long userId);
 
+    @Modifying
+    @Query(nativeQuery = true, value = "update forward_system.chat_message_to_user cmtu set is_viewed = true where user_id = :userId and exists(select * from forward_system.chats c where cmtu.chat_id = c.id and c.type = :chatType)")
+    void setAllViewed(Long userId, String chatType);
+
     @Query(nativeQuery = true, value = "select distinct cmtu.user_id from forward_system.chat_message_to_user cmtu where cmtu.is_viewed = false")
     List<Long> getAllNotViewed();
 

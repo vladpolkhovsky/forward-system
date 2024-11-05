@@ -1,6 +1,7 @@
 context.loadedChats = new Set();
 context.loadedMessages = new Set();
 context.chatId = null;
+context.loadNewMessagesCount = 30;
 
 context.chatsCache = {};
 context.chatsQueue = [];
@@ -144,7 +145,7 @@ function loadChatInfoById(chatId) {
     const raw = JSON.stringify({
         "chatId": chatId,
         "userId": context.userId,
-        "size": 50
+        "size": context.loadNewMessagesCount
     });
 
     const requestOptions = {
@@ -165,7 +166,7 @@ function loadNewMessageInfo() {
     myHeaders.append("Content-Type", "application/json; charset=UTF-8");
 
     const raw = JSON.stringify({
-        "userId": 0
+        "userId": context.userId
     });
 
     const requestOptions = {
@@ -189,7 +190,7 @@ function loadMoreMessages() {
         "chatId": context.chatId,
         "userId": context.userId,
         "loaded": [...context.loadedMessages],
-        "size": 30
+        "size": context.loadNewMessagesCount
     });
 
     const requestOptions = {
@@ -229,6 +230,24 @@ function appendChatsToChatsWindows(chatsArray) {
     for (let chat of chatsArray) {
         appendChatToChatsWindows(chat)
     }
+}
+
+function createNotificationElement(id, title, content) {
+    return `<div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">${title}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">${content}</div>
+    </div>`
+}
+
+function showNotification(id, title, content) {
+    $("#notification-container").append(createNotificationElement(id, title, content));
+    let toastBootstrap = bootstrap.Toast.getOrCreateInstance(document.getElementById(id), {
+        delay: 10000
+    });
+    toastBootstrap.show();
 }
 
 function createChatWindowElement(chatJson) {
@@ -383,6 +402,11 @@ function prependChatMessages(messages) {
         $("#messages-window").prepend(createMessageElement(message.fromUserId, message.systemMessage, message.attachments, message.options, message.text, message.createdAt, message.viewed));
     }
     hideChatNewMessagesSpinner();
+    if (messages.length < context.loadNewMessagesCount) {
+        hideMessageLoadMoreBtn();
+    } else {
+        showMessageLoadMoreBtn();
+    }
 }
 
 function appendWSMessage(message) {
@@ -391,6 +415,12 @@ function appendWSMessage(message) {
     }
 
     if (message.chatId !== context.chatId) {
+        let content = message.content;
+        if (message.content === null) {
+            content = "Сообщение без текста.";
+        }
+        showNotification(message.id, "Новое сообщение в чате: " + message.chatName, content.substring(0, 50))
+        incNewMessageCount(message.chatId);
         return;
     } else {
         sendMessageViewed();
@@ -414,6 +444,8 @@ function appendWSMessage(message) {
     }
 
     $("#messages-window").append(createMessageElement(message.fromUserId, message.isSystemMessage, attachments, options, message.content, "Недавно", false));
+
+    chatWindow.scroll(0, chatWindow.scrollHeight)
 }
 
 function processLoadChatInfo(chatInfoJson) {
@@ -434,6 +466,7 @@ function processLoadChatInfo(chatInfoJson) {
     chatWindow.scroll(0, chatWindow.scrollHeight)
 
     sendMessageViewed();
+    clearNewMessageCount(chatInfoJson.chatId);
 }
 
 function processNewSearchedChats(chatsArray) {
@@ -571,4 +604,26 @@ function moveChatInChatWindowToFront(chatId) {
     if ($(`#chat-${chatId}`).length) {
         $(`#chat-${chatId}`).prependTo("#chat-window");
     }
+}
+
+function incNewMessageCount(chatId) {
+    $(`#chat-${chatId}-new-msg-count`).removeClass("bg-white");
+    $(`#chat-${chatId}-new-msg-count`).addClass("text-bg-primary");
+    let text = $(`#chat-${chatId}-new-msg-count`).text();
+
+    if (text === null || text === undefined || text === '') {
+        text = 0;
+    } else {
+        text = parseInt(text);
+    }
+
+    $(`#chat-${chatId}-new-msg-count`).text(text + 1);
+}
+
+function clearNewMessageCount(chatId) {
+    $(`#chat-${chatId}-new-msg-count`).addClass("bg-white");
+    $(`#chat-${chatId}-new-msg-count`).removeClass("text-bg-primary");
+
+
+    $(`#chat-${chatId}-new-msg-count`).text('');
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
@@ -45,6 +46,12 @@ public class MessengerController {
     public RedirectView messengerAllViewed() {
         chatService.setAllMessagesViewed(userUiService.getCurrentUserId());
         return new RedirectView("/messenger?tab=new-orders");
+    }
+
+    @GetMapping(value = "/new-messenger-all-viewed")
+    public RedirectView newMessengerAllViewed(@RequestParam(value = "tab", required = true) String tab) {
+        chatService.setAllMessagesViewed(userUiService.getCurrentUserId(), tab);
+        return new RedirectView("/new-messenger?tab=" + tab);
     }
 
     @GetMapping(value = "/request-order/{orderId}")

@@ -42,7 +42,7 @@ public class FastMessengerController {
     }
 
     @PostMapping(value = "/new-message-info", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
-    public ResponseEntity<NewMessageCountResponseDto> loadNewMessageCount(NewMessageCountRequestDto requestDto) {
+    public ResponseEntity<NewMessageCountResponseDto> loadNewMessageCount(@RequestBody NewMessageCountRequestDto requestDto) {
         return ResponseEntity.ok(fastChatService.loadNewMessageCount(requestDto));
     }
 }

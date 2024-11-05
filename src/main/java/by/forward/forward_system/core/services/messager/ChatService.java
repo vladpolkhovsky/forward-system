@@ -9,6 +9,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageP
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
+import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,7 @@ public class ChatService {
     private final ChatMessageOptionRepository chatMessageOptionRepository;
     private final MessageRepository messageRepository;
     private final NotificationOutboxRepository notificationOutboxRepository;
+    private final ChatTabToChatTypeService chatTabToChatTypeService;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -233,6 +235,11 @@ public class ChatService {
     @Transactional
     public void setAllMessagesViewed(Long currentUserId) {
         chatMessageToUserRepository.setAllViewed(currentUserId);
+    }
+
+    @Transactional
+    public void setAllMessagesViewed(Long currentUserId, String chatTab) {
+        chatMessageToUserRepository.setAllViewed(currentUserId, chatTabToChatTypeService.getChatTypeByTab(chatTab));
     }
 
     public List<Long> getUsersWithNotViewedMessaged() {

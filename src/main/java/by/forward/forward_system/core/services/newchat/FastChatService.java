@@ -45,7 +45,7 @@ public class FastChatService {
 
     private final LoadChatMembersQueryHandler loadChatMembersQueryHandler;
 
-    private final NewMessageCountQueryHandler newMessageCountQueryHandler;
+    private final LoadNewMessageCountQueryHandler newMessageCountQueryHandler;
 
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
