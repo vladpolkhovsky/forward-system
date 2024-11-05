@@ -512,3 +512,10 @@ alter table forward_system.reviews
 
 alter table forward_system.reviews
     alter column review_verdict type varchar(65536);
+
+create table if not exists forward_system.skip_chat_notifications
+(
+    id bigint primary key,
+    user_id bigint not null references forward_system.users (id),
+    chat_id bigint not null references forward_system.chats (id)
+)

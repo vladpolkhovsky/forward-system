@@ -18,4 +18,6 @@ public interface BotIntegrationDataRepository extends JpaRepository<BotIntegrati
     @Query(nativeQuery = true, value = "select * from forward_system.bot_integration_data bid where bid.user_id = :userId")
     List<BotIntegrationDataEntity> getBotIntegrationDataByUserId(Long userId);
 
+    @Query(nativeQuery = true, value = "select bid.user_id from forward_system.bot_integration_data bid where bid.telegram_chat_id = :chatId")
+    Optional<Long> findUserIdByChatId(Long chatId);
 }

@@ -5,6 +5,7 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
+import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -26,6 +27,7 @@ public class BotNotificationJob {
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatMetadataRepository chatMetadataRepository;
     private final ChatRepository chatRepository;
+    private final SkipChatNotificationRepository skipChatNotificationRepository;
 
     @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
     @Transactional
@@ -58,6 +60,8 @@ public class BotNotificationJob {
 
     private int computeAndSendNotification(UserEntity user, List<NotificationOutboxEntity> notification) {
         Map<Long, Integer> chatIdToMessageCount = new HashMap<>();
+        List<Long> skippedChatIdsByUserId = skipChatNotificationRepository.findSkippedChatIdsByUserId(user.getId());
+
         int sandedMessageCount = 0;
         for (NotificationOutboxEntity notificationOutboxEntity : notification) {
             Boolean isViewed = notificationOutboxEntity.getMessageToUser().getIsViewed();
@@ -72,6 +76,9 @@ public class BotNotificationJob {
 
         for (Map.Entry<Long, Integer> chatIdToMessageCountEntry : chatIdToMessageCount.entrySet()) {
             if (chatIdToMessageCountEntry.getValue() == 0) {
+                continue;
+            }
+            if (skippedChatIdsByUserId.contains(chatIdToMessageCountEntry.getKey())) {
                 continue;
             }
             ChatEntity chatEntity = chatRepository.findById(chatIdToMessageCountEntry.getKey()).get();
