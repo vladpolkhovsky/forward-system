@@ -259,7 +259,7 @@ public class OrderService {
 
         UserEntity manager = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found with id " + currentUserId));
 
-        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatByUserAndChatName(userEntity.getId(), ChatNames.NEW_ORDER_CHAT_NAME.formatted(userEntity.getUsername(), manager.getUsername()));
+        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(userEntity.getId(), manager.getId());
         Optional<ChatMessageTypeEntity> chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.NEW_ORDER.getName());
         Optional<OrderParticipantsTypeEntity> participantsType = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName());
 

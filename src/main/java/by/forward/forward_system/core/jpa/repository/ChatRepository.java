@@ -18,6 +18,11 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
         "where chat_members.user_id = :userId and chat.chat_name = :name order by chat.last_message_date desc")
     Optional<ChatEntity> findChatByUserAndChatName(Long userId, String name);
 
+    @Query(nativeQuery = true, value = "select c.* from forward_system.chats c " +
+        "inner join forward_system.chat_metadata cm on cm.id = c.id " +
+        "where cm.user_id = :userId and cm.manager_id = :managerId")
+    Optional<ChatEntity> findChatEntityByUserAndManagerId(Long userId, Long managerId);
+
     @Query(nativeQuery = true, value = "select chat.id, chat.chat_name, chat.type, chat.last_message_date from forward_system.chats chat")
     List<ChatProjection> findAllChatsProjection();
 
