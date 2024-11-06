@@ -3,6 +3,7 @@ package by.forward.forward_system.core.web.mvc;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.services.core.DisciplineService;
@@ -213,10 +214,20 @@ public class CreateOrderController {
         Long orderMainChatId = orderService.getOrderMainChat(orderId);
         List<OrderParticipantUiDto> participants = orderUiService.getAllParticipants(orderId);
 
+        Integer authorsCost = order.getAuthorCost();
+
+        for (OrderParticipantUiDto participant : participants) {
+            if (userUiService.getCurrentUserId().equals(participant.getId()) &&
+                participant.getParticipantType().equals(ParticipantType.MAIN_AUTHOR.getName())) {
+                authorsCost = participant.getFee();
+            }
+        }
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("hasMainChat", orderMainChatId != null);
         model.addAttribute("mainChatId", orderMainChatId);
+        model.addAttribute("authorsCost", authorsCost);
         model.addAttribute("order", order);
         model.addAttribute("participants", participants);
 
@@ -381,6 +392,7 @@ public class CreateOrderController {
     @GetMapping(value = "/change-fee-in-order")
     public String changeFeeInOrder(Model model) {
         List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+            OrderStatus.DISTRIBUTION.getName(),
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName()

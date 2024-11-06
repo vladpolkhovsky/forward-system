@@ -129,6 +129,10 @@
 </div>
 <script src="/static/jquery-3.7.1.min.js"></script>
 <script th:inline="javascript">
+    let file = document.getElementById("file-area");
+    let textArea = document.getElementById("message-area");
+    let viewAllInTab = document.getElementById("view-all-message-in-tab");
+
     const notificationAudio = new Audio("/static/notification.mp3");
 
     const userId = [[${userId}]];
@@ -172,9 +176,6 @@
 </script>
 <script src="/static/websocket.js"></script>
 <script>
-    let file = document.getElementById("file-area");
-    let textArea = document.getElementById("message-area");
-    let viewAllInTab = document.getElementById("view-all-message-in-tab");
 
     context.chatTab = getTab();
     viewAllInTab.setAttribute("href", `/new-messenger-all-viewed?tab=${getTab()}`)

@@ -280,7 +280,7 @@ public class OrderUiService {
             orderParticipantDto.setParticipantType(orderParticipant.getParticipantsType().getType().getName());
             orderParticipantDto.setParticipantTypeRus(orderParticipant.getParticipantsType().getType().getRusName());
             orderParticipantDto.setFee(orderParticipant.getFee());
-            orderParticipantDto.setHasFee(orderParticipant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR));
+            orderParticipantDto.setHasFee(orderParticipant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR) || orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR));
             participantUiDtos.add(orderParticipantDto);
         }
         return participantUiDtos;
@@ -381,7 +381,10 @@ public class OrderUiService {
         OrderEntity order = orderService.getById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
         List<AuthorWithFeeDto> authorWithFeeDtos = new ArrayList<>();
         for (OrderParticipantEntity participant : order.getOrderParticipants()) {
-            if (!participant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR)) {
+            if (!(
+                participant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR) ||
+                participant.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
+            )) {
                 continue;
             }
             authorWithFeeDtos.add(new AuthorWithFeeDto(

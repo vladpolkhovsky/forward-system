@@ -4,7 +4,8 @@ spring:
       max-request-size: 128MB
       max-file-size: 128MB
   session:
-    timeout: 10800
+    timeout: 2629800
+
   mvc:
     async:
       request-timeout: 60s

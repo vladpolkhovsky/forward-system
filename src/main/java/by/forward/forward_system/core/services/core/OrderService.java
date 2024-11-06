@@ -183,14 +183,14 @@ public class OrderService {
 
         ParticipantType participantType = ParticipantType.byName(addParticipantRequestDto.role());
         if (participantType.equals(ParticipantType.AUTHOR)) {
-            addAuthorParticipant(orderEntity, addParticipantRequestDto.ids());
+            addAuthorParticipant(orderEntity, addParticipantRequestDto.selected());
         }
         if (participantType.equals(ParticipantType.CATCHER)) {
-            addCatcherParticipant(orderEntity, addParticipantRequestDto.ids().get(0));
+            addCatcherParticipant(orderEntity, addParticipantRequestDto.selected().get(0));
         }
     }
 
-    private OrderEntity addCatcherParticipant(OrderEntity orderEntity, Long userId) {
+    private OrderEntity addCatcherParticipant(OrderEntity orderEntity, AddParticipantRequestDto.Selected selected) {
         OrderParticipantsTypeEntity orderParticipantsTypeEntity = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).get();
         OrderParticipantEntity removeOrderParticipantEntity = null;
 
@@ -206,24 +206,34 @@ public class OrderService {
             orderParticipantRepository.delete(removeOrderParticipantEntity);
         }
 
-        addParticipant(orderEntity, orderParticipantsTypeEntity, userId);
+        addParticipant(orderEntity, orderParticipantsTypeEntity, selected.id(), null);
 
         return orderRepository.save(orderEntity);
     }
 
-    private void addAuthorParticipant(OrderEntity orderEntity, List<Long> userIds) {
+    private void addAuthorParticipant(OrderEntity orderEntity, List<AddParticipantRequestDto.Selected> selected) {
         OrderParticipantsTypeEntity orderParticipantsTypeEntity = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName()).get();
 
         for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
-            if (isAssignedAuthor(orderParticipant)) {
-                userIds.remove(orderParticipant.getUser().getId());
+            AddParticipantRequestDto.Selected cSelected = null;
+            boolean isFound = false;
+            for (AddParticipantRequestDto.Selected c : selected) {
+                if (orderParticipant.getUser().getId().equals(c.id())) {
+                    isFound = true;
+                    cSelected = c;
+                    break;
+                }
+            }
+            if (isFound) {
+                selected.remove(cSelected);
             }
         }
 
-        for (Long userId : userIds) {
-            addParticipant(orderEntity, orderParticipantsTypeEntity, userId);
+        for (AddParticipantRequestDto.Selected c : selected) {
+            Integer fee = c.fee() == -1 ? orderEntity.getAuthorCost() : c.fee();
+            addParticipant(orderEntity, orderParticipantsTypeEntity, c.id(), fee);
             sendNewOrderRequest(
-                userId,
+                c.id(),
                 orderEntity.getId(),
                 new BigDecimal(orderEntity.getTechNumber()),
                 orderEntity.getWorkType(),
@@ -277,7 +287,7 @@ public class OrderService {
         }
     }
 
-    private void addParticipant(OrderEntity orderEntity, OrderParticipantsTypeEntity orderParticipantsTypeEntity, Long userId) {
+    private void addParticipant(OrderEntity orderEntity, OrderParticipantsTypeEntity orderParticipantsTypeEntity, Long userId, Integer fee) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
 
@@ -285,9 +295,10 @@ public class OrderService {
         orderParticipantEntity.setUser(userEntity);
         orderParticipantEntity.setParticipantsType(orderParticipantsTypeEntity);
         orderParticipantEntity.setOrder(orderEntity);
+        orderParticipantEntity.setFee(fee);
 
         if (orderParticipantsTypeEntity.getType().equals(ParticipantType.MAIN_AUTHOR)) {
-            orderParticipantEntity.setFee(orderEntity.getAuthorCost());
+            orderParticipantEntity.setFee(fee);
         }
 
         orderParticipantRepository.save(orderParticipantEntity);
@@ -396,6 +407,14 @@ public class OrderService {
         }
 
         OrderEntity orderEntity = orderRepository.findById(update.getOrderId()).orElseThrow(() -> new RuntimeException("Order not found"));
+        List<Long> mainAuthors = update.getAuthors();
+
+        Integer orderMainAuthorFee = null;
+        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
+            if (mainAuthors.contains(orderParticipant.getUser().getId())) {
+                orderMainAuthorFee = orderParticipant.getFee();
+            }
+        }
 
         orderParticipantRepository.deleteAll(orderEntity.getOrderParticipants());
         orderEntity.getOrderParticipants().clear();
@@ -407,17 +426,17 @@ public class OrderService {
 
         OrderParticipantsTypeEntity mainAuthorParticipant = orderParticipantsTypeRepository.findById(ParticipantType.MAIN_AUTHOR.getName()).orElseThrow(() -> new RuntimeException("Main Author not found"));
         for (UserEntity author : authors) {
-            addParticipant(orderEntity, mainAuthorParticipant, author.getId());
+            addParticipant(orderEntity, mainAuthorParticipant, author.getId(), orderMainAuthorFee);
         }
 
         OrderParticipantsTypeEntity catcherParticipant = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).orElseThrow(() -> new RuntimeException("CATCHER not found"));
         for (UserEntity catcher : catchers) {
-            addParticipant(orderEntity, catcherParticipant, catcher.getId());
+            addParticipant(orderEntity, catcherParticipant, catcher.getId(), null);
         }
 
         OrderParticipantsTypeEntity hostParticipant = orderParticipantsTypeRepository.findById(ParticipantType.HOST.getName()).orElseThrow(() -> new RuntimeException("HOST not found"));
         for (UserEntity host : hosts) {
-            addParticipant(orderEntity, hostParticipant, host.getId());
+            addParticipant(orderEntity, hostParticipant, host.getId(),null);
         }
 
         List<ParticipantType> userTypeInChat = Arrays.asList(ParticipantType.CATCHER, ParticipantType.MAIN_AUTHOR, ParticipantType.HOST);

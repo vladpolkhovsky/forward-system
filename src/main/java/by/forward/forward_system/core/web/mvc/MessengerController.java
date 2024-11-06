@@ -1,10 +1,12 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
+import by.forward.forward_system.core.dto.ui.AuthorWithFeeDto;
 import by.forward.forward_system.core.dto.ui.DeclineDto;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.messager.ChatService;
+import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.view.RedirectView;
+
+import java.util.List;
 
 @Controller
 @AllArgsConstructor
@@ -23,6 +27,7 @@ public class MessengerController {
     private final ChatService chatService;
 
     private final OrderService orderService;
+    private final OrderUiService orderUiService;
 
     @GetMapping(value = "/messenger")
     public String messenger(Model model) {
@@ -57,6 +62,15 @@ public class MessengerController {
     @GetMapping(value = "/request-order/{orderId}")
     public String requestOrder(Model model, @PathVariable Long orderId) {
         OrderDto order = orderService.getOrder(orderId);
+
+        Integer authorsCost = order.getAuthorCost();
+        List<AuthorWithFeeDto> orderAuthorsWithFee = orderUiService.getOrderAuthorsWithFee(orderId);
+        for (AuthorWithFeeDto authorWithFee : orderAuthorsWithFee) {
+            if (authorWithFee.getId().equals(userUiService.getCurrentUserId())) {
+                authorsCost = authorWithFee.getFee();
+            }
+        }
+
         boolean orderClosed = !order.getOrderStatus().equals(OrderStatus.DISTRIBUTION.getName());
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -64,6 +78,7 @@ public class MessengerController {
         model.addAttribute("order", order);
         model.addAttribute("decline", new DeclineDto());
         model.addAttribute("orderClosed", orderClosed);
+        model.addAttribute("authorsCost", authorsCost);
         model.addAttribute("orderClosedShowError", orderClosed);
 
         return "messenger/request-order";
@@ -73,11 +88,20 @@ public class MessengerController {
     public String orderInfo(Model model, @PathVariable Long orderId) {
         OrderDto order = orderService.getOrder(orderId);
 
+        Integer authorsCost = order.getAuthorCost();
+        List<AuthorWithFeeDto> orderAuthorsWithFee = orderUiService.getOrderAuthorsWithFee(orderId);
+        for (AuthorWithFeeDto authorWithFee : orderAuthorsWithFee) {
+            if (authorWithFee.getId().equals(userUiService.getCurrentUserId())) {
+                authorsCost = authorWithFee.getFee();
+            }
+        }
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("order", order);
         model.addAttribute("decline", new DeclineDto());
         model.addAttribute("orderClosed", true);
+        model.addAttribute("authorsCost", authorsCost);
         model.addAttribute("orderClosedShowError", false);
 
         return "messenger/request-order";

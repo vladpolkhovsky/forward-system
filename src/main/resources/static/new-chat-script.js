@@ -245,7 +245,7 @@ function createNotificationElement(id, title, content) {
 function showNotification(id, title, content) {
     $("#notification-container").append(createNotificationElement(id, title, content));
     let toastBootstrap = bootstrap.Toast.getOrCreateInstance(document.getElementById(id), {
-        delay: 10000
+        delay: 20000
     });
     toastBootstrap.show();
 }
@@ -426,7 +426,7 @@ function appendWSMessage(message) {
         if (message.content === null) {
             content = "Сообщение без текста.";
         }
-        showNotification(message.id, "Новое сообщение в чате: " + message.chatName, content.substring(0, 50))
+        showNotification(message.id, "Новое сообщение в чате: " + message.chatName, content.substring(0, 150))
         incNewMessageCount(message.chatId);
         return;
     } else {
@@ -470,7 +470,8 @@ function processLoadChatInfo(chatInfoJson) {
         $("#message-div").removeClass("d-none");
     }
 
-    chatWindow.scroll(0, chatWindow.scrollHeight)
+    chatWindow.scroll(0, chatWindow.scrollHeight);
+    textArea.focus();
 
     sendMessageViewed();
     clearNewMessageCount(chatInfoJson.chatId);
