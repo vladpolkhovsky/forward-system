@@ -469,12 +469,13 @@ public class OrderService {
 
     public Long getOrderMainChat(Long orderId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        long chatId = 0;
         for (ChatEntity chat : orderEntity.getChats()) {
             if (chat.getChatType().getType().equals(ChatType.ORDER_CHAT)) {
-                return chat.getId();
+                chatId = Math.max(chat.getId(), chatId);
             }
         }
-        return null;
+        return chatId == 0 ? null : chatId;
     }
 
     public void addMainAuthorToOrder(Long orderId, Long authorId) {
