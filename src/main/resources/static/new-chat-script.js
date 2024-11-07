@@ -423,11 +423,12 @@ function appendWSMessage(message) {
 
     if (message.chatId !== context.chatId) {
         let content = message.content;
-        if (message.content === null) {
+        if (message.content === null || message.content === '') {
             content = "Сообщение без текста.";
         }
         showNotification(message.id, "Новое сообщение в чате: " + message.chatName, content.substring(0, 150))
         incNewMessageCount(message.chatId);
+        moveChatInChatWindowToFront(message.chatId);
         return;
     } else {
         sendMessageViewed();
