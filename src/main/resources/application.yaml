@@ -4,11 +4,11 @@ spring:
       max-request-size: 128MB
       max-file-size: 128MB
   session:
-    timeout: 2629800
+    timeout: 5259600
 
   mvc:
     async:
-      request-timeout: 60s
+      request-timeout: 120s
 
   datasource:
     hikari:
@@ -46,4 +46,7 @@ server:
   port: 8081
   servlet:
     session:
-      timeout: 10800
+      timeout: 5259600
+      cookie:
+        max-age: 5259600
+        name: JSESSIONID

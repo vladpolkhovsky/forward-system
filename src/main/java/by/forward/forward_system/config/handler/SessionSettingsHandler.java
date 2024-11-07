@@ -12,7 +12,7 @@ import java.io.IOException;
 @Component
 public class SessionSettingsHandler extends SavedRequestAwareAuthenticationSuccessHandler {
 
-    private static final int MAX_INACTIVE_INTERVAL = 2629800;
+    private static final int MAX_INACTIVE_INTERVAL = 5259600;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws ServletException, IOException {
