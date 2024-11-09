@@ -168,7 +168,7 @@ public class BotNotificationJob {
             return true;
         }
         ChatEntity chatEntity = chatRepository.findById(chatId).get();
-        if (chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.ADMIN)) {
+        if (chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.OWNER)) {
             return true;
         }
         return false;
