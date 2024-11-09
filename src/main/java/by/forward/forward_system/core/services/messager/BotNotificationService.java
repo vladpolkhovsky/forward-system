@@ -107,7 +107,7 @@ public class BotNotificationService {
         return true;
     }
 
-    public Optional<Long> getUserIdBy(Long chatId) {
+    public Optional<Long> getUserIdByChatId(Long chatId) {
         return botIntegrationDataRepository.findUserIdByChatId(chatId);
     }
 }

@@ -9,6 +9,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectio
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -103,8 +104,8 @@ public class ReviewService {
         return reviewDto;
     }
 
-    public List<ReviewProjectionDto> getNotReviewed() {
-        List<ReviewEntity> all = reviewRepository.findAll();
+    public List<ReviewProjectionDto> getNotReviewed(int page) {
+        List<ReviewEntity> all = reviewRepository.findAllNotReviewd((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
         List<ReviewEntity> list = all.stream()
             .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
             .filter(t -> !t.getIsReviewed())
@@ -112,8 +113,8 @@ public class ReviewService {
         return getReviewProjectionDtos(list);
     }
 
-    public List<ReviewProjectionDto> getAllReviews() {
-        List<ReviewEntity> all = reviewRepository.findAll();
+    public List<ReviewProjectionDto> getAllReviews(int page) {
+        List<ReviewEntity> all = reviewRepository.findPage((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
         return getReviewProjectionDtos(all);
     }
 
@@ -138,6 +139,8 @@ public class ReviewService {
             .map(t -> {
                 ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
                 reviewProjectionDto.setReviewId(t.getId());
+                reviewProjectionDto.setCreatedAt(t.getCreatedAt());
+                reviewProjectionDto.setReviewedAt(t.getReviewDate());
                 reviewProjectionDto.setOrderId(t.getOrder().getId());
                 reviewProjectionDto.setOrderTechNumber(new BigDecimal(t.getOrder().getTechNumber()));
                 reviewProjectionDto.setOrderName(t.getOrder().getName());
@@ -150,6 +153,10 @@ public class ReviewService {
 
     public ReviewDto getReviewById(Long reviewId) {
         return toDto(reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("review not found")));
+    }
+
+    public List<ReviewDto> getOlderReviews(Long orderId) {
+        return reviewRepository.findOldReviews(orderId).stream().map(this::toDto).toList();
     }
 
     public void saveVerdict(Long reviewId, String verdict, String verdictMark, Long fileId) {
@@ -198,5 +205,15 @@ public class ReviewService {
 
     public Integer getNotAcceptedCount() {
         return reviewRepository.countAllByIsAcceptedIsFalse();
+    }
+
+    public int getReviewsPageCount() {
+        int count = (int) reviewRepository.count();
+        return count / Constants.REVIEWS_PAGE_SIZE + (count % Constants.REVIEWS_PAGE_SIZE == 0 ? 0 : 1);
+    }
+
+    public int getNotReviewedPageCount() {
+        int count = (int) reviewRepository.countNotReviewed();
+        return count / Constants.REVIEWS_PAGE_SIZE + (count % Constants.REVIEWS_PAGE_SIZE == 0 ? 0 : 1);
     }
 }

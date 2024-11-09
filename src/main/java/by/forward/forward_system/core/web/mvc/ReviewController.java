@@ -15,6 +15,7 @@ import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 @Controller
 @AllArgsConstructor
@@ -57,12 +59,20 @@ public class ReviewController {
     }
 
     @GetMapping(value = "/edit-review-order")
-    public String editReviewSelector(Model model) {
-        List<ReviewProjectionDto> notReviewed = reviewService.getNotReviewed();
+    public String editReviewSelector(Model model, @RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+
+        int pageCount = reviewService.getNotReviewedPageCount();
+        page = Math.max(Math.min(pageCount, page), 1);
+        List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
+
+        List<ReviewProjectionDto> notReviewed = reviewService.getNotReviewed(page);
 
         model.addAttribute("menuName", "Выберите запрос, который хотите редактировать и отправить на рассмотрение эксперта");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("reviews", notReviewed);
+        model.addAttribute("showPages", true);
+        model.addAttribute("page", page);
+        model.addAttribute("pages", pages);
 
         return "main/expert-review-edit-order-selector";
     }
@@ -113,8 +123,10 @@ public class ReviewController {
     @GetMapping(value = "/expert-review-order-answer/{orderId}/{reviewId}")
     public String expertAnswer(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewDto reviewById = reviewService.getReviewById(reviewId);
+        List<ReviewDto> olderReviews = reviewService.getOlderReviews(orderId);
 
         model.addAttribute("menuName", "Проверьте работу и напишите вердикт.");
+        model.addAttribute("olderReviews", olderReviews);
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
         model.addAttribute("orderId", orderId);
@@ -133,6 +145,7 @@ public class ReviewController {
         AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());
 
         reviewService.saveVerdict(reviewId, verdict, verdictMark, attachmentEntity.getId());
+        orderService.notifyVerdictSaved(orderId);
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
 
         return new RedirectView("/main");
@@ -171,12 +184,20 @@ public class ReviewController {
     }
 
     @GetMapping(value = "/review-order-answers")
-    public String reviewOrderAnswers(Model model) {
-        List<ReviewProjectionDto> all = reviewService.getAllReviews();
+    public String reviewOrderAnswers(Model model, @RequestParam(value = "page", required = false, defaultValue = "1") int page) {
+
+        int pageCount = reviewService.getReviewsPageCount();
+        page = Math.max(Math.min(pageCount, page), 1);
+        List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
+
+        List<ReviewProjectionDto> all = reviewService.getAllReviews(page);
 
         model.addAttribute("menuName", "Выберите заказ, который хотите посмотреть");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("reviews", all);
+        model.addAttribute("showPages", true);
+        model.addAttribute("page", page);
+        model.addAttribute("pages", pages);
 
         return "main/expert-review-view-selector";
     }

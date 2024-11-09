@@ -2,7 +2,6 @@ package by.forward.forward_system.core.bot;
 
 import by.forward.forward_system.core.jpa.model.ChatEntity;
 import by.forward.forward_system.core.jpa.model.SkipChatNotificationEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
@@ -16,11 +15,12 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class StopNotificationFromChat implements CommandResolver {
+public class UnstopNotificationFromChatResolver implements CommandResolver {
 
     private final BotNotificationService botNotificationService;
 
@@ -32,13 +32,13 @@ public class StopNotificationFromChat implements CommandResolver {
 
     @Override
     public boolean accept(String command) {
-        return command.startsWith("/stop-notification");
+        return command.startsWith("/continue-notification");
     }
 
     @Override
     @Transactional
     public void resolve(TelegramClient telegramClient, Update update) throws TelegramApiException {
-        Optional<Long> userId = botNotificationService.getUserIdBy(update.getMessage().getChatId());
+        Optional<Long> userId = botNotificationService.getUserIdByChatId(update.getMessage().getChatId());
 
         if (userId.isEmpty()) {
             telegramClient.execute(SendMessage.builder()
@@ -53,7 +53,7 @@ public class StopNotificationFromChat implements CommandResolver {
         if (s.length != 2) {
             telegramClient.execute(SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
-                .text("Неправильный набор аргументов: Используйте: /stop-notification <chat-id>")
+                .text("Неправильный набор аргументов: Используйте: /continue-notification <chat-id>")
                 .build());
             return;
         }
@@ -62,17 +62,23 @@ public class StopNotificationFromChat implements CommandResolver {
             Long chatId = Long.parseLong(s[1]);
             Long exactUserId = userId.get();
 
-            UserEntity userEntity = userRepository.findById(exactUserId).orElseThrow(() -> new RuntimeException("User with id not found " + exactUserId));
             ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat with id not found " + chatId));
 
-            SkipChatNotificationEntity skipChatNotificationEntity = new SkipChatNotificationEntity();
-            skipChatNotificationEntity.setChat(chatEntity);
-            skipChatNotificationEntity.setUser(userEntity);
+            List<SkipChatNotificationEntity> skipChatNotificationEntities = skipChatNotificationRepository.getSkippedChatEntity(exactUserId, chatId);
 
-            SkipChatNotificationEntity save = skipChatNotificationRepository.save(skipChatNotificationEntity);
+            if (skipChatNotificationEntities.isEmpty()) {
+                telegramClient.execute(SendMessage.builder()
+                    .chatId(update.getMessage().getChatId())
+                    .text("Вы не отписаны от уведомлений из чата \"%s\"".formatted(chatEntity.getChatName()))
+                    .build());
+                return;
+            }
+
+            skipChatNotificationRepository.deleteAll(skipChatNotificationEntities);
+
             telegramClient.execute(SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
-                .text("Успешно отписаны от уведомлений из чата \"%s\"".formatted(save.getChat().getChatName()))
+                .text("Успешно отменена отписка от уведомлений из чата \"%s\"".formatted(chatEntity.getChatName()))
                 .build());
         } catch (Exception ex) {
             telegramClient.execute(SendMessage.builder()

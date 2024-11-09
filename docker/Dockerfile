@@ -6,6 +6,8 @@ COPY . /usr/src/forward-system
 
 RUN microdnf install --nodocs wget findutils
 
+RUN keytool -importkeystore -srckeystore forward-system.jks -destkeystore forward-system.p12 -deststoretype pkcs12
+
 RUN mkdir -p /root/.postgresql && \
     wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" \
       --output-document /root/.postgresql/root.crt && \

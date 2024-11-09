@@ -13,4 +13,6 @@ public interface SkipChatNotificationRepository extends JpaRepository<SkipChatNo
     @Query(nativeQuery = true, value = "select scn.chat_id from forward_system.skip_chat_notifications scn where scn.user_id = :userId")
     List<Long> findSkippedChatIdsByUserId(Long userId);
 
+    @Query(nativeQuery = true, value = "select * from forward_system.skip_chat_notifications scn where scn.user_id = :userId and scn.chat_id = :chatId")
+    List<SkipChatNotificationEntity> getSkippedChatEntity(Long userId, Long chatId);
 }

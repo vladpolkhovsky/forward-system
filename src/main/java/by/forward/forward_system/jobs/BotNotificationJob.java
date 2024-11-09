@@ -1,6 +1,7 @@
 package by.forward.forward_system.jobs;
 
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
@@ -78,7 +79,7 @@ public class BotNotificationJob {
             if (chatIdToMessageCountEntry.getValue() == 0) {
                 continue;
             }
-            if (skippedChatIdsByUserId.contains(chatIdToMessageCountEntry.getKey())) {
+            if (isNoNeedToSendNotification(skippedChatIdsByUserId, user, chatIdToMessageCountEntry.getKey())) {
                 continue;
             }
             ChatEntity chatEntity = chatRepository.findById(chatIdToMessageCountEntry.getKey()).get();
@@ -160,5 +161,16 @@ public class BotNotificationJob {
             "%s".
             """.formatted(userEntity.getUsername(), newMessageCount, chatName);
         botNotificationService.sendBotNotification(userEntity.getId(), text);
+    }
+
+    private boolean isNoNeedToSendNotification(List<Long> skippedChatIdsByUserId, UserEntity user, Long chatId) {
+        if (skippedChatIdsByUserId.contains(chatId)) {
+            return true;
+        }
+        ChatEntity chatEntity = chatRepository.findById(chatId).get();
+        if (chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.ADMIN)) {
+            return true;
+        }
+        return false;
     }
 }

@@ -15,7 +15,7 @@
     <link rel="icon" type="image/x-icon" href="/static/favicon.png">
     <link rel="stylesheet" href="/static/chat-style.css">
 </head>
-<body>
+<body id="id-body">
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container mt-3">
     <div class="row main-font">
@@ -161,16 +161,6 @@
         if (body.type === "banned") {
             alert("Вы заблокированы.")
         }
-    }
-
-    const toastTrigger = document.getElementById('liveToastBtn')
-    const toastLiveExample = document.getElementById('liveToast')
-
-    if (toastTrigger) {
-        const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toastLiveExample)
-        toastTrigger.addEventListener('click', () => {
-            toastBootstrap.show()
-        })
     }
 
 </script>

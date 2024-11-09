@@ -100,8 +100,10 @@ public class OrderService {
         orderEntity.setAuthorCost(order.getAuthorCost());
         orderEntity.setTakingCost(order.getTakingCost());
 
-        String changesText = convertChangesToText(changes);
-        sendChangesToChat(order.getId(), changesText);
+        if (!changes.isEmpty()) {
+            String changesText = convertChangesToText(changes);
+            sendChangesToChat(order.getId(), changesText);
+        }
 
         orderEntity = orderRepository.save(orderEntity);
 
@@ -542,6 +544,24 @@ public class OrderService {
         return orderRepository.maxTechNumber().orElse("0");
     }
 
+    public void notifyVerdictSaved(Long orderId) {
+        Long orderMainChat = getOrderMainChat(orderId);
+        if (orderMainChat == null) {
+            return;
+        }
+
+        ChatEntity chatEntity = chatRepository.findById(orderMainChat).orElseThrow(() -> new RuntimeException("Main chat not found"));
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Message type not found"));
+
+        messageService.sendMessage(null,
+            chatEntity,
+            "Эксперт проверил работу.",
+            true,
+            chatMessageTypeEntity,
+            Collections.emptyList(),
+            Collections.emptyList());
+    }
+
     public void checkOrderAccessEdit(Long orderId, Long currentUserId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
@@ -708,4 +728,5 @@ public class OrderService {
     public List<OrderEntity> findAllOrdersByUserInParticipant(Long currentUserId) {
         return orderRepository.findOrdersWithUserInParticipant(currentUserId);
     }
+
 }

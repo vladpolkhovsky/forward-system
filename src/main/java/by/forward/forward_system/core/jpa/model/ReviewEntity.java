@@ -33,7 +33,7 @@ public class ReviewEntity {
     @Column(name = "review_mark")
     private String reviewMark;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_file_id")
     private AttachmentEntity reviewAttachment;
 

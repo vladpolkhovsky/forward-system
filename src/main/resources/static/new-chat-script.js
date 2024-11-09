@@ -24,6 +24,7 @@ const additionalDates = document.getElementById("additional-dates");
 const additionalViewFull = document.getElementById("additional-view-full");
 
 const chatWindow = document.getElementById("scroll-window");
+const mainWindow = document.getElementById("id-body");
 
 function getUrlParam(paramName) {
     let searchParams = new URLSearchParams(window.location.search);
@@ -472,8 +473,8 @@ function processLoadChatInfo(chatInfoJson) {
     }
 
     chatWindow.scroll(0, chatWindow.scrollHeight);
-    textArea.focus();
-
+    mainWindow.scroll(0, mainWindow.scrollHeight);
+    
     sendMessageViewed();
     clearNewMessageCount(chatInfoJson.chatId);
 }

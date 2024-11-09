@@ -16,6 +16,27 @@
     </div>
 </div>
 <div class="container">
+    <div class="row" th:if="${showPages}">
+        <div class="col-12">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a class="page-link" th:href="|/edit-review-order?page=| + ${page - 1}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li th:each="cPage : ${pages}" th:class="|page-item | + ${cPage == page ? 'active' : ''}">
+                        <a class="page-link" th:href="|/edit-review-order?page=| + ${cPage}" th:text="${cPage}"></a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" th:href="|/edit-review-order?page=| + ${page + 1}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
     <div class="row">
         <p>Выберите запрос на проверку для изменения.</p>
         <div class="col-12">
@@ -28,7 +49,9 @@
                                th:href="|/edit-review-order/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}">
                             </a>
                         </div>
-                        <p th:text="|Название заказа: | + ${order.getOrderName()}"></p>
+                        <p class="m-0" th:text="|Название заказа: | + ${order.getOrderName()}"></p>
+                        <p class="m-0" th:text="|Дата создания запроса: | + ${#temporals.format(order.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+                        <p class="m-0" th:if="${order.getReviewedAt() != null}" th:text="|Дата проверки: | + ${#temporals.format(order.getReviewedAt(), 'dd.MM.yyyy HH:mm')}"></p>
                     </div>
                     <span class="badge text-bg-primary rounded-pill" th:text="${order.getReviewStatusName()}"></span>
                 </li>
