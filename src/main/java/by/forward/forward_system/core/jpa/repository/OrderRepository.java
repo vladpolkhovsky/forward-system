@@ -23,7 +23,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> findByStatus(List<String> orderStatuses);
 
     @Query(nativeQuery = true, value = "SELECT o.id as id, o.tech_number as techNumber, o.name as name, o.order_status as status from forward_system.orders o " +
-        "where o.order_status in :orderStatuses")
+        "where o.order_status in :orderStatuses " +
+        "order by o.tech_number::int8 desc")
     List<SimpleOrderProjection> findByStatusProjection(List<String> orderStatuses);
 
     @Query(nativeQuery = true, value = "select u.firstname as firstname, u.lastname as lastname, u.username as username, a.filename as attachmentFilename, a.id as attachmentFileId, cm.created_at as attachmentTime from forward_system.orders o " +

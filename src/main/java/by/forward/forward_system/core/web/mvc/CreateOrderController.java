@@ -82,7 +82,7 @@ public class CreateOrderController {
     public String updateOrder(Model model) {
         userUiService.checkAccessManager();
 
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.CREATED.getName(),
             OrderStatus.DISTRIBUTION.getName()
         ));
@@ -263,7 +263,7 @@ public class CreateOrderController {
     public String orderToInProgress(Model model) {
         model.addAttribute("userShort", userUiService.getCurrentUser());
 
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.CREATED.getName(),
             OrderStatus.DISTRIBUTION.getName()
         ));
@@ -316,7 +316,7 @@ public class CreateOrderController {
 
     @GetMapping(value = "/add-author-to-order")
     public String addAuthorToOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName()
@@ -353,7 +353,7 @@ public class CreateOrderController {
 
     @GetMapping(value = "/del-author-from-order")
     public String delAuthorFromOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName()
@@ -392,7 +392,7 @@ public class CreateOrderController {
 
     @GetMapping(value = "/change-fee-in-order")
     public String changeFeeInOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.DISTRIBUTION.getName(),
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),

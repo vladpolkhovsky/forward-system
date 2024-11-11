@@ -36,13 +36,13 @@ public class ChatEntity {
     @JoinColumn(name = "type", nullable = false)
     private ChatTypeEntity chatType;
 
-    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMessageEntity> chatMassages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMemberEntity> chatMembers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
 
 }

@@ -23,8 +23,6 @@
         <p>Можно добавить автора в заказы в статусах "В работе", "Проверка", "Доработка"</p>
         <div class="col-8">
             <ul class="list-group">
-
-                <!--/*@thymesVar id="ordersList" type="java.util.List<by.forward.forward_system.core.dto.ui.OrderUiDto>"*/-->
                 <li class="list-group-item d-flex justify-content-between align-items-start" th:each="order, orderStat : ${ordersList}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">

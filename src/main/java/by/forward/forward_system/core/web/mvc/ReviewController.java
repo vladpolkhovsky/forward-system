@@ -7,6 +7,7 @@ import by.forward.forward_system.core.jpa.model.ReviewEntity;
 import by.forward.forward_system.core.jpa.repository.ReviewRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
+import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.ReviewService;
@@ -44,13 +45,10 @@ public class ReviewController {
 
     @GetMapping(value = "/review-order")
     public String reviewSelector(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(OrderStatus.IN_PROGRESS.getName(),
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
+            OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.FINALIZATION.getName())
         );
-
-        allOrdersInStatus = allOrdersInStatus.stream()
-            .sorted(Comparator.comparing(OrderUiDto::getId).reversed())
-            .toList();
 
         model.addAttribute("menuName", "Выберите заказ, который хотите отправить на рассмотрение эксперта");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -217,6 +215,7 @@ public class ReviewController {
         model.addAttribute("expertUsername", reviewById.getExpertUsername());
         model.addAttribute("menuName", "Вердикт проверки.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("additionalFileId", reviewById.getAdditionalAttachmentId());
         model.addAttribute("review", reviewById);
 
         return "main/expert-review-order-view";

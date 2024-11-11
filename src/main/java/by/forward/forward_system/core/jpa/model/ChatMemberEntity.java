@@ -9,6 +9,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "chat_members", schema = "forward_system")
 public class ChatMemberEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)

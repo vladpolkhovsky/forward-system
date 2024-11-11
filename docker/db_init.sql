@@ -545,4 +545,5 @@ CREATE TABLE forward_system.SPRING_SESSION_ATTRIBUTES
     CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES forward_system.SPRING_SESSION (PRIMARY_ID) ON DELETE CASCADE
 );
 
-alter table forward_system.reviews add additional_file_id bigint references forward_system.attachments (id);
+alter table forward_system.reviews
+    add additional_file_id bigint references forward_system.attachments (id);

@@ -103,7 +103,6 @@ public class OrderUiService {
     public List<SimpleOrderProjection> findAllOrdersInStatusProjection(List<String> statuses) {
         return orderService.findAllOrdersInStatusProjection(statuses)
             .stream()
-            .sorted(Comparator.comparing(o -> new BigDecimal(o.getTechNumber())))
             .toList();
     }
 
