@@ -60,6 +60,7 @@ public class AdminMenuController {
         model.addAttribute("authors", authors);
         model.addAttribute("catchers", catchers);
         model.addAttribute("hosts", hosts);
+        model.addAttribute("orderId", byId.getOrderId());
 
         return "main/review-order";
     }

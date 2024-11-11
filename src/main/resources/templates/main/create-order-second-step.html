@@ -52,7 +52,7 @@
                     авторам.
                 </div>
                 <div class="mb-2 row border" th:each="author, stat : ${authors}">
-                    <div class="col-8">
+                    <div class="col-4">
                         <input class="author-selection form-check-input h5"
                                type="checkbox"
                                th:id="|author-| + ${author.getId()}"
@@ -61,7 +61,7 @@
                                th:checked="${author.getChecked()}">
                         <label th:class="|form-check-label fs-5 | + ${author.getBgColor()}"
                                th:for="|author-| + ${author.getId()}"
-                               th:text="${author.getFio()} + | (| + ${author.getUsername()} + |)|"></label>
+                               th:text="${author.getUsername()}"></label>
                     </div>
                     <div class="col-4">
                         <input class="author-selection-fee form-control"
@@ -70,6 +70,10 @@
                                onchange="changeAuthorFee(event)"
                                type="number"
                                placeholder="Другая стоимость">
+                    </div>
+                    <div class="col-4" th:unless="${author.getChecked() || notDistributionStatus}">
+                        Сохраненённое значение:
+                        <span th:id="|author-fee-| + ${author.getId()}" th:text="|Нет|"></span>
                     </div>
                 </div>
                 <button id="author-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">
@@ -94,9 +98,18 @@
     const catcherSubmitBtn = document.getElementById("catcher-submit");
 
     function changeAuthorFee(event) {
-        event.target.classList.add('bg-info');
         let targetAuthorId = event.target.getAttribute("targetAuthor");
-        document.getElementById(targetAuthorId).setAttribute("fee", event.target.value);
+        let idValue = event.target.getAttribute("idValue");
+        let targetValue = event.target.value;
+        if(event.target.value !== '') {
+            event.target.classList.add('bg-info');
+            document.getElementById(`author-fee-${idValue}`).innerText = targetValue;
+        } else {
+            targetValue = -1;
+            event.target.classList.remove('bg-info');
+            document.getElementById(`author-fee-${idValue}`).innerText = "Нет";
+        }
+        document.getElementById(targetAuthorId).setAttribute("fee", targetValue);
     }
 
     function getSelectedItems(targetItems) {

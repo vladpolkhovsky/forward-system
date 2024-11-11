@@ -11,6 +11,7 @@ import by.forward.forward_system.core.jpa.repository.DisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.AuthorWithDisciplineProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
+import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.core.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -99,6 +100,13 @@ public class OrderUiService {
             .toList();
     }
 
+    public List<SimpleOrderProjection> findAllOrdersInStatusProjection(List<String> statuses) {
+        return orderService.findAllOrdersInStatusProjection(statuses)
+            .stream()
+            .sorted(Comparator.comparing(o -> new BigDecimal(o.getTechNumber())))
+            .toList();
+    }
+
     @Transactional
     public OrderUiDto createOrder(OrderUiDto order) {
         OrderEntity entity = toEntity(order);
@@ -155,6 +163,7 @@ public class OrderUiService {
         Map<String, Long> usernameToId = new HashMap<>();
         Map<Long, List<AuthorWithDisciplineProjection>> idToDisciplines = new HashMap<>();
         Map<Long, String> idToFio = new HashMap<>();
+
         for (AuthorWithDisciplineProjection author : allAuthors) {
             idToDisciplines.putIfAbsent(author.getId(), new ArrayList<>());
             idToDisciplines.get(author.getId()).add(author);

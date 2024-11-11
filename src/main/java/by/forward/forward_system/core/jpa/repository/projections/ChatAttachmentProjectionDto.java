@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class ChatAttachmentProjectionDto {
     private String fio;
+    private String username;
     private Long attachmentFileId;
     private String attachmentFilename;
     private LocalDateTime attachmentTime;

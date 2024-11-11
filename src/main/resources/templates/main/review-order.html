@@ -16,6 +16,7 @@
     </div>
 </div>
 <div class="container">
+    <a th:href="|/view-order/| + ${orderId}" target="_blank">Посмотреть ТЗ</a>
     <div class="alert alert-danger" role="alert" th:if="${isViewed}">
         Данный запрос уже рассмотрен!
     </div>

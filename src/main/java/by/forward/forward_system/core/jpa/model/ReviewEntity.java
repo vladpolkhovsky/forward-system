@@ -37,6 +37,10 @@ public class ReviewEntity {
     @JoinColumn(name = "review_file_id")
     private AttachmentEntity reviewAttachment;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "additional_file_id")
+    private AttachmentEntity additionalAttachment;
+
     @Column(name = "is_reviewed", nullable = false)
     private Boolean isReviewed = false;
 

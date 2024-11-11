@@ -11,6 +11,7 @@ import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
+import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
@@ -63,6 +64,10 @@ public class OrderService {
         return orderRepository.findByStatus(orderStatuses);
     }
 
+    public List<SimpleOrderProjection> findAllOrdersInStatusProjection(List<String> orderStatuses) {
+        return orderRepository.findByStatusProjection(orderStatuses);
+    }
+
     public OrderEntity save(OrderEntity orderEntity) {
         Optional<OrderStatusEntity> statusById = orderStatusRepository.findById(OrderStatus.CREATED.getName());
         OrderStatusEntity orderStatusEntity = statusById.orElseThrow(() -> new RuntimeException("OrderStatus not found with name " + OrderStatus.CREATED.getName()));
@@ -75,7 +80,7 @@ public class OrderService {
         if (localDateTime == null) {
             return "не указано";
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
         return localDateTime.format(formatter);
     }
 
@@ -559,7 +564,8 @@ public class OrderService {
             true,
             chatMessageTypeEntity,
             Collections.emptyList(),
-            Collections.emptyList());
+            Collections.emptyList()
+        );
     }
 
     public void checkOrderAccessEdit(Long orderId, Long currentUserId) {

@@ -16,6 +16,7 @@ import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
@@ -82,6 +83,7 @@ public class ReviewController {
         List<ChatAttachmentProjectionDto> chatAttachments = orderUiService.getOrderMainChatAttachments(orderId).stream()
             .map(t -> new ChatAttachmentProjectionDto(
                 t.getFirstname() + " " + t.getLastname().substring(0, 1),
+                t.getUsername(),
                 t.getAttachmentFileId(),
                 t.getAttachmentFilename(),
                 t.getAttachmentTime(),
@@ -129,6 +131,7 @@ public class ReviewController {
         model.addAttribute("olderReviews", olderReviews);
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
+        model.addAttribute("additionalFile", reviewById.getAdditionalAttachmentId());
         model.addAttribute("orderId", orderId);
 
         return "main/expert-review-order-answer";
@@ -155,9 +158,12 @@ public class ReviewController {
     public String expertReviewOrder(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Not fount"));
 
+        Long additionalFileId = reviewEntity.getAdditionalAttachment() == null ? null : reviewEntity.getAdditionalAttachment().getId();
+
         List<ChatAttachmentProjectionDto> chatAttachments = orderUiService.getOrderMainChatAttachments(orderId).stream()
             .map(t -> new ChatAttachmentProjectionDto(
                 t.getFirstname() + " " + t.getLastname().substring(0, 1),
+                t.getUsername(),
                 t.getAttachmentFileId(),
                 t.getAttachmentFilename(),
                 t.getAttachmentTime(),
@@ -177,6 +183,8 @@ public class ReviewController {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("orderId", orderId);
         model.addAttribute("reviewId", reviewId);
+        model.addAttribute("hasFile", additionalFileId != null);
+        model.addAttribute("additionalFileId", additionalFileId);
         model.addAttribute("messageText", reviewEntity.getReviewMessage());
         model.addAttribute("files", chatAttachments);
 
@@ -206,25 +214,34 @@ public class ReviewController {
     public String expertReviewOrderView(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewDto reviewById = reviewService.getReviewById(reviewId);
 
-        model.addAttribute("menuName", "Проверьте работу и напишите вердикт.");
+        model.addAttribute("expertUsername", reviewById.getExpertUsername());
+        model.addAttribute("menuName", "Вердикт проверки.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("review", reviewById);
 
         return "main/expert-review-order-view";
     }
 
+    @SneakyThrows
     @PostMapping(value = "/expert-review-order/{orderId}")
-    public RedirectView expertReviewOrder(@PathVariable Long orderId, @RequestBody MultiValueMap<String, String> body) {
-        String reviewId = body.getFirst("reviewId");
-        Long expertId = Long.parseLong(body.getFirst("expertId"));
+    public RedirectView expertReviewOrder(@PathVariable Long orderId,
+                                          @RequestParam(value = "reviewId", required = false) String reviewId,
+                                          @RequestParam("expertId") Long expertId,
+                                          @RequestParam("attachmentId") Long attachmentId,
+                                          @RequestParam("reviewText") String messageText,
+                                          @RequestParam(value = "additionalFile", required = false) MultipartFile additionalFile) {
 
-        Long attachmentId = Long.parseLong(body.getFirst("attachmentId"));
-        String messageText = body.getFirst("reviewText");
+
+        AttachmentEntity additionalAttachment = null;
+
+        if (additionalFile != null && StringUtils.isNotBlank(additionalFile.getOriginalFilename()) && additionalFile.getBytes().length > 0) {
+            additionalAttachment = attachmentService.saveAttachment(additionalFile.getOriginalFilename(), additionalFile.getBytes());
+        }
 
         if (reviewId == null) {
-            reviewService.saveNewReviewRequest(orderId, expertId, attachmentId, messageText);
+            reviewService.saveNewReviewRequest(orderId, expertId, attachmentId, messageText, additionalAttachment);
         } else {
-            reviewService.updateReviewRequest(orderId, expertId, Long.parseLong(reviewId), attachmentId, messageText);
+            reviewService.updateReviewRequest(orderId, expertId, Long.parseLong(reviewId), attachmentId, messageText, additionalAttachment);
         }
 
         orderService.changeStatus(orderId, OrderStatus.REVIEW);

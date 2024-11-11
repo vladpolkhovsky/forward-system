@@ -123,6 +123,37 @@ function loadChatById(chatId) {
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
+function loadChatByIdOnNewMessage(chatId) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const rawJson = JSON.stringify({
+        "chatId": chatId,
+        "userId": context.userId,
+        "chatTab": context.chatTab
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: rawJson,
+        redirect: "follow"
+    };
+
+    fetch(loadChatByIdUrl, requestOptions)
+        .then((response) => response.json())
+        .then((result) => {
+            processNewLoadedChats(result.chats);
+            return result.chats;
+        })
+        .then((chatsArray) => {
+            for (let chat of chatsArray) {
+                moveChatInChatWindowToFront(chat.id);
+            }
+        })
+        .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
+}
+
 function sendMessageViewed() {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json; charset=UTF-8");
@@ -229,7 +260,7 @@ function appendChatToChatsWindows(chatJson) {
 
 function appendChatsToChatsWindows(chatsArray) {
     for (let chat of chatsArray) {
-        appendChatToChatsWindows(chat)
+        appendChatToChatsWindows(chat);
     }
 }
 
@@ -264,9 +295,9 @@ function createChatWindowElement(chatJson) {
     </li>`;
 }
 
-function createStatus(orderStatusName) {
+function createStatus(orderStatusName, orderId) {
     let color = 'btn-secondary';
-    let orderStatusRus = "Не назначен";
+    let orderStatusRus = "Создан/На распределении";
 
     if (orderStatusName === 'IN_PROGRESS') {
         color = 'btn-primary';
@@ -282,9 +313,10 @@ function createStatus(orderStatusName) {
     }
     if (orderStatusName === 'GUARANTEE' || orderStatusName === 'CLOSED') {
         color = 'btn-success';
-        orderStatusRus = "На гаранити/Завершён";
+        orderStatusRus = "На гарантии/Завершён";
     }
-    return `<a class="btn ${color}">${orderStatusRus}</a>`;
+
+    return `<a class="btn ${color}" href="change-order-status/${orderId}" target="_blank">${orderStatusRus}</a>`;
 }
 
 function createDates(datesArray) {
@@ -305,7 +337,7 @@ function formatChatHeader(chatName, orderInfo) {
         workType.innerText = orderInfo.workType;
         deadline.innerText = orderInfo.deadline;
         discipline.innerText = orderInfo.discipline;
-        status.innerHTML = createStatus(orderInfo.orderStatus);
+        status.innerHTML = createStatus(orderInfo.orderStatus, orderInfo.id);
         intermediateDeadline.innerText = orderInfo.intermediateDeadline;
         additionalDates.innerHTML = createDates(JSON.parse(orderInfo.dates));
 
@@ -427,9 +459,16 @@ function appendWSMessage(message) {
         if (message.content === null || message.content === '') {
             content = "Сообщение без текста.";
         }
+
         showNotification(message.id, "Новое сообщение в чате: " + message.chatName, content.substring(0, 150))
         incNewMessageCount(message.chatId);
-        moveChatInChatWindowToFront(message.chatId);
+
+        if (context.loadedChats.has(message.chatId)) {
+            moveChatInChatWindowToFront(message.chatId);
+        } else {
+            loadChatByIdOnNewMessage(message.chatId);
+        }
+
         return;
     } else {
         sendMessageViewed();

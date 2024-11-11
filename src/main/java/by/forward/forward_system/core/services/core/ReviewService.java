@@ -35,12 +35,13 @@ public class ReviewService {
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final BotNotificationService botNotificationService;
 
-    public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText) {
+    public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = new ReviewEntity();
 
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
         reviewEntity.setReviewedBy(userRepository.findById(expertId).orElseThrow(() -> new RuntimeException("Expert not found")));
+        reviewEntity.setAdditionalAttachment(additionalFile);
 
         reviewEntity.setIsReviewed(false);
         reviewEntity.setIsAccepted(false);
@@ -53,8 +54,12 @@ public class ReviewService {
         botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
     }
 
-    public void updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText) {
+    public void updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (additionalFile != null) {
+            reviewEntity.setAdditionalAttachment(additionalFile);
+        }
 
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
@@ -88,8 +93,12 @@ public class ReviewService {
     public ReviewDto toDto(ReviewEntity reviewEntity) {
         ReviewDto reviewDto = new ReviewDto();
         reviewDto.setId(reviewEntity.getId());
+        reviewDto.setExpertUsername(reviewEntity.getReviewedBy().getUsername());
         reviewDto.setOrderId(reviewEntity.getOrder().getId());
         reviewDto.setAttachmentId(reviewEntity.getAttachment().getId());
+        if (reviewEntity.getAdditionalAttachment() != null) {
+            reviewDto.setAdditionalAttachmentId(reviewEntity.getAdditionalAttachment().getId());
+        }
         reviewDto.setReviewMessage(reviewEntity.getReviewMessage());
         reviewDto.setReviewVerdict(reviewEntity.getReviewVerdict());
         reviewDto.setIsReviewed(reviewEntity.getIsReviewed());
@@ -107,7 +116,6 @@ public class ReviewService {
     public List<ReviewProjectionDto> getNotReviewed(int page) {
         List<ReviewEntity> all = reviewRepository.findAllNotReviewd((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
         List<ReviewEntity> list = all.stream()
-            .sorted(Comparator.comparing(ReviewEntity::getId).reversed())
             .filter(t -> !t.getIsReviewed())
             .toList();
         return getReviewProjectionDtos(list);

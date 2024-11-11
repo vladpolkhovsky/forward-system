@@ -18,8 +18,9 @@
 <div class="container">
     <div class="row">
         <p>Выберите файл, который хотите отправить на проверку и укажите сообщение для проверяющего.</p>
-        <form th:action="|/expert-review-order/| + ${orderId}" method="post">
+        <form th:action="|/expert-review-order/| + ${orderId}" method="post" enctype="multipart/form-data">
             <input th:if="${reviewId}" th:value="${reviewId}" name="reviewId" hidden>
+            <div>Выберите файл из чата для проверки (обязательно):</div>
             <div th:each="file : ${files}">
                 <div class="mt-3"></div>
                 <input required class="form-check-input" type="radio" name="attachmentId"
@@ -29,17 +30,26 @@
                 <label class="form-check-label" th:for="|att-| + ${file.getAttachmentFileId()}">
                     <a th:href="|/load-file/| + ${file.getAttachmentFileId()}" target="_blank"
                        th:text="${file.getAttachmentFilename()}"></a>
+                    <span> файл от </span>
                     <strong th:href="|/load-file/| + ${file.getAttachmentFileId()}"
-                            th:text="${file.getFio()}"></strong>
+                            th:text="${file.getUsername()}"></strong>
                     <i th:text="${#temporals.format(file.getAttachmentTime(), 'yyyy-MM-dd')}"></i>
                 </label>
             </div>
+
             <label for="select-expert" class="form-label mt-3">Выберите эксперта:</label>
             <select required id="select-expert" name="expertId" class="form-select" size="15" aria-label="Size 3 select example">
                 <option th:each="expert : ${experts}" th:selected="${expert.getChecked()}" th:value="${expert.getId()}" th:text="${expert.getUsername()}"></option>
             </select>
+
             <p class="mt-5">Сообщение для эксперта.</p>
             <textarea required name="reviewText" class="form-control" rows="10" th:text="${messageText}"></textarea>
+
+            <p class="mt-3">Дополнительный файлы для эксперта (используйте архив, чтобы загрузить несколько файлов). <span class="fw-bold" th:if="${hasFile}" th:text="|Файл уже добавлен. Прикрепите новый файл, чтобы заменить старый (если не хотите менять, то не пркрепляйте новый).|"></span></p>
+            <p th:if="${hasFile}" ><a class="mb-3" th:href="|/load-file/| + ${additionalFileId}">Скачать старый файл</a></p>
+
+            <input name="additionalFile" class="form-control" type="file">
+
             <div class="row mt-3">
                 <input class="form-control btn btn-primary" type="submit">
             </div>

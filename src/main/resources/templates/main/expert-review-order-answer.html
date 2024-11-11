@@ -46,6 +46,8 @@
             <p>Файл на проверку и сообщение от менеджера</p>
             <hr>
             <a th:href="|/load-file/| + ${review.getAttachmentId()}" target="_blank">Файл на проверку</a>
+            <hr th:if="${additionalFile}">
+            <a th:if="${additionalFile}" th:href="|/load-file/| + ${additionalFile}" target="_blank">Дополнительно приложенный файл от менеджера</a>
             <hr>
             <a th:href="|/static/expert-form/expert-form.xlsx|" target="_blank">Форма заполенения отчёта</a>
             <hr>

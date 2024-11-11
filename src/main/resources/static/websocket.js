@@ -1,4 +1,4 @@
-function connectToWebSocket() {
+function connectToWebSocket(onError) {
     const brokerUrl = 'ws://' + window.location.host + '/ws'
 
     const stompClient = new StompJs.Client({
@@ -10,22 +10,57 @@ function connectToWebSocket() {
         stompClient.subscribe(`/user/${context.userId}/queue/messages`, (notification) => {
             processWsNotification(JSON.parse(notification.body))
         });
-        // stompClient.publish({
-        //     destination: "/app/chat",
-        //     headers: {priority: 9},
-        //     body: JSON.stringify({
-        //         userId: 1
-        //     })
-        // });
     };
 
     stompClient.onWebSocketError = (error) => {
-        alert('Ошибка : stompClient.onWebSocketError : ' + error);
+        alert('Вы будете переклбючены на SockJS. Ошибка : stompClient.onWebSocketError : ' + JSON.stringify(error));
+        console.error('Error with websocket', error);
+        onError(error)
+    };
+
+    stompClient.onStompError = (frame) => {
+        alert('Вы будете переклбючены на SockJS. Ошибка : stompClient.onStompError : ' + JSON.stringify(frame.body));
+        console.error('Broker reported error: ' + frame.headers['message']);
+        console.error('Additional details: ' + frame.body);
+        onError(frame);
+    };
+
+    stompClient.activate();
+
+    return stompClient;
+}
+
+function connectToStompJs(wsStomp) {
+    if (wsStomp != null) {
+        wsStomp.deactivate();
+    }
+
+    const brokerUrl = 'http://' + window.location.host + '/sockjs'
+
+    function mySocketFactory() {
+        return new SockJS(brokerUrl);
+    }
+
+    const stompClient = new StompJs.Client({
+
+    });
+
+    stompClient.webSocketFactory = mySocketFactory;
+
+    stompClient.onConnect = (frame) => {
+        console.log('SockJS Connected: ' + frame);
+        stompClient.subscribe(`/user/${context.userId}/queue/messages`, (notification) => {
+            processWsNotification(JSON.parse(notification.body))
+        });
+    };
+
+    stompClient.onWebSocketError = (error) => {
+        alert('Критическая ошибка SockJS : SockJS stompClient.onWebSocketError : ' + error);
         console.error('Error with websocket', error);
     };
 
     stompClient.onStompError = (frame) => {
-        alert('Ошибка : stompClient.onStompError : ' + frame.body);
+        alert('Критическая ошибка SockJS : SockJS stompClient.onStompError : ' + frame.body);
         console.error('Broker reported error: ' + frame.headers['message']);
         console.error('Additional details: ' + frame.body);
     };

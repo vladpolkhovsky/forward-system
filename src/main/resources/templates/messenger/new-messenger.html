@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <link rel="icon" type="image/x-icon" href="/static/favicon.png">
     <link rel="stylesheet" href="/static/chat-style.css">
 </head>
@@ -224,11 +225,12 @@
         reader.readAsBinaryString(f);
     }
 
-    document.getElementById("send-btn").addEventListener("click", e => {
-        stomp.publish()
-    });
+    function handleWsError(e) {
+        console.error("Ошибка: ", e, "переключаем на SockJs");
+        context.stomp = connectToStompJs(context.stomp);
+    }
 
-    stomp = connectToWebSocket();
+    context.stomp = connectToWebSocket(handleWsError);
 
     function sendMessage() {
         let attachments = [];
@@ -238,7 +240,7 @@
             });
         }
         if (textArea.value.length > 0 || context.fileLoaded) {
-            stomp.publish({
+            context.stomp.publish({
                 destination: "/app/chat",
                 body: JSON.stringify({
                     userId: context.userId,

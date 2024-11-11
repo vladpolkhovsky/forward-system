@@ -6,6 +6,7 @@ import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.core.DisciplineService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
@@ -440,7 +441,7 @@ public class CreateOrderController {
     public String changeOrderStatusSelector(Model model) {
         userUiService.checkAccessManager();
 
-        List<OrderUiDto> allOrdersInStatus = orderUiService.findAllOrdersInStatus(Arrays.asList(
+        List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName(),
