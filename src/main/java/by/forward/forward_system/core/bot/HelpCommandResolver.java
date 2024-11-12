@@ -23,6 +23,7 @@ public class HelpCommandResolver implements CommandResolver {
         /stop-notification <chat-id> - отписка от уведомлений из чата
         /continue-notification <chat-id> - отмена отписки от уведомлений из чата
         /user-list - список всех зарегистрированных в боте пользователей
+        /unsubscribe - отписатья от рассылки сообщений
         """;
 
     @Override
