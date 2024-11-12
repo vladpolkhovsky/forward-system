@@ -91,6 +91,12 @@ public class BotNotificationService {
     }
 
     @Transactional
+    public void unsubscribe(Long chatId) {
+        List<BotIntegrationDataEntity> botIntegrationDataByChatId = botIntegrationDataRepository.getBotIntegrationDataByChatId(chatId);
+        botIntegrationDataRepository.deleteAll(botIntegrationDataByChatId);
+    }
+
+    @Transactional
     public boolean sendBotNotification(Long userId, String messageText) {
         webPushNotification.sendNotification(userId, "У вас есть непрочитанные сообщения.", messageText);
         List<BotIntegrationDataEntity> botIntegrationDataByUserId = botIntegrationDataRepository.getBotIntegrationDataByUserId(userId);
