@@ -47,7 +47,7 @@ public class BanController {
     public String autoBanUserSelector(Model model, @PathVariable Long banId) {
         userUiService.checkAccessAdmin();
 
-        BanProjectionDto banned = banService.getBanned(banId);
+        BanProjectionDto banned = banService.getBanned(banId, true);
 
         model.addAttribute("menuName", "Недавно заблокированный пользователь");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -63,7 +63,7 @@ public class BanController {
         if (banVerdict) {
             banService.setPermanentBan(banId);
         } else {
-            BanProjectionDto banned = banService.getBanned(banId);
+            BanProjectionDto banned = banService.getBanned(banId, false);
             banService.unban(banned.getUser().getId());
         }
 

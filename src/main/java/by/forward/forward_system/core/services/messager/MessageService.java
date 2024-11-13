@@ -132,8 +132,8 @@ public class MessageService {
         return messageDtos;
     }
 
-    public List<MessageDto> getMessagesFromUser(Long userId) {
-        List<ChatMessageEntity> allByUser = messageRepository.findAllByUser(userId);
+    public List<MessageDto> getMessagesFromUser(Long userId, int limit) {
+        List<ChatMessageEntity> allByUser = messageRepository.findAllByUser(userId, limit);
         return allByUser.stream().map(this::convertChatMessage).toList();
     }
 

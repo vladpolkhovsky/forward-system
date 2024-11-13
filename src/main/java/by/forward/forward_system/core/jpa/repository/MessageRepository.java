@@ -13,6 +13,6 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
         " where c.user_id = :currentUserId and c.is_viewed = false;")
     Integer getNewMessageByUserId(Long currentUserId);
 
-    @Query(value = "select m from ChatMessageEntity m where m.fromUser.id = :userId order by m.createdAt desc")
-    List<ChatMessageEntity> findAllByUser(Long userId);
+    @Query(value = "select m from ChatMessageEntity m where m.fromUser.id = :userId order by m.createdAt desc limit :limit")
+    List<ChatMessageEntity> findAllByUser(Long userId, int limit);
 }

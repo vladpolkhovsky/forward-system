@@ -17,13 +17,9 @@ import by.forward.forward_system.core.services.messager.MessageService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -133,29 +129,32 @@ public class BanService {
 
     public List<BanProjectionDto> getAllNewBanned() {
         List<SecurityBlockEntity> allByIsPermanentBlockFalse = securityBlockRepository.findAllByIsPermanentBlockFalse();
-        return allByIsPermanentBlockFalse.stream().map(this::toDto).toList();
+        return allByIsPermanentBlockFalse.stream().map(t -> toDto(t, false)).toList();
     }
 
 
     public List<BanProjectionDto> getAllBanned() {
         List<SecurityBlockEntity> allByIsPermanentBlockFalse = securityBlockRepository.findAllByIsPermanentBlockTrue();
-        return allByIsPermanentBlockFalse.stream().map(this::toDto).toList();
+        return allByIsPermanentBlockFalse.stream().map(t -> toDto(t, false)).toList();
     }
 
-    public BanProjectionDto getBanned(Long banId) {
+    public BanProjectionDto getBanned(Long banId, boolean fetchMessages) {
         SecurityBlockEntity securityBlockEntity = securityBlockRepository.findById(banId).orElseThrow(() -> new RuntimeException("SpamBlockEntity not found"));
-        return toDto(securityBlockEntity);
+        return toDto(securityBlockEntity, fetchMessages);
     }
 
     public BanProjectionDto getBannedByUserId(Long userId) {
         SecurityBlockEntity securityBlockEntity = securityBlockRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("SpamBlockEntity not found"));
-        return toDto(securityBlockEntity);
+        return toDto(securityBlockEntity, false);
     }
 
-    public BanProjectionDto toDto(SecurityBlockEntity securityBlockEntity) {
+    public BanProjectionDto toDto(SecurityBlockEntity securityBlockEntity, boolean fetchMessages) {
         UserDto user = userService.getConverted(securityBlockEntity.getUser().getId());
+        List<MessageDto> messagesFromUser = new ArrayList<>();
 
-        List<MessageDto> messagesFromUser = messageService.getMessagesFromUser(user.getId());
+        if (fetchMessages) {
+            messagesFromUser = messageService.getMessagesFromUser(user.getId(), 50);
+        }
 
         MessageDto messageDto = null;
         if (securityBlockEntity.getChatMessage() != null) {
