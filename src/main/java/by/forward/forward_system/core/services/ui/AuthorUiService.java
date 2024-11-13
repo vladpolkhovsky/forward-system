@@ -44,6 +44,7 @@ public class AuthorUiService {
     public List<AuthorUiDto> getAllAuthorsFast() {
         return authorService.getAllAuthorsFast().stream()
             .map(this::toDtoWithoutDisciplines)
+            .sorted(Comparator.comparing(AuthorUiDto::getUsername))
             .toList();
     }
 

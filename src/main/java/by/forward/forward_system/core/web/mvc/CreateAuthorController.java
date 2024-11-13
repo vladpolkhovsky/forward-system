@@ -44,7 +44,7 @@ public class CreateAuthorController {
 
         model.addAttribute("menuName", "Выберите автора для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("userList", authorUiService.getAllAuthors());
+        model.addAttribute("userList", authorUiService.getAllAuthorsFast());
 
         return "main/update-author-selector";
     }

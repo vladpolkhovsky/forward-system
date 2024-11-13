@@ -12,9 +12,11 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
+import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
@@ -51,6 +53,7 @@ public class OrderService {
     private final AIDetector aiDetector;
     private final BanService banService;
     private final UserService userService;
+    private final BotNotificationService botNotificationService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -271,7 +274,7 @@ public class OrderService {
         Optional<OrderParticipantsTypeEntity> participantsType = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName());
 
         ChatMessageOptionEntity chatMessageOptionEntity = new ChatMessageOptionEntity();
-        chatMessageOptionEntity.setOptionName("Рассмотреть предложение");
+        chatMessageOptionEntity.setOptionName("Ознакомиться с ТЗ/требованиями");
         chatMessageOptionEntity.setContent("/request-order/" + orderId);
         chatMessageOptionEntity.setOptionResolved(false);
         chatMessageOptionEntity.setOrderParticipant(participantsType.get());
@@ -446,12 +449,11 @@ public class OrderService {
             addParticipant(orderEntity, hostParticipant, host.getId(),null);
         }
 
-        List<ParticipantType> userTypeInChat = Arrays.asList(ParticipantType.CATCHER, ParticipantType.MAIN_AUTHOR, ParticipantType.HOST);
+        List<ParticipantType> userTypeInChat = Arrays.asList(ParticipantType.MAIN_AUTHOR, ParticipantType.HOST);
         List<UserEntity> orderParticipants = orderEntity.getOrderParticipants().stream()
             .filter(t -> userTypeInChat.contains(t.getParticipantsType().getType()))
             .map(OrderParticipantEntity::getUser)
             .toList();
-
 
         List<UserEntity> usersWithRoleAdmin = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
 
@@ -556,16 +558,12 @@ public class OrderService {
         }
 
         ChatEntity chatEntity = chatRepository.findById(orderMainChat).orElseThrow(() -> new RuntimeException("Main chat not found"));
-        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Message type not found"));
 
-        messageService.sendMessage(null,
-            chatEntity,
-            "Эксперт проверил работу.",
-            true,
-            chatMessageTypeEntity,
-            Collections.emptyList(),
-            Collections.emptyList()
-        );
+        Long orderHost = getOrderHost(chatEntity.getOrder().getId());
+        if (orderHost != null) {
+            botNotificationService.sendBotNotification(orderHost, "Эксперт проверил работу. ТЗ №" + chatEntity.getOrder().getTechNumber());
+        }
+
     }
 
     public void checkOrderAccessEdit(Long orderId, Long currentUserId) {
@@ -735,4 +733,13 @@ public class OrderService {
         return orderRepository.findOrdersWithUserInParticipant(currentUserId);
     }
 
+    public Long getOrderHost(Long orderId) {
+        List<OrderParticipantEntity> orderParticipantsByOrderId = orderParticipantRepository.getOrderParticipantsByOrderId(orderId);
+        for (OrderParticipantEntity orderParticipantEntity : orderParticipantsByOrderId) {
+            if (orderParticipantEntity.getParticipantsType().getType().equals(ParticipantType.HOST)) {
+                return orderParticipantEntity.getUser().getId();
+            }
+        }
+        return null;
+    }
 }

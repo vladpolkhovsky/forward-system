@@ -147,6 +147,8 @@
         xhr.onload = function () {
             if (xhr.status !== 200) {
                 alert("Ошибка соединения!")
+            } else {
+                alert("Отправлено.")
             }
         }
         xhr.send(data);

@@ -146,7 +146,9 @@ public class ReviewController {
         AttachmentEntity attachmentEntity = attachmentService.saveAttachment(file.getOriginalFilename(), file.getBytes());
 
         reviewService.saveVerdict(reviewId, verdict, verdictMark, attachmentEntity.getId());
+
         orderService.notifyVerdictSaved(orderId);
+
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
 
         return new RedirectView("/main");
@@ -212,9 +214,14 @@ public class ReviewController {
     public String expertReviewOrderView(Model model, @PathVariable Long orderId, @PathVariable Long reviewId) {
         ReviewDto reviewById = reviewService.getReviewById(reviewId);
 
+        List<ReviewDto> olderReviews = reviewService.getOlderReviews(orderId).stream()
+            .filter(t -> !t.getId().equals(reviewId))
+            .toList();
+
         model.addAttribute("expertUsername", reviewById.getExpertUsername());
         model.addAttribute("menuName", "Вердикт проверки.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("olderReviews", olderReviews);
         model.addAttribute("additionalFileId", reviewById.getAdditionalAttachmentId());
         model.addAttribute("review", reviewById);
 

@@ -71,7 +71,7 @@ public class AuthorService {
             addChatToUser(
                 chatMembers,
                 ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUser().getUsername(), manager.getUsername()),
-                "Здесь будут появляться новые заказы!",
+                "Здесь будут появляться новые заказы.\nОжидайте, когда ваш менеджер вышлет вам новый заказ на рассмотрение.",
                 requestOrderChat,
                 manager,
                 authorUser
