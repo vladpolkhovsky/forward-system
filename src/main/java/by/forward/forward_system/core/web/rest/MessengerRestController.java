@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.web.rest;
 
 import by.forward.forward_system.core.dto.messenger.ChatDto;
-import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.UserDto;
 import by.forward.forward_system.core.dto.rest.AttachmentDto;
@@ -10,9 +9,11 @@ import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
@@ -76,5 +77,11 @@ public class MessengerRestController {
     public ResponseEntity<Long> saveFile(@RequestBody AttachmentDto attachment) {
         List<Long> longs = attachmentService.saveAttachment(Arrays.asList(attachment));
         return ResponseEntity.ok(longs.get(0));
+    }
+
+    @SneakyThrows
+    @PostMapping(value = "/file-save-form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> saveFileForm(@RequestParam(value = "file", required = false) MultipartFile file) {
+        return ResponseEntity.ok(attachmentService.saveAttachmentRaw(file.getOriginalFilename(), file.getBytes()));
     }
 }

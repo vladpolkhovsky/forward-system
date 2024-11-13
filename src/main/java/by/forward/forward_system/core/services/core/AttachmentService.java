@@ -55,6 +55,10 @@ public class AttachmentService {
         return attachmentEntities.stream().map(AttachmentEntity::getId).toList();
     }
 
+    public Long saveAttachmentRaw(String filename, byte[] content) {
+        return saveAttachment(filename, content).getId();
+    }
+
     @SneakyThrows
     public AttachmentEntity saveAttachment(String filename, byte[] content) {
         UUID fileUUID = UUID.randomUUID();

@@ -118,6 +118,7 @@
                         <div class="input-group input-group-lg">
                             <input id="file-area" type="file" class="form-control col-6 col-sm-12 mt-2">
                         </div>
+                        <div id="loaded-file-area" class="mt-2 mb-1"></div>
                         <div class="row">
                             <button id="send-btn" class="btn btn-primary col-6 col-sm-12 mt-2" onclick="sendMessage()">Отправить</button>
                         </div>
@@ -189,42 +190,67 @@
     }
 
     if (window.File && window.FileReader && window.FileList && window.Blob) {
-        file.addEventListener('change', handleFileSelect, false);
+        file.addEventListener('change', handleBigFileSelect, false);
     } else {
         alert('Данный браузер не поддерживает загрузку файлов!');
     }
 
-    function handleFileSelect(evt) {
-        console.log(evt)
-        let f = evt.target.files[0];
-        let reader = new FileReader();
-        alert("Згрузка файла. Не отправляйте сообщение пока файл не загрузится!")
-        reader.onload = (function (theFile) {
-            return function (e) {
-                let binaryData = e.target.result;
-                let base64String = window.btoa(binaryData);
+    function handleBigFileSelect(evt) {
+        if (file.files.length != 1) {
+            alert("Вы указали неверное кол-во файлов")
+        }
 
-                context.fileBase64 = base64String;
-                context.fileName = theFile.name;
-                context.fileLoaded = false;
 
-                fetch("/api/messenger/file-save", {
-                    method: "POST",
-                    headers: {
-                        'Content-type': 'application/json; charset=UTF-8',
-                    },
-                    body: JSON.stringify({
-                        fileName: context.fileName,
-                        base64content: context.fileBase64
-                    })
-                }).then(r => r.json()).then(r => {
-                    context.fileLoaded = true;
-                    context.fileAttachmentId = parseInt(r)
-                    alert('Файл успешно загружен!');
-                })
-            };
-        })(f);
-        reader.readAsBinaryString(f);
+        const formdata = new FormData();
+        formdata.append("file", file.files[0], file.files[0].name);
+
+        const requestOptions = {
+            method: "POST",
+            body: formdata,
+            redirect: "follow"
+        };
+
+        fetch("/api/messenger/file-save-form", requestOptions)
+            .then((response) => response.text())
+            .then((result) => handleFileSaved(parseInt(result), file.files[0].name))
+            .catch((error) => console.error(error));
+
+
+        $("#loaded-file-area").append(
+            `<div class="d-flex justify-content-center">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>`
+        );
+    }
+
+    function deleteAttachment() {
+        context.fileLoaded = false;
+        context.fileName = null;
+        context.fileAttachmentId = null;
+
+        $("#loaded-file-area").empty();
+    }
+
+    function handleFileSaved(fileId, filename) {
+        deleteAttachment();
+
+        context.fileLoaded = true;
+        context.fileAttachmentId = fileId;
+        context.fileName = filename;
+
+        alert("Файл успешно загружен.")
+
+        $("#loaded-file-area").empty();
+
+        let fileLoadedElement = `
+            <span class="badge text-bg-success" style="text-wrap: auto;">Загружен файл ${context.fileName}
+                <a id="delete-attachment" class="ms-2 p-1 btn btn-warning" type="button" style="font-size: 10px;" onclick="deleteAttachment()"><strong>Удалить</strong></a>
+            </span>
+        `;
+
+        $("#loaded-file-area").append(fileLoadedElement)
     }
 
     function handleWsError(e) {
@@ -236,11 +262,13 @@
 
     function sendMessage() {
         let attachments = [];
+
         if (context.fileLoaded === true) {
             attachments.push({
                 fileAttachmentId: context.fileAttachmentId
             });
         }
+
         if (textArea.value.length > 0 || context.fileLoaded) {
             context.stomp.publish({
                 destination: "/app/chat",
@@ -254,11 +282,10 @@
 
             file.value = '';
             textArea.value = '';
-            context.fileLoaded = false;
-            context.fileBase64 = null;
-            context.fileName = null;
-            context.fileAttachmentId = null;
-            context.fileLoaded = false;
+
+            deleteAttachment();
+
+            $("#loaded-file-area").empty();
         }
 
         textArea.focus();
