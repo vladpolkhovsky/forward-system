@@ -197,9 +197,9 @@
 
     function handleBigFileSelect(evt) {
         if (file.files.length != 1) {
-            alert("Вы указали неверное кол-во файлов")
+            alert("Вы указали неверное кол-во файлов");
+            return;
         }
-
 
         const formdata = new FormData();
         formdata.append("file", file.files[0], file.files[0].name);
@@ -244,8 +244,9 @@
 
         $("#loaded-file-area").empty();
 
+        let extFilename = filename.length > 50 ? filename.substring(0, 25) + "..." + filename.substring(filename.length - 25) : filename;
         let fileLoadedElement = `
-            <span class="badge text-bg-success" style="text-wrap: auto;">Загружен файл ${context.fileName}
+            <span class="badge text-bg-success" style="text-wrap: auto;">Загружен файл ${extFilename}
                 <a id="delete-attachment" class="ms-2 p-1 btn btn-warning" type="button" style="font-size: 10px;" onclick="deleteAttachment()"><strong>Удалить</strong></a>
             </span>
         `;
