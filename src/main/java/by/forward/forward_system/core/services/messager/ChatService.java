@@ -79,7 +79,8 @@ public class ChatService {
                 true,
                 messageType,
                 Collections.emptyList(),
-                Collections.emptyList()
+                Collections.emptyList(),
+                false
             );
         }
 

@@ -35,7 +35,21 @@ public class MessageService {
                                          Boolean isSystemMessage,
                                          ChatMessageTypeEntity chatMessageTypeEntity,
                                          List<ChatMessageAttachmentEntity> attachments,
-                                         List<ChatMessageOptionEntity> options) {
+                                         List<ChatMessageOptionEntity> options
+    ) {
+        return sendMessage(fromUserEntity, chatEntity, message, isSystemMessage, chatMessageTypeEntity, attachments, options, true);
+    }
+
+    @Transactional
+    public ChatMessageEntity sendMessage(UserEntity fromUserEntity,
+                                         ChatEntity chatEntity,
+                                         String message,
+                                         Boolean isSystemMessage,
+                                         ChatMessageTypeEntity chatMessageTypeEntity,
+                                         List<ChatMessageAttachmentEntity> attachments,
+                                         List<ChatMessageOptionEntity> options,
+                                         boolean markMessagesAsNew) {
+
         LocalDateTime now = LocalDateTime.now();
 
         ChatMessageEntity chatMessageEntity = new ChatMessageEntity();
@@ -68,10 +82,15 @@ public class MessageService {
 
         chatMessageEntity = messageRepository.save(chatMessageEntity);
 
+        if (!markMessagesAsNew) {
+            return chatMessageEntity;
+        }
+
         for (ChatMemberEntity chatMember : chatMessageEntity.getChat().getChatMembers()) {
             if (fromUserEntity != null && Objects.equals(chatMember.getUser().getId(), fromUserEntity.getId())) {
                 continue;
             }
+
             ChatMessageToUserEntity chatMessageToUserEntity = new ChatMessageToUserEntity();
             chatMessageToUserEntity.setUser(chatMember.getUser());
             chatMessageToUserEntity.setChat(chatEntity);

@@ -3,6 +3,7 @@ package by.forward.forward_system.core.services.messager.ws;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.dto.websocket.WSChatMessage;
+import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.core.AIDetector;
 import by.forward.forward_system.core.services.core.AttachmentService;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,10 +39,13 @@ public class WebsocketMassageService {
     private final AIDetector aiDetector;
 
     private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
 
     public void handleWebsocketMessage(WSChatMessage chatMessage) {
         Long chatId = chatMessage.getChatId();
         Long userId = chatMessage.getUserId();
+
+        Optional<String> chatNameById = chatRepository.findChatNameById(chatId);
 
         if (spamDetectorService.isSpam(chatId)) {
             if (banService.ban(userId, "Превышен лимит сообщений в чате.", true, Collections.emptyList())) {
@@ -61,7 +66,7 @@ public class WebsocketMassageService {
         List<Long> logIds = new ArrayList<>();
 
         if (StringUtils.isNoneBlank(message)) {
-            AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(message, username);
+            AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(message, username, chatNameById.orElse("<идентификатор чата не найден>"));
             if (!checkResult.isOk()) {
                 logIds.add(checkResult.aiLogId());
             }

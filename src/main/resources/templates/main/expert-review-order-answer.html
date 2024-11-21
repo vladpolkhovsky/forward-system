@@ -38,6 +38,7 @@
                         <p>Сообщение от менеджера: <span th:text="${older.getReviewMessage()}"></span></p>
                         <p>Сообщение от эксперта: <span th:text="${older.getReviewVerdict()}"></span></p>
                         <p>Оценка эксперта: <span th:text="${older.getReviewVerdictMark()}"></span></p>
+                        <p><a th:href="|/load-file/| + ${older.getAttachmentId()}" target="_blank">Файл на проверку</a></p>
                         <a th:href="|/load-file/| + ${older.getReviewFileId()}" th:text="|Заполненная форма отчёта|"></a>
                     </div>
                 </div>

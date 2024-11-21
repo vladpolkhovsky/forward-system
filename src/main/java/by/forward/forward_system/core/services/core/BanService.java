@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.ai.AiRequestDto;
+import by.forward.forward_system.core.dto.ai.AiResponseDto;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.UserDto;
 import by.forward.forward_system.core.enums.auth.Authority;
@@ -14,8 +16,10 @@ import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.utils.JsonUtils;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -59,7 +63,11 @@ public class BanService {
 
         List<AiLogEntity> allAiLogs = aiLogRepository.findAllById(aiLogId);
         LocalDateTime now = LocalDateTime.now();
+
         for (AiLogEntity aiLog : allAiLogs) {
+            AiRequestDto aiRequestDto = JsonUtils.mapAiRequest(aiLog.getRequestJson());
+            AiResponseDto aiResponseDto = JsonUtils.mapAiResponse(aiLog.getResponseJson());
+
             AiViolationEntity aiViolationEntity = new AiViolationEntity();
 
             aiViolationEntity.setUser(userEntity);
@@ -69,7 +77,7 @@ public class BanService {
 
             aiViolationRepository.save(aiViolationEntity);
 
-            sendViolationNotificationToAdmins(userEntity);
+            sendViolationNotificationToAdmins(userEntity, aiRequestDto.getMessage(), aiResponseDto.getExplanation(), aiRequestDto.getTarget());
         }
 
         boolean manyViolations = aiViolationRepository.violationsCount(userId, now.minusMinutes(60)) >= 3;
@@ -184,14 +192,23 @@ public class BanService {
             .toList();
     }
 
-    private void sendViolationNotificationToAdmins(UserEntity userEntity) {
+    private void sendViolationNotificationToAdmins(UserEntity userEntity, String message, String explanation, String target) {
         String text = """
             Сообщение для %s.
-            Пользователь %s нарушил правила общения.
+            Пользователь %s нарушил правила общения в чате "%s".
+            ---
+            Сообщение пользователя: %s
+            ---
+            Описание нарушения: %s
             """;
+        message = StringUtils.abbreviate(message, 512);
+        explanation = StringUtils.abbreviate(explanation, 512);
         List<UserEntity> allUserWithoutRole = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allUserWithoutRole) {
-            botNotificationService.sendBotNotification(admin.getId(), text.formatted(admin.getUsername(), userEntity.getUsername()));
+            botNotificationService.sendBotNotification(
+                admin.getId(),
+                text.formatted(admin.getUsername(), userEntity.getUsername(), target, message, explanation)
+            );
         }
     }
 

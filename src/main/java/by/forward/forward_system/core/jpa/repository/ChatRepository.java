@@ -54,4 +54,7 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
         "left join forward_system.chat_members chat_members on chat.id = chat_members.chat_id " +
         "where chat.id = :chatId and chat_members.user_id = :userId")
     boolean isChatMember(Long chatId, Long userId);
+
+    @Query(nativeQuery = true, value = "select c.chat_name from forward_system.chats c where c.id = :chatId")
+    Optional<String> findChatNameById(Long chatId);
 }

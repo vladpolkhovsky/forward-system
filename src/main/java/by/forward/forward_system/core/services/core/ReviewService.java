@@ -200,7 +200,7 @@ public class ReviewService {
 
             messageService.sendMessage(null,
                 chatEntity,
-                "Эксперт прислал рецензаю для доработки",
+                "Получена рецензия от экспертного отдела. Изучите внимательно файл и выполните доработку.",
                 true,
                 chatMessageTypeEntity,
                 Collections.singletonList(attachmentEntity),

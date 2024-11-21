@@ -427,7 +427,7 @@ public class OrderUiService {
         UserShortUiDto currentUser = userUiService.getCurrentUser();
 
         String orderText = getOrderData(orderInfo);
-        AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(orderText, currentUser.getUsername());
+        AIDetector.AICheckResult checkResult = aiDetector.isValidMessage(orderText, currentUser.getUsername(), "Создание заказа №" + orderInfo.getTechNumber());
 
         if (!checkResult.isOk()) {
             return !banService.ban(currentUser.getId(), """

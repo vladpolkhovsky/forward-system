@@ -66,8 +66,8 @@ public class AIDetector {
     }
 
     @Transactional
-    public AICheckResult isValidMessage(String message, String username) {
-        MessageCheckRequest messageCheckRequest = new MessageCheckRequest(username, message);
+    public AICheckResult isValidMessage(String message, String username, String target) {
+        MessageCheckRequest messageCheckRequest = new MessageCheckRequest(username, message, target);
 
         try {
             return sendToAi(messageCheckRequest, MESSAGE_CHECK_PATH, null);
@@ -178,7 +178,8 @@ public class AIDetector {
     }
 
     private record MessageCheckRequest(String username,
-                                       String message) {
+                                       String message,
+                                       String target) {
 
     }
 

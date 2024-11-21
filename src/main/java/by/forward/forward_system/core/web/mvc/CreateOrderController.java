@@ -145,7 +145,7 @@ public class CreateOrderController {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("menuName", "Фыйлы для заказа");
+        model.addAttribute("menuName", "Файлы для заказа");
         model.addAttribute("files", orderService.getOrderAttachments(id));
         model.addAttribute("orderId", id);
 

@@ -58,8 +58,8 @@ public class ChatUtilsService {
     }
 
     @Transactional
-    public void createNewOrderChats(Long id) {
-        UserEntity manager = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+    public void createNewOrderChats(Long managerId) {
+        UserEntity manager = userRepository.findById(managerId).orElseThrow(() -> new RuntimeException("User not found"));
         ChatTypeEntity requestOrderChat = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
 
         List<UserEntity> allAuthors = authorRepository.findAll().stream()
@@ -75,7 +75,7 @@ public class ChatUtilsService {
             ArrayList<UserEntity> chatMembers = new ArrayList<>(admins);
             chatMembers.addAll(Arrays.asList(manager, author));
 
-            if (chatMetadataRepository.isChatExists(author.getId(), id)) {
+            if (chatMetadataRepository.isChatExists(author.getId(), managerId)) {
                 continue;
             }
 

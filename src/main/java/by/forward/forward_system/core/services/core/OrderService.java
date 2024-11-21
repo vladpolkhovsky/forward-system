@@ -287,7 +287,8 @@ public class OrderService {
                 true,
                 chatMessageType.get(),
                 Collections.emptyList(),
-                Collections.singletonList(chatMessageOptionEntity)
+                Collections.singletonList(chatMessageOptionEntity),
+                false
             );
 
             MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
