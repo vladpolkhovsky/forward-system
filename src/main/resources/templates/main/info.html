@@ -23,7 +23,7 @@
             <li class="list-group-item" th:if="${user.getIsHr()}">HR</li>
             <li class="list-group-item" th:if="${user.getIsManager()}">Менеджер</li>
             <li class="list-group-item" th:if="${user.getIsOwner()}">Владелец</li>
-            <li class="list-group-item" th:if="${user.getIsAccountant()()}">Бухгалтер</li>
+            <li class="list-group-item" th:if="${user.getIsAccountant()}">Бухгалтер</li>
         </ul>
         <label for="id" class="mt-3 form-label">Системный идентификатор</label>
         <input type="text" readonly class="form-control" id="id" th:value="${user.getId()}">
