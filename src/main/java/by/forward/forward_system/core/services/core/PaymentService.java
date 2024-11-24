@@ -34,6 +34,7 @@ public class PaymentService {
     private final BotNotificationService botNotificationService;
 
     private final UserRepository userRepository;
+
     private final MessageService messageService;
 
     @Transactional
@@ -70,7 +71,7 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(userId, """
-            Здравствуйте %s
+            Здравствуйте, %s
             Для вас сформирована выплата №%d
             Проверьте свои выплаты на сайте и следуйте указаниям.
             """.formatted(user.getUsername(), paymentNumber));
@@ -142,13 +143,13 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
+            Изменён стаутс выплаты №%d.
             Автор прислал подписанный файл.
-            Выплата №%d
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
+            Изменён стаутс выплаты №%d.
             Автор прислал подписанный файл.
-            Выплата №%d
             """.formatted(payment.getPaymentNumber()));
     }
 
@@ -172,7 +173,7 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         botNotificationService.sendBotNotification(payment.getUser().getId(), """
-            Здравствуйте %s
+            Здравствуйте, %s.
             Выплата №%d успешно прозведена.
             Прверьте карточку выплаты и вышлите чек.
             """.formatted(payment.getUser().getUsername(), payment.getPaymentNumber()));
@@ -213,13 +214,13 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
+            Изменён стаутс выплаты №%d.
             Автор прислал чек.
-            Выплата №%d
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
+            Изменён стаутс выплаты №%d.
             Автор прислал чек.
-            Выплата №%d
             """.formatted(payment.getPaymentNumber()));
     }
 
@@ -262,7 +263,8 @@ public class PaymentService {
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Выплата №%d аннулирована. Причина аннулирования в карточе выплаты.
+            Выплата №%d аннулирована.
+            Причина аннулирования в карточе выплаты.
             """.formatted(payment.getPaymentNumber()));
     }
 
