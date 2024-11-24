@@ -26,8 +26,8 @@ public class PaymentEntity {
     @JoinColumn(name = "created_by_user_id", nullable = false)
     private UserEntity createdByUser;
 
-    @Column(name = "payment_number", nullable = false)
-    private Long paymentNumber;
+    @Column(name = "payment_number", nullable = false, length = 2048)
+    private String paymentNumber;
 
     @Column(name = "acc_message", length = 65536)
     private String accMessage;

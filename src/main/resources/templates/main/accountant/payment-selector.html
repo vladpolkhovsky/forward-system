@@ -42,7 +42,7 @@
             <li class="list-group-item d-flex justify-content-between align-items-start"
                 th:each="payment : ${payments}">
                 <div class="ms-1 me-auto">
-                    <p><a th:href="|/payment/| + ${payment.getId()}"><strong th:text="|Выплата №| + ${payment.getNumber()}"></strong></a></p>
+                    <p><a th:href="|/payment/| + ${payment.getId()}"><strong th:text="|Выплата: | + ${payment.getNumber()}"></strong></a></p>
                     <p class="m-0" th:text="|Получатель выплаты: | + ${payment.getUsername()}"></p>
                     <p class="m-0" th:text="|Дата обновления: | +  ${#temporals.format(payment.getUpdated(), 'dd.MM.yyyy HH:mm')}"></p>
                     <p class="m-0" th:text="|Дата создания: | +  ${#temporals.format(payment.getCreated(), 'dd.MM.yyyy HH:mm')}"></p>

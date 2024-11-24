@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public interface PaymentDto {
     Long getId();
-    Long getNumber();
+    String getNumber();
 
     String getStatusName();
     String getUsername();

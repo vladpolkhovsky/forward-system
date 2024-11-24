@@ -570,9 +570,9 @@ create table if not exists forward_system.payment
     acc_message              varchar(65536),
     user_message             varchar(65536),
     annulled_reason          varchar(65536),
-    acc_attachment_id        bigint       references forward_system.attachments (id),
-    user_attachment_id       bigint       references forward_system.attachments (id),
-    user_check_attachment_id bigint       references forward_system.attachments (id),
+    acc_attachment_id        bigint references forward_system.attachments (id),
+    user_attachment_id       bigint references forward_system.attachments (id),
+    user_check_attachment_id bigint references forward_system.attachments (id),
     status                   varchar(255) not null references forward_system.payment_status (name),
     created_at               timestamp    not null,
     updated_at               timestamp    not null
@@ -584,3 +584,6 @@ create table if not exists forward_system.payment_files
     payment_id    bigint not null references forward_system.payment (id),
     attachment_id bigint not null references forward_system.attachments (id)
 );
+
+alter table forward_system.payment
+    alter column payment_number type varchar(2048)

@@ -12,7 +12,7 @@
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
     <div class="row">
-        <h3>Выплата № <strong th:text="${paymentNumber}"></strong></h3>
+        <h3>Выплата: <strong th:text="${paymentNumber}"></strong></h3>
     </div>
     <p>Статус выплаты: <strong th:text="${paymentStatus.getRusName()}"></strong></p>
 </div>

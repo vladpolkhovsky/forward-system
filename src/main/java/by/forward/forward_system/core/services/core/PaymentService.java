@@ -39,7 +39,7 @@ public class PaymentService {
 
     @Transactional
     @SneakyThrows
-    public void createPayment(Long userId, Long createdByUserId, String accMessage, MultipartFile accFile) {
+    public void createPayment(Long userId, Long createdByUserId, String accMessage, String paymentNumber, MultipartFile accFile) {
         PaymentStatusEntity status = paymentStatusRepository.findById(PaymentStatus.WAITING_SIGNED_FILE.getName()).orElseThrow(() -> new RuntimeException("Payment Status Not Found"));
         AttachmentEntity attachmentEntity = attachmentService.saveAttachment(accFile.getOriginalFilename(), accFile.getBytes());
 
@@ -47,7 +47,6 @@ public class PaymentService {
         UserEntity createdByUser = userRepository.findById(createdByUserId).orElseThrow(() -> new RuntimeException("User Not Found"));
 
         LocalDateTime now = LocalDateTime.now();
-        Long paymentNumber = paymentRepository.count() + 1;
 
         PaymentEntity paymentEntity = new PaymentEntity();
         paymentEntity.setPaymentNumber(paymentNumber);
@@ -72,12 +71,12 @@ public class PaymentService {
 
         botNotificationService.sendBotNotification(userId, """
             Здравствуйте, %s
-            Для вас сформирована выплата №%d
+            Для вас сформирована выплата: %s
             Проверьте свои выплаты на сайте и следуйте указаниям.
             """.formatted(user.getUsername(), paymentNumber));
 
         sendMessageToAdminChat(userId, """
-            Для автора %s создана выплата №%d.
+            Для автора %s создана выплата: %s
             Проверьте свои выплаты на сайте и следуйте указаниям.
             """.formatted(user.getUsername(), paymentNumber));
     }
@@ -143,12 +142,12 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
-            Изменён стаутс выплаты №%d.
+            Изменён стаутс выплаты: %s.
             Автор прислал подписанный файл.
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Изменён стаутс выплаты №%d.
+            Изменён стаутс выплаты: %s.
             Автор прислал подписанный файл.
             """.formatted(payment.getPaymentNumber()));
     }
@@ -174,12 +173,12 @@ public class PaymentService {
 
         botNotificationService.sendBotNotification(payment.getUser().getId(), """
             Здравствуйте, %s.
-            Выплата №%d успешно прозведена.
+            Выплата %s успешно прозведена.
             Прверьте карточку выплаты и вышлите чек.
             """.formatted(payment.getUser().getUsername(), payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Выплата №%d для автора %s успешно прозведена.
+            Выплата %s для автора %s успешно прозведена.
             Прверьте карточку выплаты и вышлите чек.
             """.formatted(payment.getPaymentNumber(), payment.getUser().getUsername()));
     }
@@ -214,12 +213,12 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
-            Изменён стаутс выплаты №%d.
+            Изменён стаутс выплаты: %s.
             Автор прислал чек.
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Изменён стаутс выплаты №%d.
+            Изменён стаутс выплаты: %s.
             Автор прислал чек.
             """.formatted(payment.getPaymentNumber()));
     }
@@ -243,7 +242,7 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Выплата №%d успешно завершена.
+            Выплата %s успешно завершена.
             """.formatted(payment.getPaymentNumber()));
     }
 
@@ -258,12 +257,12 @@ public class PaymentService {
         payment = paymentRepository.save(payment);
 
         botNotificationService.sendBotNotification(payment.getUser().getId(), """
-            Выплата №%d аннулирована.
+            Выплата %s аннулирована.
             Проверьте карточку выплаты, чтобы узнать причину.
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Выплата №%d аннулирована.
+            Выплата %s аннулирована.
             Причина аннулирования в карточе выплаты.
             """.formatted(payment.getPaymentNumber()));
     }

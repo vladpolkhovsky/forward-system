@@ -43,13 +43,14 @@ public class AccountantController {
     @PostMapping(value = "/create-payment")
     public RedirectView initialSave(@RequestParam(value = "userId", required = true) Long userId,
                                     @RequestParam(value = "acc-message", required = true) String accMessage,
+                                    @RequestParam(value = "payment-number", required = true) String paymentNumber,
                                     @RequestParam(value = "acc-file", required = true) MultipartFile accFile
     ) {
         userUiService.checkAccessAccountant();
 
         Long currentUserId = userUiService.getCurrentUserId();
 
-        paymentService.createPayment(userId, currentUserId, accMessage, accFile);
+        paymentService.createPayment(userId, currentUserId, accMessage, paymentNumber, accFile);
 
         return new RedirectView("/main");
     }
@@ -93,7 +94,7 @@ public class AccountantController {
 
         PaymentEntity paymentEntity = paymentService.getPayment(paymentId);
         PaymentStatus paymentStatus = paymentEntity.getStatus().getStatus();
-        Long paymentNumber = paymentEntity.getPaymentNumber();
+        String paymentNumber = paymentEntity.getPaymentNumber();
 
         String username = paymentEntity.getUser().getUsername();
         String createdByUsername = paymentEntity.getCreatedByUser().getUsername();
