@@ -47,6 +47,14 @@ public class UserUiService {
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
     }
 
+    public void checkAccessAccountant() {
+        UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
+        if (userEntity.getAuthorities().contains(Authority.ACCOUNTANT) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+            return;
+        }
+        throw new IllegalStateException("Нет доступа к просмотру страницы.");
+    }
+
     public void checkAccessManager() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
         if (userEntity.getAuthorities().contains(Authority.MANAGER) || userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
@@ -85,6 +93,12 @@ public class UserUiService {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
         return byUsername.get().getAuthorities().contains(Authority.OWNER);
+    }
+
+    public Boolean isCurrentUserAccountant() {
+        UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+        Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
+        return byUsername.get().getAuthorities().contains(Authority.ACCOUNTANT);
     }
 
     public List<UserUiDto> getAllUsers() {
@@ -167,6 +181,7 @@ public class UserUiService {
             userEntity.getAuthorities().contains(Authority.MANAGER),
             userEntity.getAuthorities().contains(Authority.AUTHOR),
             userEntity.getAuthorities().contains(Authority.HR),
+            userEntity.getAuthorities().contains(Authority.ACCOUNTANT),
             userEntity.getAuthorities().contains(Authority.OWNER),
             userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
@@ -206,6 +221,10 @@ public class UserUiService {
 
         if (userUiDto.getIsOwner() != null && userUiDto.getIsOwner()) {
             userEntity.addRole(Authority.OWNER);
+        }
+
+        if (userUiDto.getIsAccountant() != null && userUiDto.getIsAccountant()) {
+            userEntity.addRole(Authority.ACCOUNTANT);
         }
 
         return userEntity;

@@ -45,7 +45,7 @@ public class OrderActionMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Удалить автора из заказа", "/del-author-from-order", false, null),
             new MenuEntry.MenuItem("Изменение долей в заказе", "/change-fee-in-order", false, null)
         );
-        return new MenuEntry("Заказы", list, 5);
+        return new MenuEntry("Заказы", list, 6);
     }
 
 }

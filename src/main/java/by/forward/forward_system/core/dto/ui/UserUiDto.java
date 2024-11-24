@@ -27,6 +27,7 @@ public class UserUiDto {
     private Boolean isManager;
     private Boolean isAuthor;
     private Boolean isHr;
+    private Boolean isAccountant;
     private Boolean isOwner;
     private String rolesRus;
 }

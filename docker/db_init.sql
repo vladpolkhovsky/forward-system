@@ -547,3 +547,40 @@ CREATE TABLE forward_system.SPRING_SESSION_ATTRIBUTES
 
 alter table forward_system.reviews
     add additional_file_id bigint references forward_system.attachments (id);
+
+create table if not exists forward_system.payment_status
+(
+    name varchar(255) primary key
+);
+
+insert into forward_system.payment_status(name)
+values ('WAITING_SIGNED_FILE'),
+       ('WAITING_PAYMENT'),
+       ('WAITING_CHECK'),
+       ('VERIFICATION'),
+       ('CLOSED'),
+       ('ANNULLED');
+
+create table if not exists forward_system.payment
+(
+    id                       bigint primary key,
+    user_id                  bigint       not null references forward_system.users (id),
+    created_by_user_id       bigint       not null references forward_system.users (id),
+    payment_number           bigint       not null,
+    acc_message              varchar(65536),
+    user_message             varchar(65536),
+    annulled_reason          varchar(65536),
+    acc_attachment_id        bigint       references forward_system.attachments (id),
+    user_attachment_id       bigint       references forward_system.attachments (id),
+    user_check_attachment_id bigint       references forward_system.attachments (id),
+    status                   varchar(255) not null references forward_system.payment_status (name),
+    created_at               timestamp    not null,
+    updated_at               timestamp    not null
+);
+
+create table if not exists forward_system.payment_files
+(
+    id            bigint primary key,
+    payment_id    bigint not null references forward_system.payment (id),
+    attachment_id bigint not null references forward_system.attachments (id)
+);

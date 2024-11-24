@@ -11,20 +11,20 @@ import java.util.Collection;
 import java.util.List;
 
 @Component
-public class SettingsMenuComponent implements MenuComponent {
+public class AccountantMenuComponent implements MenuComponent {
 
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
-        return authorities.contains(Authority.ADMIN) || authorities.contains(Authority.OWNER);
+        return authorities.contains(Authority.OWNER) || authorities.contains(Authority.ACCOUNTANT);
     }
 
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Дисциплины", "/settings-discipline", false, null)
+            new MenuEntry.MenuItem("Создать выплату", "/create-payment", false, null),
+            new MenuEntry.MenuItem("Просмотр выплат", "/acc-view-payment", false, null)
         );
 
-        return new MenuEntry("Настройки", list, 8);
+        return new MenuEntry("Бухгалтер", list, 3);
     }
-
 }

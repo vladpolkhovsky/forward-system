@@ -233,4 +233,12 @@ public class MessageService {
         chatMessageEntity.setIsHidden(true);
         messageRepository.save(chatMessageEntity);
     }
+
+    @Transactional
+    public void sendMessageToAdminChat(Long userId, String message) {
+        ChatEntity userAdminChat = chatRepository.findUserAdminChat(userId).orElseThrow(() -> new RuntimeException("Admin chat not found"));
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Chat message type not found for id " + ChatMessageType.MESSAGE.getName()));
+
+        sendMessage(null, userAdminChat, message, true, chatMessageTypeEntity, List.of(), List.of());
+    }
 }

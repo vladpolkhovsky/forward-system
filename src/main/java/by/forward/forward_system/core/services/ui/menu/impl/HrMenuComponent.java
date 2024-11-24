@@ -24,6 +24,6 @@ public class HrMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Создать автора", "/create-author", false, null)
         );
 
-        return new MenuEntry("HR", list, 3);
+        return new MenuEntry("HR", list, 4);
     }
 }

@@ -25,6 +25,6 @@ public class ManagerMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Просмотр авторов", "/author-view-all", false, null)
         );
 
-        return new MenuEntry("Менеджер", list, 4);
+        return new MenuEntry("Менеджер", list, 5);
     }
 }

@@ -16,7 +16,6 @@ import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.mapping.Collection;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,7 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @Controller

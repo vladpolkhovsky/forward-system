@@ -29,7 +29,8 @@ public class AuthorMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Мои заказы", "/view-my-order-author", true, orderUiService.countMyOrders())
+            new MenuEntry.MenuItem("Мои заказы", "/view-my-order-author", true, orderUiService.countMyOrders()),
+            new MenuEntry.MenuItem("Мои выплаты", "/author-view-payment", false, null)
         );
 
         return new MenuEntry("Автор", list, 2);
