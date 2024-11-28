@@ -57,7 +57,7 @@ public class AccountantController {
 
     @GetMapping(value = "/{type}-view-payment")
     public String viewPayment(@PathVariable String type, Model model, @RequestParam(value = "page", defaultValue = "1") long page) {
-        if (!List.of("acc", "admin", "author").contains(type)) {
+        if (!List.of("acc", "author").contains(type)) {
             throw new IllegalArgumentException("Неправильная ссылка!");
         }
 
@@ -91,6 +91,10 @@ public class AccountantController {
 
         boolean isUser = paymentService.isPaymentUser(paymentId, currentUserId);
         boolean isAcc = userUiService.isCurrentUserOwner() || userUiService.isCurrentUserAccountant();
+
+        if (!isUser && !isAcc) {
+            throw new IllegalStateException("Нет доступа к просмотру страницы.");
+        }
 
         PaymentEntity paymentEntity = paymentService.getPayment(paymentId);
         PaymentStatus paymentStatus = paymentEntity.getStatus().getStatus();

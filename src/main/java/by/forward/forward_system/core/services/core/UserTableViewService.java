@@ -24,6 +24,7 @@ public class UserTableViewService {
 
     public List<UserTableViewDto> get(String col, String order) {
         Comparator<UserTableViewDto> comparator = Comparator.comparing((a) -> a.getUsername().toLowerCase());
+
         if (col.equals("activeOrders")) {
             comparator = Comparator.comparing(UserTableViewDto::activeOrderCount);
         }
@@ -33,7 +34,7 @@ public class UserTableViewService {
         }
 
         return userRepository.findAll().stream()
-            .filter(t -> t.getAuthorities().size() > 1 || !t.getAuthorities().contains(Authority.AUTHOR))
+            .filter(t -> !t.getAuthorities().contains(Authority.AUTHOR))
             .map(this::toViewDto)
             .sorted(comparator)
             .toList();

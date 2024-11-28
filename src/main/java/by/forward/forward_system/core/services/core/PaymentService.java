@@ -142,12 +142,12 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
-            Изменён стаутс выплаты: %s.
+            Изменён статус выплаты: %s.
             Автор прислал подписанный файл.
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Изменён стаутс выплаты: %s.
+            Изменён статус выплаты: %s.
             Автор прислал подписанный файл.
             """.formatted(payment.getPaymentNumber()));
     }
@@ -213,12 +213,12 @@ public class PaymentService {
         paymentFileRepository.save(paymentFileEntity);
 
         botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
-            Изменён стаутс выплаты: %s.
+            Изменён статус выплаты: %s.
             Автор прислал чек.
             """.formatted(payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
-            Изменён стаутс выплаты: %s.
+            Изменён статус выплаты: %s.
             Автор прислал чек.
             """.formatted(payment.getPaymentNumber()));
     }

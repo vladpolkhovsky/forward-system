@@ -42,7 +42,7 @@
                         <input class="form-check-input" type="checkbox" th:id="|author-| + ${author.getId()}"
                                th:checked="${author.getChecked()}" name="author" th:value="${author.getId()}">
                         <label class="form-check-label" th:for="|author-| + ${author.getId()}"
-                               th:text="${author.getFio()} + | (| + ${author.getUsername()} + |)|"></label>
+                               th:text="${author.getUsername()}"></label>
                     </div>
                 </li>
             </ul>
