@@ -66,7 +66,7 @@ public class AccountantController {
             pageCount = paymentService.countPages(userUiService.getCurrentUserId());
         }
 
-        page = Math.min(1, Math.max(page, pageCount));
+        page = Math.max(1, Math.min(page, pageCount));
         List<Long> pages = LongStream.range(1, pageCount + 1).boxed().toList();
 
         List<PaymentDto> payments = null;
