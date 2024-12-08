@@ -59,6 +59,9 @@ public class LoadChatOrderQueryHandler implements QueryHandler<Long, OrderInfoDt
 
     @SneakyThrows
     private String parseDate(String dateString) {
+        if (StringUtils.isBlank(dateString)) {
+            return null;
+        }
         Date date = inputDateFormat.parse(dateString.replace("T", " "));
         return outputDateFormat.format(date);
     }

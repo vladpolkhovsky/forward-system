@@ -322,7 +322,11 @@ function createStatus(orderStatusName, orderId) {
 function createDates(datesArray) {
     let str = "";
     for (let date of datesArray) {
-        str = str + `<li class="list-group-item">${date.text} : ${date.time.replace('T', ' ')}</li>`
+        let dateText = date.text;
+        if (date.time !== null) {
+            dateText = dateText + " : " + date.time;
+        }
+        str = str + `<li class="list-group-item">${dateText}</li>`
     }
     if (str.length === 0) {
         str = "Не назначено."
