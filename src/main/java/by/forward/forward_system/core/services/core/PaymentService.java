@@ -174,12 +174,12 @@ public class PaymentService {
         botNotificationService.sendBotNotification(payment.getUser().getId(), """
             Здравствуйте, %s.
             Выплата %s успешно прозведена.
-            Прверьте карточку выплаты и вышлите чек.
+            Проверьте карточку выплаты и вышлите чек.
             """.formatted(payment.getUser().getUsername(), payment.getPaymentNumber()));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
             Выплата %s для автора %s успешно прозведена.
-            Прверьте карточку выплаты и вышлите чек.
+            Проверьте карточку выплаты и вышлите чек.
             """.formatted(payment.getPaymentNumber(), payment.getUser().getUsername()));
     }
 
