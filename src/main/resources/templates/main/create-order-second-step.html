@@ -22,7 +22,7 @@
     </div>
     <h3 th:text="|Заказ №| + ${order.getTechNumber()} + |. Выбор авторов и кетчера.|"></h3>
     <div class="row">
-        <div class="col-5">
+        <div class="col-12 col-md-5">
             <div class="container g-3 border">
                 <p>Отметьте кетчера, который создал заказ.</p>
                 <div class="form-check mb-2" th:each="user, stat : ${users}">
@@ -41,7 +41,7 @@
                 </button>
             </div>
         </div>
-        <div class="col-7">
+        <div class="col-12 col-md-7">
             <div class="container border">
                 <p>Отметьте тех авторов, которым хотите предложить данный заказ.</p>
                 <p>Обозначение: <strong><span class="badge text-bg-success">напишет на 5</span>, <span
@@ -76,9 +76,15 @@
                         <span th:id="|author-fee-| + ${author.getId()}" th:text="|Нет|"></span>
                     </div>
                 </div>
-                <button id="author-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">
-                    Отправить заказ
-                </button>
+                <div class="mb-2 row">
+                    <p>Сообщение для авторов (оставьте пустым, если не хотите ничего отправлять).</p>
+                    <textarea class="form-control p-2" id="author-message" rows="3"></textarea>
+                </div>
+                <div class="mb-2 row">
+                    <button id="author-submit" class="btn btn-primary mt-3 mb-3" th:disabled="${notDistributionStatus}">
+                        Отправить заказ
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -93,6 +99,7 @@
     const catchers = document.querySelectorAll(".catcher-selection");
     const authors = document.querySelectorAll(".author-selection");
     const authorsFee = document.querySelectorAll(".author-selection-fee");
+    const authorsMessage = document.getElementById("author-message");
 
     const authorSubmitBtn = document.getElementById("author-submit");
     const catcherSubmitBtn = document.getElementById("catcher-submit");
@@ -101,7 +108,7 @@
         let targetAuthorId = event.target.getAttribute("targetAuthor");
         let idValue = event.target.getAttribute("idValue");
         let targetValue = event.target.value;
-        if(event.target.value !== '') {
+        if (event.target.value !== '') {
             event.target.classList.add('bg-info');
             document.getElementById(`author-fee-${idValue}`).innerText = targetValue;
         } else {
@@ -133,17 +140,26 @@
         return ids;
     }
 
-    function sendSelected(ids, endpoint, role) {
+    function sendSelected(ids, endpoint, role, message) {
         let xhr = new XMLHttpRequest();
+
+        if (message === undefined) {
+            message = null;
+        }
+
         xhr.open('POST', endpoint, false);
         xhr.setRequestHeader("Content-Type", "application/json");
+
         let data = JSON.stringify({
             selected: ids,
-            role: role
+            role: role,
+            message: message
         });
+
         xhr.onerror = function () {
             alert("Ошибка соединения!");
         }
+
         xhr.onload = function () {
             if (xhr.status !== 200) {
                 alert("Ошибка соединения!")
@@ -151,6 +167,7 @@
                 alert("Отправлено.")
             }
         }
+
         xhr.send(data);
     }
 
@@ -162,13 +179,14 @@
 
     function sendSelectedAuthors(event) {
         let selectedItems = getSelectedItems(authors);
-        sendSelected(convertToIds(selectedItems), apiEndpoint, 'AUTHOR');
+        sendSelected(convertToIds(selectedItems), apiEndpoint, 'AUTHOR', authorsMessage.value);
         disableSelected(selectedItems);
+        authorsMessage.value = "";
     }
 
     function sendSelectedCatcher(event) {
         let selectedItems = getSelectedItems(catchers);
-        sendSelected(convertToIds(selectedItems), apiEndpoint, 'CATCHER');
+        sendSelected(convertToIds(selectedItems), apiEndpoint, 'CATCHER', null);
         disableSelected(selectedItems);
         catcherSubmitBtn.setAttribute("disabled", null);
         catcherSubmitBtn.textContent = "Назначен";

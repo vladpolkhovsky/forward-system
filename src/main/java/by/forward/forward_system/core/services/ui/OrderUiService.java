@@ -203,7 +203,7 @@ public class OrderUiService {
 
         List<AuthorWithDisciplineProjection> disciplines = idToDisciplines.get(authorId);
         for (AuthorWithDisciplineProjection discipline : disciplines) {
-            if (order.getDiscipline().getId().equals(discipline.getDisciplineId())) {
+            if (!order.getDiscipline().getId().equals(discipline.getDisciplineId())) {
                 continue;
             }
             if (discipline.getDisciplineQuality().equals(DisciplineQualityType.EXCELLENT.getName())) {

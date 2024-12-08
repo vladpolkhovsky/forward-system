@@ -1,8 +1,10 @@
 package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.ChatEntity;
+import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
+import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -59,9 +61,20 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
     Optional<String> findChatNameById(Long chatId);
 
     @Query(nativeQuery = true, value = """
-            select c.* from forward_system.chats c
+        select c.* from forward_system.chats c
         	inner join forward_system.chat_members cm on cm.chat_id = c.id
         	where cm.user_id = :userId and c."type" = 'ADMIN_TALK_CHAT' and c.id != 0
         """)
     Optional<ChatEntity> findUserAdminChat(Long userId);
+
+    List<ChatEntity> order(OrderEntity order);
+
+    @Query(nativeQuery = true, value = """
+        select c.id as chatId, c.order_id as orderId, count(distinct cmtu.id) as newMessageCount from forward_system.chats c
+        	inner join forward_system.chat_members cm on cm.chat_id = c.id
+        	left join forward_system.chat_message_to_user cmtu on cmtu.chat_id = c.id and cmtu.user_id = :userId and not cmtu.is_viewed
+        	where cm.user_id = :userId and c.order_id in :orderIds
+        	group by c.order_id, c.id
+    """)
+    List<OrderChatDataProjection> findOrderChatNewMessagesForUser(List<Long> orderIds, Long userId);
 }

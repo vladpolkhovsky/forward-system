@@ -10,10 +10,13 @@ import java.util.List;
 @Repository
 public interface UpdateOrderRequestRepository extends JpaRepository<UpdateOrderRequestEntity, Long> {
 
-    @Query(nativeQuery = true, value = "select r.* from forward_system.update_order_request r " +
+    @Query(nativeQuery = true, value = "select * from forward_system.update_order_request r " +
         "where r.is_viewed = false order by created_at")
     List<UpdateOrderRequestEntity> getNotReviewedOrderRequests();
 
     Integer countAllByIsViewedFalse();
 
+    @Query(nativeQuery = true, value = "select * from forward_system.update_order_request r " +
+        "where r.order_id = :orderId")
+    List<UpdateOrderRequestEntity> findByOrderId(Long orderId);
 }

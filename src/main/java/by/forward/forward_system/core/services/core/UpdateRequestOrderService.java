@@ -2,15 +2,12 @@ package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.OrderStatus;
-import by.forward.forward_system.core.jpa.model.OrderEntity;
-import by.forward.forward_system.core.jpa.model.OrderStatusEntity;
-import by.forward.forward_system.core.jpa.model.UpdateOrderRequestEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.OrderStatusRepository;
 import by.forward.forward_system.core.jpa.repository.UpdateOrderRequestRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
-import by.forward.forward_system.core.utils.AuthUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
@@ -42,10 +39,18 @@ public class UpdateRequestOrderService {
                                         Long orderId,
                                         BigDecimal orderTechNumber,
                                         OrderStatus newStatus) {
-        UserEntity userEntity = userRepository.findByUsername(AuthUtils.getCurrentUserDetails().getUsername()).orElseThrow(() -> new RuntimeException("User not found"));
+
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+
+        UserEntity catcher = orderEntity.getOrderParticipants().stream()
+            .filter(t -> t.getParticipantsType().getType().equals(ParticipantType.CATCHER))
+            .findAny()
+            .map(OrderParticipantEntity::getUser)
+            .orElseThrow(() -> new RuntimeException("Не назначен кетчер!"));
+
         UpdateOrderRequestDto updateOrderRequestDto = new UpdateOrderRequestDto();
 
-        updateOrderRequestDto.setFromUserId(userEntity.getId());
+        updateOrderRequestDto.setFromUserId(catcher.getId());
         updateOrderRequestDto.setOrderId(orderId);
         updateOrderRequestDto.setOrderTechNumber(orderTechNumber);
         updateOrderRequestDto.setCreatedAt(LocalDateTime.now());
@@ -75,7 +80,9 @@ public class UpdateRequestOrderService {
     public UpdateOrderRequestDto update(Long requestId, UpdateOrderRequestDto updateOrderRequestDto, Boolean isViewed, Boolean isAccepted) {
         UpdateOrderRequestEntity updateOrderRequestEntity = updateOrderRequestRepository.findById(requestId).orElseThrow(() -> new RuntimeException("UpdateOrderRequest not found"));
 
-        UserEntity userEntity = userRepository.findById(updateOrderRequestDto.getFromUserId()).orElseThrow(() -> new RuntimeException("Order not found"));
+        Long oldFromUserId = updateOrderRequestEntity.getUser().getId();
+
+        UserEntity userEntity = userRepository.findById(oldFromUserId).orElseThrow(() -> new RuntimeException("Order not found"));
         OrderEntity orderEntity = orderRepository.findById(updateOrderRequestDto.getOrderId()).orElseThrow(() -> new RuntimeException("Order not found"));
         OrderStatusEntity orderStatus = orderStatusRepository.findById(updateOrderRequestDto.getNewStatus()).orElseThrow(() -> new RuntimeException("New status not found"));
 

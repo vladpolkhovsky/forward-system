@@ -75,14 +75,14 @@ public class AdminMenuController {
            return new RedirectView("/main");
         }
 
+        Boolean verdict = BooleanUtils.toBoolean(body.getFirst("verdict"));
+
         UpdateOrderRequestDto created = updateRequestOrderService.create(
             body,
             byId.getOrderId(),
             byId.getOrderTechNumber(),
             OrderStatus.byName(byId.getNewStatus())
         );
-
-        Boolean verdict = BooleanUtils.toBoolean(body.getFirst("verdict"));
 
         UpdateOrderRequestDto update = updateRequestOrderService.update(requestId, created, true, verdict);
 

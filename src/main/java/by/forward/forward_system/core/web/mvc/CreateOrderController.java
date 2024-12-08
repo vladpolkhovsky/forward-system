@@ -6,11 +6,9 @@ import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
-import by.forward.forward_system.core.services.core.DisciplineService;
-import by.forward.forward_system.core.services.core.OrderService;
-import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
-import by.forward.forward_system.core.services.core.UserService;
+import by.forward.forward_system.core.services.core.*;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
@@ -42,6 +40,7 @@ public class CreateOrderController {
     private final DisciplineService disciplineService;
     private final BotNotificationService botNotificationService;
     private final UserService userService;
+    private final OrderChatHandlerService orderChatHandlerService;
 
     @GetMapping("/create-order")
     public String createOrder(Model model) {
@@ -175,7 +174,7 @@ public class CreateOrderController {
 
     @GetMapping(value = "/view-order")
     public String viewOrder(Model model, @RequestParam(value = "page", required = false, defaultValue = "1") int page, @RequestParam(value = "techNumber", required = false) String techNumber) {
-        List<OrderUiDto> allOrdersInStatus = Collections.emptyList();
+        List<OrderUiDto> orders = Collections.emptyList();
 
         int pageCount;
 
@@ -183,22 +182,26 @@ public class CreateOrderController {
             pageCount = 1;
             page = 1;
 
-            allOrdersInStatus = orderUiService.getOrderByTechNumber(techNumber);
+            orders = orderUiService.getOrderByTechNumber(techNumber);
         } else {
             pageCount = orderUiService.getOrdersPageCount();
             page = Math.max(Math.min(pageCount, page), 1);
 
-            allOrdersInStatus = orderUiService.getAllOrdersPage(page);
+            orders = orderUiService.getAllOrdersPage(page);
             pageCount = orderUiService.getOrdersPageCount();
         }
+
+        List<Long> orderIds = orders.stream().map(t -> t.getId()).toList();
+        Map<Long, OrderChatDataProjection> chatData = orderChatHandlerService.calcChatData(orderIds, userUiService.getCurrentUserId());
 
         List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
 
         model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", allOrdersInStatus);
+        model.addAttribute("ordersList", orders);
         model.addAttribute("page", page);
         model.addAttribute("pages", pages);
+        model.addAttribute("chatHandler", chatData);
         model.addAttribute("showPages", true);
         model.addAttribute("showSearch", true);
 
@@ -473,6 +476,15 @@ public class CreateOrderController {
 
         String status = body.getFirst("status");
         orderService.changeStatus(orderId, OrderStatus.byName(status));
+
+        return new RedirectView("/main");
+    }
+
+    @PostMapping(value = "/delete-order/{orderId}")
+    public RedirectView deleteOrder(@PathVariable Long orderId) {
+        orderService.checkOrderAccessDelete(orderId, userUiService.getCurrentUserId());
+
+        orderService.deleteOrder(orderId);
 
         return new RedirectView("/main");
     }

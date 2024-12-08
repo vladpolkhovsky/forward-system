@@ -1,8 +1,12 @@
 package by.forward.forward_system.core.services.newchat.handlers;
 
+import by.forward.forward_system.core.dto.messenger.fast.OrderDatesDto;
 import by.forward.forward_system.core.dto.messenger.fast.OrderInfoDto;
 import by.forward.forward_system.core.services.newchat.QueryHandler;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.intellij.lang.annotations.Language;
 import org.springframework.jdbc.core.PreparedStatementSetter;
@@ -10,11 +14,22 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
+import java.util.List;
 
 @Component
 @AllArgsConstructor
 public class LoadChatOrderQueryHandler implements QueryHandler<Long, OrderInfoDto> {
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    private static final SimpleDateFormat inputDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+
+    private static final SimpleDateFormat outputDateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     @Language("SQL")
     private final static String QUERY = """
@@ -35,20 +50,33 @@ public class LoadChatOrderQueryHandler implements QueryHandler<Long, OrderInfoDt
         };
     }
 
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
-
-    public String formatDate(Timestamp timestamp) {
+    private String formatDate(Timestamp timestamp) {
         if (timestamp == null) {
             return "Не назначен";
         }
         return timestamp.toLocalDateTime().format(dateTimeFormatter);
     }
 
-    public String formatDates(String dates) {
+    @SneakyThrows
+    private String parseDate(String dateString) {
+        Date date = inputDateFormat.parse(dateString.replace("T", " "));
+        return outputDateFormat.format(date);
+    }
+
+    @SneakyThrows
+    private String formatDates(String dates) {
         if (StringUtils.isBlank(dates)) {
             return "[]";
+        } else {
+            List<OrderDatesDto> orderDatesDtos = mapper.readValue(dates, new TypeReference<List<OrderDatesDto>>() {
+
+            });
+            orderDatesDtos = orderDatesDtos.stream().map(t -> new OrderDatesDto(
+                t.getText(),
+                parseDate(t.getTime())
+            )).toList();
+            return mapper.writeValueAsString(orderDatesDtos);
         }
-        return dates;
     }
 
     @Override
