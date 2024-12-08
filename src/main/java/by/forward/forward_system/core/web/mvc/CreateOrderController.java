@@ -238,12 +238,16 @@ public class CreateOrderController {
 
     @GetMapping(value = "/view-my-order")
     public String viewMyOrder(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
+        List<OrderUiDto> orders = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
+
+        List<Long> orderIds = orders.stream().map(t -> t.getId()).toList();
+        Map<Long, OrderChatDataProjection> chatData = orderChatHandlerService.calcChatData(orderIds, userUiService.getCurrentUserId());
 
         model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", allOrdersInStatus);
+        model.addAttribute("ordersList", orders);
         model.addAttribute("showPages", false);
+        model.addAttribute("chatHandler", chatData);
         model.addAttribute("showSearch", false);
 
         return "main/view-order-selector";
