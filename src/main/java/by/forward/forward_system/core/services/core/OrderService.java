@@ -284,7 +284,8 @@ public class OrderService {
             true,
             chatMessageType,
             Collections.emptyList(),
-            Collections.emptyList()
+            Collections.emptyList(),
+            false
         );
 
         MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
