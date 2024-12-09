@@ -328,10 +328,10 @@ public class OrderService {
 
             if (!StringUtils.isBlank(message)) {
                 ChatMessageEntity additionalMessage = messageService.sendMessage(
-                    null,
+                    manager,
                     newOrdersChatByUser.get(),
                     message,
-                    true,
+                    false,
                     chatMessageType.get(),
                     Collections.emptyList(),
                     Collections.emptyList()

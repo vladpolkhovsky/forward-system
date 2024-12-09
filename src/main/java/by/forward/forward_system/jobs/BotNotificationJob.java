@@ -30,7 +30,7 @@ public class BotNotificationJob {
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
-    //@Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
+    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
     @Transactional
     public void notifyBot() {
         LocalDateTime startTime = LocalDateTime.now();
