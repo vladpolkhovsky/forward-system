@@ -95,7 +95,7 @@
                                type="number"
                                placeholder="Другая стоимость">
                     </div>
-                    <div class="col-12 col-md-4 d-flex align-items-center"
+                    <div class="col-12 col-md-4 d-flex align-items-center text-break"
                          th:unless="${author.getChecked() || notDistributionStatus}">
                         Сохраненённое значение: <span th:id="|author-fee-| + ${author.getId()}"
                                                       class="fs-6 badge text-bg-light"
@@ -136,7 +136,7 @@
                                    type="number"
                                    placeholder="Другая стоимость">
                         </div>
-                        <div class="col-12 col-md-4 d-flex align-items-center"
+                        <div class="col-12 col-md-4 d-flex align-items-center text-break"
                              th:unless="${author.getChecked() || notDistributionStatus}">
                             Сохраненённое значение: <span th:id="|author-fee-| + ${author.getId()}"
                                                           class="fs-6 badge text-bg-secondary"
