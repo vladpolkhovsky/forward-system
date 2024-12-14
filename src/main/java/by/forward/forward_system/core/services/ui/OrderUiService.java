@@ -232,15 +232,15 @@ public class OrderUiService {
     private String calcBgColor(Map<Long, List<AuthorWithDisciplineProjection>> idToDisciplines, Long authorId, OrderEntity order) {
         int comp = calcOrder(idToDisciplines, authorId, order);
         if (comp == 0) {
-            return "text-bg-success";
+            return "text-bg-light-green";
         }
         if (comp == 1) {
-            return "text-bg-warning";
+            return "text-bg-light-orange";
         }
         if (comp == 2) {
-            return "text-bg-primary";
+            return "text-bg-light-blue";
         } else {
-            return "text-bg-light";
+            return "";
         }
     }
 
