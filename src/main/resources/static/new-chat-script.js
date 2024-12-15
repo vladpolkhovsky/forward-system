@@ -411,13 +411,13 @@ function createMessageElement(fromUserId, isSystemMessage, attachments, options,
 
     if (attachments.length > 0) {
         for (let attachment of attachments) {
-            attachmentHtml += `<a class="me-2 mt-1" target="_blank" href="/load-file/${attachment.id}">${attachment.name}</a>`
+            attachmentHtml += `<a class="mt-1" target="_blank" href="/load-file/${attachment.id}"><span>Файл: </span>${attachment.name}</a><br/>`
         }
     }
 
     if (options.length > 0) {
         for (let option of options) {
-            optionHtml += `<a class="me-2 mt-1 btn btn-primary" target="_blank" href="${option.url}">${option.name}</a>`
+            optionHtml += `<a class="btn btn-primary mt-1 w-100" target="_blank" href="${option.url}">${option.name}</a>`
         }
     }
 

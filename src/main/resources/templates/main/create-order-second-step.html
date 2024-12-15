@@ -106,14 +106,16 @@
                         <p class="m-0 fs-5">Запрос отправлен автору.</p>
                     </div>
                 </div>
-                <p class="d-inline-flex gap-1 mt-2">
-                    <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#authors-without-mark"
-                            role="button" aria-expanded="false" aria-controls="authors-without-mark">
-                        Показать авторов, у которых не указана дисциплина заказа.
-                    </button>
-                </p>
+                <button class="btn btn-primary w-100 mt-1 mb-1"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#authors-without-mark"
+                        role="button"
+                        aria-expanded="false"
+                        aria-controls="authors-without-mark">
+                    Показать авторов, у которых не указана дисциплина заказа.
+                </button>
                 <div class="collapse" id="authors-without-mark">
-                    <div th:class="|row border pt-2 pb-2 | + ${author.getBgColor()}"
+                    <div class="row border pt-2 pb-2"
                          th:if="${author.getBgColor() == ''}"
                          th:each="author, stat : ${authors}">
                         <div class="col-12 col-md-4 mb-md-0 mb-2 d-flex align-items-center">
@@ -148,7 +150,6 @@
                         </div>
                     </div>
                 </div>
-                <hr />
                 <div class="mb-2 row pt-2">
                     <p>Сообщение для авторов (оставьте пустым, если не хотите ничего отправлять).</p>
                     <textarea class="form-control p-2" id="author-message" rows="3"></textarea>
