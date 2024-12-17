@@ -8,6 +8,8 @@ import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.OrderStatusRepository;
 import by.forward.forward_system.core.jpa.repository.UpdateOrderRequestRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UpdateRequestOrderService {
@@ -40,27 +43,37 @@ public class UpdateRequestOrderService {
                                         BigDecimal orderTechNumber,
                                         OrderStatus newStatus) {
 
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        List<Long> hosts = mapIds(multiValueMap.get("host"));
+        List<Long> catchers = mapIds(multiValueMap.get("catcher"));
+        List<Long> authors = mapIds(multiValueMap.get("author"));
 
-        UserEntity catcher = orderEntity.getOrderParticipants().stream()
-            .filter(t -> t.getParticipantsType().getType().equals(ParticipantType.CATCHER))
-            .findAny()
-            .map(OrderParticipantEntity::getUser)
-            .orElseThrow(() -> new RuntimeException("Не назначен кетчер!"));
+        if (CollectionUtils.isEmpty(hosts)) {
+            throw new RuntimeException("Не назначен хост.");
+        }
+
+        if (CollectionUtils.isEmpty(catchers)) {
+            throw new RuntimeException("Не назначен кетчер.");
+        }
+
+        if (CollectionUtils.isEmpty(authors)) {
+            throw new RuntimeException("Не назначен автор.");
+        }
+
+        if (hosts.size() != 1 || authors.size() != 1 || catchers.size() != 1) {
+            throw new RuntimeException("Неправильный формат данных: " + Map.of("Кетчеры", catchers, "Хосты", hosts, "Авторы", authors));
+        }
 
         UpdateOrderRequestDto updateOrderRequestDto = new UpdateOrderRequestDto();
 
-        updateOrderRequestDto.setFromUserId(catcher.getId());
+        Long catcherId = catchers.get(0);
+
+        updateOrderRequestDto.setFromUserId(catcherId);
         updateOrderRequestDto.setOrderId(orderId);
         updateOrderRequestDto.setOrderTechNumber(orderTechNumber);
         updateOrderRequestDto.setCreatedAt(LocalDateTime.now());
 
         updateOrderRequestDto.setNewStatus(newStatus.getName());
         updateOrderRequestDto.setNewStatusRus(newStatus.getRusName());
-
-        List<Long> hosts = mapIds(multiValueMap.get("host"));
-        List<Long> catchers = mapIds(multiValueMap.get("catcher"));
-        List<Long> authors = mapIds(multiValueMap.get("author"));
 
         updateOrderRequestDto.setCatchers(catchers);
         updateOrderRequestDto.setHosts(hosts);
@@ -120,7 +133,9 @@ public class UpdateRequestOrderService {
         OrderEntity orderEntity = orderRepository.findById(updateOrderRequestDto.getOrderId()).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(updateOrderRequestDto.getFromUserId()).orElseThrow(() -> new RuntimeException("User not found"));
         OrderStatusEntity orderStatus = orderStatusRepository.findById(updateOrderRequestDto.getNewStatus()).orElseThrow(() -> new RuntimeException("New status not found"));
+
         UpdateOrderRequestEntity updateOrderRequestEntity = new UpdateOrderRequestEntity();
+
         updateOrderRequestEntity.setOrder(orderEntity);
         updateOrderRequestEntity.setUser(userEntity);
         updateOrderRequestEntity.setCatcherIds(toStrList(updateOrderRequestDto.getCatchers()));
@@ -130,11 +145,13 @@ public class UpdateRequestOrderService {
         updateOrderRequestEntity.setIsViewed(updateOrderRequestDto.getIsViewed());
         updateOrderRequestEntity.setIsAccepted(updateOrderRequestDto.getIsAccepted());
         updateOrderRequestEntity.setCreatedAt(updateOrderRequestDto.getCreatedAt());
+
         return updateOrderRequestEntity;
     }
 
     public UpdateOrderRequestDto toDto(UpdateOrderRequestEntity updateOrderRequestEntity) {
         UpdateOrderRequestDto updateOrderRequestDto = new UpdateOrderRequestDto();
+
         updateOrderRequestDto.setId(updateOrderRequestEntity.getId());
         updateOrderRequestDto.setFromUserId(updateOrderRequestEntity.getUser().getId());
         updateOrderRequestDto.setOrderId(updateOrderRequestEntity.getOrder().getId());
@@ -147,6 +164,7 @@ public class UpdateRequestOrderService {
         updateOrderRequestDto.setIsViewed(updateOrderRequestEntity.getIsViewed());
         updateOrderRequestDto.setIsAccepted(updateOrderRequestEntity.getIsAccepted());
         updateOrderRequestDto.setCreatedAt(updateOrderRequestEntity.getCreatedAt());
+
         return updateOrderRequestDto;
     }
 

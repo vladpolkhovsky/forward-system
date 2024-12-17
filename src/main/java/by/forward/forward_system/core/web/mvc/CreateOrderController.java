@@ -309,6 +309,7 @@ public class CreateOrderController {
         );
 
         updateRequestOrderService.save(updateOrderRequestDto);
+
         orderService.changeStatus(orderId, OrderStatus.DISTRIBUTION, OrderStatus.ADMIN_REVIEW);
 
         List<UserEntity> adminUsers = userService.findUsersWithRole(Authority.ADMIN.getAuthority());

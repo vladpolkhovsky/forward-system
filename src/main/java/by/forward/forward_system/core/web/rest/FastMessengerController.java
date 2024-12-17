@@ -45,4 +45,14 @@ public class FastMessengerController {
     public ResponseEntity<NewMessageCountResponseDto> loadNewMessageCount(@RequestBody NewMessageCountRequestDto requestDto) {
         return ResponseEntity.ok(fastChatService.loadNewMessageCount(requestDto));
     }
+
+    @PostMapping(value = "/load-order-status", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<LoadChatsStatusResponseDto> loadChatStatusByChats(@RequestBody LoadChatsStatusRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.loadChatStatus(requestDto));
+    }
+
+    @PostMapping(value = "/load-order-member", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<LoadIsChatMemberResponseDto> loadChatMemberByChats(@RequestBody LoadIsChatMemberRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.loadIsChatMember(requestDto));
+    }
 }

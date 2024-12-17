@@ -7,6 +7,8 @@ context.chatsCache = {};
 context.chatsQueue = [];
 
 const loadNewChatsUrl = '/api/new-chat/chats';
+const loadStatusUrl = '/api/new-chat/load-order-status';
+const loadIsMemberUrl = '/api/new-chat/load-order-member';
 const searchChatsUrl = '/api/new-chat/search';
 const loadChatByIdUrl = '/api/new-chat/chat-by-id';
 const loadChatInfoUrl = '/api/new-chat/load-chat-info';
@@ -72,7 +74,11 @@ function searchForChat(searchText) {
 
     fetch(searchChatsUrl, requestOptions)
         .then((response) => response.json())
-        .then((result) => processNewSearchedChats(result.chats))
+        .then((result) => {
+            processNewSearchedChats(result.chats)
+            return result;
+        })
+        .then((result) => postProcessChat(extractChatIds(result.chats)))
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
@@ -96,7 +102,11 @@ function loadNewChats() {
 
     fetch(loadNewChatsUrl, requestOptions)
         .then((response) => response.json())
-        .then((result) => processNewLoadedChats(result.chats))
+        .then((result) => {
+            processNewLoadedChats(result.chats);
+            return result;
+        })
+        .then((result) => postProcessChat(extractChatIds(result.chats)))
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
@@ -119,7 +129,11 @@ function loadChatById(chatId) {
 
     fetch(loadChatByIdUrl, requestOptions)
         .then((response) => response.json())
-        .then((result) => processNewLoadedChats(result.chats))
+        .then((result) => {
+            processNewLoadedChats(result.chats)
+            return result;
+        })
+        .then((result) => postProcessChat(extractChatIds(result.chats)))
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
@@ -150,7 +164,9 @@ function loadChatByIdOnNewMessage(chatId) {
             for (let chat of chatsArray) {
                 moveChatInChatWindowToFront(chat.id);
             }
+            return chatsArray
         })
+        .then((chatsArray) => postProcessChat(chatsArray))
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
@@ -238,11 +254,72 @@ function loadMoreMessages() {
         .catch((error) => console.error(error));
 }
 
+function loadChatStatus(chatIds) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const raw = JSON.stringify({
+        "chatIds": chatIds
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+    };
+
+    fetch(loadStatusUrl, requestOptions)
+        .then((response) => response.json())
+        .then((response) => fillChatStatus(response.statuses))
+}
+
+function loadIsChatOrderMember(chatIds) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const raw = JSON.stringify({
+        "chatIds": chatIds,
+        "userId": context.userId
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+        redirect: "follow"
+    };
+
+    fetch(loadIsMemberUrl, requestOptions)
+        .then((response) => response.json())
+        .then((response) => markMyChats(response.statuses))
+}
+
+function postProcessChat(chatIds) {
+    if (chatIds === undefined || chatIds === null || chatIds.length === 0) {
+        return;
+    }
+    loadChatStatus(chatIds);
+    loadIsChatOrderMember(chatIds);
+}
+
 function processNewMessagesCount(count) {
     $("#nav-new-orders-tab-count").text(" (" + count.newOrders + ")");
     $("#nav-admin-tab-count").text(" (" + count.admin + ")");
     $("#nav-orders-tab-count").text(" (" + count.orders + ")");
     $("#nav-special-tab-count").text(" (" + count.special + ")");
+}
+
+function markMyChats(chatStatusArray) {
+    for (let chat of chatStatusArray) {
+        $(`#chat-${chat.id}`).addClass('bg-success-subtle')
+    }
+}
+
+function fillChatStatus(chatStatusArray) {
+    for (let chat of chatStatusArray) {
+        $(`#chat-${chat.id}-status`).prepend(createChatStatus(chat.status));
+    }
 }
 
 function clearChatsWindow() {
@@ -283,40 +360,67 @@ function showNotification(id, title, content) {
 }
 
 function createChatWindowElement(chatJson) {
-    let text_bg = chatJson.newMessageCount === 0 ? "bg-white" : "text-bg-primary";
+    let text_bg = chatJson.newMessageCount === 0 ? "text-bg-light" : "text-bg-primary";
+    let count = chatJson.newMessageCount === 0 ? "" : chatJson.newMessageCount;
     return `
     <li id="chat-${chatJson.id}" class="list-group-item d-flex justify-content-between align-items-start" onclick="onChatLoadBtnClick(${chatJson.id})">
         <div class="ms-2 me-auto main-font">
-            <div class="fw-bold">${chatJson.chatName}</div>
-            <p><span id="chat-${chatJson.id}-date">${chatJson.lastMessageDate}</span> <span id="chat-1-chat-id">(chat-id = ${chatJson.id})</span>
+            <div id="chat-${chatJson.id}-status">
+                <span class="fw-bold m-0">${chatJson.chatName}</span>
+            </div>
+            <p class="m-0 mt-1"><span id="chat-${chatJson.id}-date">${chatJson.lastMessageDate}</span> <span id="chat-1-chat-id">(chat-id = ${chatJson.id})</span>
             </p>
         </div>
-        <span id="chat-${chatJson.id}-new-msg-count" class="badge ${text_bg} rounded-pill">${chatJson.newMessageCount}</span>
+        <span id="chat-${chatJson.id}-new-msg-count" class="badge ${text_bg} rounded-pill">${count}</span>
     </li>`;
 }
 
 function createStatus(orderStatusName, orderId) {
-    let color = 'btn-secondary';
+    let color = 'text-bg-secondary';
     let orderStatusRus = "Создан/На распределении";
 
     if (orderStatusName === 'IN_PROGRESS') {
-        color = 'btn-primary';
+        color = 'text-bg-primary';
         orderStatusRus = "В работе";
     }
     if (orderStatusName === 'REVIEW') {
-        color = 'btn-info';
+        color = 'text-bg-info';
         orderStatusRus = "Проверка";
     }
     if (orderStatusName === 'FINALIZATION') {
-        color = 'btn-warning';
+        color = 'text-bg-warning';
         orderStatusRus = "Доработка";
     }
     if (orderStatusName === 'GUARANTEE' || orderStatusName === 'CLOSED') {
-        color = 'btn-success';
+        color = 'text-bg-success';
         orderStatusRus = "На гарантии/Завершён";
     }
 
-    return `<a class="btn ${color}" href="change-order-status/${orderId}" target="_blank">${orderStatusRus}</a>`;
+    return `<a class="badge ${color} p-2 p-sm-3" href="/change-order-status/${orderId}" target="_blank">${orderStatusRus}</a>`;
+}
+
+function createChatStatus(orderStatusName) {
+    let color = 'text-bg-secondary';
+    let orderStatusRus = "Создан/На распределении";
+
+    if (orderStatusName === 'IN_PROGRESS') {
+        color = 'text-bg-primary';
+        orderStatusRus = "В работе";
+    }
+    if (orderStatusName === 'REVIEW') {
+        color = 'text-bg-info';
+        orderStatusRus = "Проверка";
+    }
+    if (orderStatusName === 'FINALIZATION') {
+        color = 'text-bg-warning';
+        orderStatusRus = "Доработка";
+    }
+    if (orderStatusName === 'GUARANTEE' || orderStatusName === 'CLOSED') {
+        color = 'text-bg-success';
+        orderStatusRus = "На гарантии/Завершён";
+    }
+
+    return `<span class="badge ${color} p-2">${orderStatusRus}</span>`;
 }
 
 function createDates(datesArray) {
@@ -326,7 +430,7 @@ function createDates(datesArray) {
         if (date.time !== null) {
             dateText = dateText + " : " + date.time;
         }
-        str = str + `<li class="list-group-item">${dateText}</li>`
+        str = str + `<li class="list-group-item p-1 ps-3 pe-3">${dateText}</li>`
     }
     if (str.length === 0) {
         str = "Не назначено."
@@ -422,7 +526,7 @@ function createMessageElement(fromUserId, isSystemMessage, attachments, options,
     }
 
     return `
-        <div class="border p-2 mt-1 main-font ${additionalStyles}">
+        <div class="border p-2 mt-1 main-font fs-6 ${additionalStyles}">
             <p class="m-0 fw-bold ${textAlign}">${getUsername(fromUserId, isSystemMessage)} ${getUserToIdRole(fromUserId, isSystemMessage)}</p>
             <hr class="mt-1 mb-1"/>
             <pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${text}</pre>
@@ -526,6 +630,14 @@ function processNewSearchedChats(chatsArray) {
     hideLoadChatSpinner();
     updateChatsCache(chatsArray);
     appendChatsToChatsWindows(chatsArray);
+}
+
+function extractChatIds(chatArray) {
+    let ids = [];
+    for (let chat of chatArray) {
+        ids.push(chat.id);
+    }
+    return ids;
 }
 
 function processNewLoadedChats(chatsArray) {
@@ -637,8 +749,20 @@ function onChatLoadBtnClick(chatId) {
 
     clearMessagesWindow();
 
-    $(".bg-primary-subtle").removeClass("bg-primary-subtle")
-    $(`#chat-${chatId}`).addClass('bg-primary-subtle');
+    $(".border-select").removeClass("border-select")
+    $(".rounded-0").removeClass("rounded-0")
+    $(".border-end-0").removeClass("border-end-0")
+    $(".border-top-0").removeClass("border-top-0")
+    $(".border-bottom-0").removeClass("border-bottom-0")
+    $(".border-primary").removeClass("border-primary")
+
+    $(`#chat-${chatId}`).addClass('border-select');
+    $(`#chat-${chatId}`).addClass('rounded-0');
+    $(`#chat-${chatId}`).addClass('border-end-0');
+    $(`#chat-${chatId}`).addClass('border-top-0');
+    $(`#chat-${chatId}`).addClass('border-bottom-0');
+    $(`#chat-${chatId}`).addClass('border-primary');
+
     hideAdditionalOrderData();
     showChatNewMessagesSpinner()
 
@@ -662,6 +786,7 @@ function moveChatInChatWindowToFront(chatId) {
 function incNewMessageCount(chatId) {
     $(`#chat-${chatId}-new-msg-count`).removeClass("bg-white");
     $(`#chat-${chatId}-new-msg-count`).addClass("text-bg-primary");
+
     let text = $(`#chat-${chatId}-new-msg-count`).text();
 
     if (text === null || text === undefined || text === '') {
@@ -676,7 +801,6 @@ function incNewMessageCount(chatId) {
 function clearNewMessageCount(chatId) {
     $(`#chat-${chatId}-new-msg-count`).addClass("bg-white");
     $(`#chat-${chatId}-new-msg-count`).removeClass("text-bg-primary");
-
 
     $(`#chat-${chatId}-new-msg-count`).text('');
 }

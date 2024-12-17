@@ -47,6 +47,10 @@ public class FastChatService {
 
     private final LoadNewMessageCountQueryHandler newMessageCountQueryHandler;
 
+    private final LoadChatOrderStatusByIdsQueryHandler loadChatOrderStatusByIdsQueryHandler;
+
+    private final LoadIsChatOrderMemberByIdsQueryHandler loadIsChatOrderMemberByIdsQueryHandler;
+
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
         PreparedStatementSetter preparedStatementSetter = loadChatQueryHandler.getPreparedStatementSetter(loadChatRequestDto);
@@ -230,10 +234,6 @@ public class FastChatService {
         );
     }
 
-    private <T> List<T> emptyIfNull(List<T> list) {
-        return list == null ? Collections.emptyList() : list;
-    }
-
     public NewMessageCountResponseDto loadNewMessageCount(NewMessageCountRequestDto requestDto) {
 
         String query = newMessageCountQueryHandler.getQuery(requestDto.getUserId());
@@ -255,5 +255,33 @@ public class FastChatService {
             mapNullToZero.apply(map.get(ChatType.ORDER_CHAT.getName())),
             mapNullToZero.apply(map.get(ChatType.SPECIAL_CHAT.getName()))
         );
+    }
+
+    public LoadIsChatMemberResponseDto loadIsChatMember(LoadIsChatMemberRequestDto requestDto) {
+        String loadIsMember = loadIsChatOrderMemberByIdsQueryHandler.getQuery(requestDto);
+        PreparedStatementSetter loadAllPreparedStatementSetter = loadIsChatOrderMemberByIdsQueryHandler.getPreparedStatementSetter(requestDto);
+        RowMapper<LoadIsChatMemberResponseDto.IsChatMember> loadIsMemberRowMapper = loadIsChatOrderMemberByIdsQueryHandler.getRowMapper();
+
+        List<LoadIsChatMemberResponseDto.IsChatMember> loadAllChatsQuery = jdbcTemplate.query(loadIsMember, loadAllPreparedStatementSetter, loadIsMemberRowMapper);
+
+        return new LoadIsChatMemberResponseDto(
+            loadAllChatsQuery
+        );
+    }
+
+    public LoadChatsStatusResponseDto loadChatStatus(LoadChatsStatusRequestDto requestDto) {
+        String loadChatOrderStatus = loadChatOrderStatusByIdsQueryHandler.getQuery(requestDto);
+        PreparedStatementSetter loadAllPreparedStatementSetter = loadChatOrderStatusByIdsQueryHandler.getPreparedStatementSetter(requestDto);
+        RowMapper<LoadChatsStatusResponseDto.ChatStatus> loadChatOrderStatusRowMapper = loadChatOrderStatusByIdsQueryHandler.getRowMapper();
+
+        List<LoadChatsStatusResponseDto.ChatStatus> loadAllChatsQuery = jdbcTemplate.query(loadChatOrderStatus, loadAllPreparedStatementSetter, loadChatOrderStatusRowMapper);
+
+        return new LoadChatsStatusResponseDto(
+            loadAllChatsQuery
+        );
+    }
+
+    private <T> List<T> emptyIfNull(List<T> list) {
+        return list == null ? Collections.emptyList() : list;
     }
 }
