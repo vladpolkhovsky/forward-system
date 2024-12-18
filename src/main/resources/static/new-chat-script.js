@@ -166,7 +166,7 @@ function loadChatByIdOnNewMessage(chatId) {
             }
             return chatsArray
         })
-        .then((chatsArray) => postProcessChat(chatsArray))
+        .then((chatsArray) => postProcessChat(extractChatIds(chatsArray)))
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
