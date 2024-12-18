@@ -995,7 +995,7 @@ function processLoadedNotes(notesArray) {
 
 function createNoteItem(note) {
     let chatLink = "<p>Нет привязки к чату.</p>"
-    if (note.chatId && note.chatTab) {
+    if ((note.chatId === 0) || note.chatTab) {
         chatLink = `<p>Чат: <a href="/new-messenger?tab=${note.chatTab}&chatId=${note.chatId}">${note.chatName}</a></p>`
     }
 
