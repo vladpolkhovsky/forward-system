@@ -28,8 +28,8 @@
 <body id="id-body">
 <script src="/static/emoji.js"></script>
 <div th:insert="~{main/header :: header-div}"></div>
-<div class="container mt-3">
-    <div class="row main-font p-3">
+<div class="container-fluid main-font mt-3">
+    <div class="main-font p-2">
         <ul class="nav nav-underline">
             <li class="nav-item">
                 <a id="nav-new-orders-tab" class="nav-link" href="/new-messenger?tab=new-orders">Новые заказы<span
@@ -49,9 +49,11 @@
             </li>
         </ul>
     </div>
-    <hr/>
+    <hr class="m-0"/>
+</div>
+<div class="container-fluid mt-3 ps-3 pe-3">
     <div class="row mt-3">
-        <div class="col-12 col-md-5 mb-4">
+        <div class="col-12 col-sm-7 col-md-5 col-lg-4 col-xl-4 mb-4">
             <div class="input-group">
                 <input id="search-input" type="text" class="form-control" placeholder="Поиск в чате">
                 <button id="search-input-clear" class="btn btn-outline-secondary" type="button"
@@ -78,7 +80,7 @@
             <hr/>
             <a id="view-all-message-in-tab" href="/new-messenger-all-viewed">Отметить все как прочитанные</a>
         </div>
-        <div class="col-12 col-md-7">
+        <div class="col-12 col-sm-5 col-md-7 col-lg-8 col-xl-8 mb-4">
             <div id="chat-windows" class="card fs-6">
                 <div class="card-header fw-bold main-font">
                     <p id="chat-name" class="m-0">Выберите чат для загрузки</p>
@@ -122,18 +124,18 @@
                     <div id="messages-window">
                     </div>
                 </div>
-                <div id="message-div" class="row p-3">
-                    <div class="col-12 col-sm-8 mt-2">
+                <div id="message-div" class="row p-3 mt-2">
+                    <div class="col-12 col-lg-8">
                         <textarea id="message-area" class="form-control" rows="7"
                                   style="min-height: 100%; min-width: 100%" data-emoji-picker="true"></textarea>
                     </div>
-                    <div class="col-12 col-sm-4 mt-2">
+                    <div class="col-12 col-lg-4 d-flex flex-column justify-content-center">
                         <div class="input-group input-group-lg">
                             <input id="file-area" type="file" class="form-control col-6 col-sm-12 mt-2">
                         </div>
                         <div id="loaded-file-area" class="mt-2 mb-1"></div>
-                        <div class="row">
-                            <button id="send-btn" class="btn btn-primary col-6 col-sm-12 mt-2" onclick="sendMessage()">
+                        <div class="row mt-2">
+                            <button id="send-btn" class="btn btn-primary col-12 col-sm-12" onclick="sendMessage()">
                                 Отправить
                             </button>
                         </div>

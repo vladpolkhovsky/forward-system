@@ -784,7 +784,7 @@ function moveChatInChatWindowToFront(chatId) {
 }
 
 function incNewMessageCount(chatId) {
-    $(`#chat-${chatId}-new-msg-count`).removeClass("bg-white");
+    $(`#chat-${chatId}-new-msg-count`).removeClass("text-bg-light");
     $(`#chat-${chatId}-new-msg-count`).addClass("text-bg-primary");
 
     let text = $(`#chat-${chatId}-new-msg-count`).text();
