@@ -6,6 +6,11 @@ context.loadNewMessagesCount = 30;
 context.chatsCache = {};
 context.chatsQueue = [];
 
+const loadNotesUrl = "/api/new-chat/notes/" + context.userId;
+const createNoteUrl = "/api/new-chat/notes/" + context.userId + "/new";
+const updateNoteUrl = "/api/new-chat/notes/" + context.userId + "/";
+const deleteNoteUrl = "/api/new-chat/notes/" + context.userId + "/";
+
 const loadNewChatsUrl = '/api/new-chat/chats';
 const loadStatusUrl = '/api/new-chat/load-order-status';
 const loadIsMemberUrl = '/api/new-chat/load-order-member';
@@ -31,6 +36,7 @@ const mainWindow = document.getElementById("id-body");
 function getUrlParam(paramName) {
     let searchParams = new URLSearchParams(window.location.search);
     let isTabExists = searchParams.has(paramName);
+
     if (isTabExists) {
         return searchParams.get(paramName);
     } else {
@@ -52,6 +58,82 @@ function getTab() {
 
 function activateTab() {
     $(`#nav-${context.chatTab}-tab`).addClass('active')
+}
+
+function loadNoteByUser() {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow"
+    };
+
+    fetch(loadNotesUrl, requestOptions)
+        .then((response) => response.json())
+        .then((result) => processLoadedNotes(result))
+        .catch((error) => alert("Произошла ошибка загрузки заметок. " + JSON.stringify(error)));
+}
+
+function loadSaveNote(noteChatId, noteText) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const rawJson = JSON.stringify({
+        "chatId": noteChatId,
+        "text": noteText
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: rawJson,
+        redirect: "follow"
+    };
+
+    fetch(createNoteUrl, requestOptions)
+        .then((response) => response.json())
+        .then((result) => processLoadedNotes(result))
+        .catch((error) => alert("Произошла ошибка загрузки заметок. " + JSON.stringify(error)));
+}
+
+function loadUpdateNote(noteId, noteText) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const rawJson = JSON.stringify({
+        "id": noteId,
+        "text": noteText
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: rawJson,
+        redirect: "follow"
+    };
+
+    fetch(updateNoteUrl + noteId, requestOptions)
+        .then((response) => response.json())
+        .then((result) => processLoadedNotes(result))
+        .catch((error) => alert("Произошла ошибка загрузки заметок. " + JSON.stringify(error)));
+}
+
+function loadDeleteNote(noteId) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const requestOptions = {
+        method: "DELETE",
+        headers: myHeaders,
+        redirect: "follow"
+    };
+
+    fetch(deleteNoteUrl + noteId, requestOptions)
+        .then((response) => response.json())
+        .then((result) => processLoadedNotes(result))
+        .catch((error) => alert("Произошла ошибка загрузки заметок. " + JSON.stringify(error)));
 }
 
 function searchForChat(searchText) {
@@ -368,7 +450,10 @@ function createChatWindowElement(chatJson) {
             <div id="chat-${chatJson.id}-status">
                 <span class="fw-bold m-0">${chatJson.chatName}</span>
             </div>
-            <p class="m-0 mt-1"><span id="chat-${chatJson.id}-date">${chatJson.lastMessageDate}</span> <span id="chat-1-chat-id">(chat-id = ${chatJson.id})</span>
+            <p class="m-0 mt-1">
+                <span id="chat-${chatJson.id}-date" class="me-2">${chatJson.lastMessageDate}</span>
+                <span id="chat-1-chat-id" class="me-2">(chat-id = ${chatJson.id})</span>
+                <button type="button" class="btn btn-primary me-2 p-1" data-bs-toggle="modal" data-bs-target="#show-create-note-modal" onclick="updateNote(null, ${chatJson.id}, '${chatJson.chatName}', null)">&#9997;</button>
             </p>
         </div>
         <span id="chat-${chatJson.id}-new-msg-count" class="badge ${text_bg} rounded-pill">${count}</span>
@@ -438,8 +523,13 @@ function createDates(datesArray) {
     return `<ul class="list-group">${str}</ul>`
 }
 
-function formatChatHeader(chatName, orderInfo) {
+function formatChatHeader(chatId, chatName, orderInfo) {
     chatTitle.innerText = chatName;
+
+    $("#note-chat-header").empty();
+    $("#note-chat-header").removeClass("d-none");
+    $("#note-chat-header").append(`<button class="p-1 btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#show-notes-modal" onclick="loadNotes(${chatId})">&#128203;</button>`);
+
     if (orderInfo !== null) {
         techNumber.innerText = orderInfo.techNumber;
         workType.innerText = orderInfo.workType;
@@ -608,7 +698,7 @@ function processLoadChatInfo(chatInfoJson) {
     hideChatNewMessagesSpinner();
     showMessageLoadMoreBtn();
 
-    formatChatHeader(chatInfoJson.chatName, chatInfoJson.order);
+    formatChatHeader(chatInfoJson.chatId, chatInfoJson.chatName, chatInfoJson.order);
 
     buildChatTable(chatInfoJson);
     prependChatMessages(chatInfoJson.messages);
@@ -621,7 +711,7 @@ function processLoadChatInfo(chatInfoJson) {
 
     chatWindow.scroll(0, chatWindow.scrollHeight);
     mainWindow.scroll(0, mainWindow.scrollHeight);
-    
+
     sendMessageViewed();
     clearNewMessageCount(chatInfoJson.chatId);
 }
@@ -803,4 +893,131 @@ function clearNewMessageCount(chatId) {
     $(`#chat-${chatId}-new-msg-count`).removeClass("text-bg-primary");
 
     $(`#chat-${chatId}-new-msg-count`).text('');
+}
+
+function clearNote() {
+    $("#note-id").val(null);
+    $("#note-chat-id").val(null);
+    $("#note-chat-name").val(null);
+    $("#note-text").val(null);
+}
+
+function updateNoteById(noteId) {
+    updateNote(context.notes[noteId].id, context.notes[noteId].chatId, context.notes[noteId].chatName, context.notes[noteId].text)
+}
+
+function updateNote(noteId, chatId, chatName, noteText) {
+    clearNote();
+
+    $("#note-id").val(noteId);
+    $("#note-chat-id").val(chatId);
+    $("#note-chat-name").val(chatName);
+    $("#note-text").val(noteText);
+}
+
+function deleteNote(noteId) {
+    let isOk = confirm("Удалить заметку?");
+
+    if (!isOk) {
+        return;
+    }
+
+    $("#notes-content").empty();
+    $("#notes-loader-spin").removeClass("d-none");
+
+    loadDeleteNote(noteId)
+}
+
+function saveNote() {
+    let noteId = $("#note-id").val();
+    let noteChatId = $("#note-chat-id").val();
+    let noteText = $("#note-text").val();
+
+    if (noteId && noteId.length > 0) {
+        noteId = parseInt(noteId);
+    } else {
+        noteId = null;
+    }
+
+    if (noteChatId && noteChatId.length > 0) {
+        noteChatId = parseInt(noteChatId);
+    } else {
+        noteChatId = null;
+    }
+
+    if (!(noteText && noteText.length > 0)) {
+        noteText = null;
+    }
+
+    $("#notes-content").empty();
+    $("#notes-loader-spin").removeClass("d-none");
+
+    if (noteId != null) {
+        loadUpdateNote(noteId, noteText);
+    } else {
+        loadSaveNote(noteChatId, noteText);
+    }
+}
+
+function loadNotes(filterChatId) {
+    context.notesFilterChatId = filterChatId;
+
+    $("#notes-content").empty();
+    $("#notes-loader-spin").removeClass("d-none");
+
+    loadNoteByUser();
+}
+
+function processLoadedNotes(notesArray) {
+    let filteredNotes = [];
+    for (let note of notesArray) {
+        if (context.notesFilterChatId === null || context.notesFilterChatId === undefined) {
+            filteredNotes.push(note);
+            continue;
+        }
+        if (note.chatId === context.notesFilterChatId) {
+            filteredNotes.push(note);
+        }
+    }
+
+    if (filteredNotes.length === 0) {
+        $("#notes-content").append(`<p class="fs-4 text-center">Нет заметок.</p>`)
+    }
+
+    context.notes = {};
+    for (let note of filteredNotes) {
+        context.notes[note.id] = note;
+        $("#notes-content").append(createNoteItem(note))
+    }
+
+    $("#notes-loader-spin").addClass("d-none");
+}
+
+function createNoteItem(note) {
+    let chatLink = "<p>Нет привязки к чату.</p>"
+    if (note.chatId && note.chatTab) {
+        chatLink = `<p>Чат: <a href="/new-messenger?tab=${note.chatTab}&chatId=${note.chatId}">${note.chatName}</a></p>`
+    }
+
+    let noteText = "<i>Нет текста заметки</i>"
+    if (note.text && note.text.length > 0) {
+        noteText = `<pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${note.text}</pre>`;
+    }
+
+    return `
+        <div class="row">
+            <div class="col-12 mb-2 d-flex justify-content-between">
+                <div>
+                    <i>Заметка от ${note.createdAt}</i>
+                </div>
+                <div>
+                    <button type="button" class="btn btn-primary me-2 p-1" data-bs-toggle="modal" data-bs-target="#show-create-note-modal" onclick="updateNoteById(${note.id})">&#9997;</button>
+                    <button type="button" class="btn btn-danger p-1" onclick="deleteNote(${note.id})">&#128465;</button>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">${chatLink}</div>
+            <div class="col-12 col-md-8">${noteText}</div>
+            <hr class="m-0 mt-2 mb-2">
+        </div>
+    `
 }

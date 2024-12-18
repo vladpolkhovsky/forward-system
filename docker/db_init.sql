@@ -586,4 +586,13 @@ create table if not exists forward_system.payment_files
 );
 
 alter table forward_system.payment
-    alter column payment_number type varchar(2048)
+    alter column payment_number type varchar(2048);
+
+create table if not exists forward_system.chat_notes
+(
+    id         bigint primary key,
+    chat_id    bigint references forward_system.chats (id),
+    user_id    bigint    not null references forward_system.users (id),
+    text       varchar(5000),
+    created_at timestamp not null
+)

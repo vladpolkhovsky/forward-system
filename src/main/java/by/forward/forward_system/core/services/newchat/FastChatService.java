@@ -6,6 +6,10 @@ import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatM
 import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatMessageDto;
 import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatMessageOptionDto;
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.jpa.model.ChatNoteEntity;
+import by.forward.forward_system.core.jpa.repository.ChatNoteRepository;
+import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.newchat.handlers.*;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -13,13 +17,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Function;
 
 @Service
 @AllArgsConstructor
 public class FastChatService {
+
+    private static final DateTimeFormatter dateTimeFormatterSmallDate = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -50,6 +59,10 @@ public class FastChatService {
     private final LoadChatOrderStatusByIdsQueryHandler loadChatOrderStatusByIdsQueryHandler;
 
     private final LoadIsChatOrderMemberByIdsQueryHandler loadIsChatOrderMemberByIdsQueryHandler;
+
+    private final ChatNoteRepository chatNoteRepository;
+
+    private final ChatRepository chatRepository;
 
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
@@ -281,7 +294,67 @@ public class FastChatService {
         );
     }
 
+    public List<ChatNoteDto> loadAllChatNotes(Long userId) {
+        List<ChatNoteEntity> chatNotes = chatNoteRepository.findAllByUserId(userId);
+
+        List<Long> chatNotesChatIds = chatNotes.stream().map(ChatNoteEntity::getChatId).filter(Objects::nonNull).toList();
+
+        List<ChatProjection> chatsProjection = chatRepository.findChatsProjection(chatNotesChatIds);
+
+        HashMap<Long, String> chatIdToChatTab = new HashMap<>();
+        HashMap<Long, String> chatIdToChatName = new HashMap<>();
+        for (ChatProjection chatProjection : chatsProjection) {
+            chatIdToChatTab.put(chatProjection.getId(), chatTabToChatTypeService.getChatTabByType(chatProjection.getType()));
+            chatIdToChatName.put(chatProjection.getId(), chatProjection.getChatName());
+        }
+
+        return chatNotes.stream().map(t -> {
+            ChatNoteDto chatNoteDto = new ChatNoteDto();
+            chatNoteDto.setId(t.getId());
+            chatNoteDto.setChatId(t.getChatId());
+            chatNoteDto.setChatName(chatIdToChatName.get(t.getChatId()));
+            chatNoteDto.setChatTab(chatIdToChatTab.get(t.getChatId()));
+            chatNoteDto.setText(t.getText());
+            chatNoteDto.setCreatedAt(dateTimeFormatterSmallDate.format(t.getCreatedAt()));
+            return chatNoteDto;
+        }).toList();
+    }
+
+    @Transactional
+    public List<ChatNoteDto> updateChatNote(Long userId, Long noteId, ChatNoteDto dto) {
+        ChatNoteEntity chatNote = chatNoteRepository.findById(noteId).orElseThrow(() -> new RuntimeException("Note not found"));
+
+        chatNote.setText(dto.getText());
+        chatNote.setCreatedAt(LocalDateTime.now());
+
+        chatNoteRepository.save(chatNote);
+
+        return loadAllChatNotes(userId);
+    }
+
+    @Transactional
+    public List<ChatNoteDto> deleteChatNote(Long userId, Long noteId) {
+        chatNoteRepository.findById(noteId).ifPresent(chatNoteRepository::delete);
+
+        return loadAllChatNotes(userId);
+    }
+
+    @Transactional
+    public List<ChatNoteDto> createNote(Long userId, ChatNoteDto chatNoteDto) {
+        ChatNoteEntity chatNote = new ChatNoteEntity();
+
+        chatNote.setChatId(chatNoteDto.getChatId());
+        chatNote.setText(chatNoteDto.getText());
+        chatNote.setUserId(userId);
+        chatNote.setCreatedAt(LocalDateTime.now());
+
+        chatNoteRepository.save(chatNote);
+
+        return loadAllChatNotes(userId);
+    }
+
     private <T> List<T> emptyIfNull(List<T> list) {
         return list == null ? Collections.emptyList() : list;
     }
+
 }

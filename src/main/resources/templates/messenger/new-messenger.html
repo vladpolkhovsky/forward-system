@@ -53,14 +53,17 @@
 </div>
 <div class="container-fluid mt-3 ps-3 pe-3">
     <div class="row mt-3">
-        <div class="col-12 col-sm-7 col-md-5 col-lg-4 col-xl-4 mb-4">
-            <div class="input-group">
+        <div class="col-12 col-md-5 col-lg-4 col-xl-4 mb-4">
+            <div class="input-group mb-3">
                 <input id="search-input" type="text" class="form-control" placeholder="Поиск в чате">
                 <button id="search-input-clear" class="btn btn-outline-secondary" type="button"
                         onclick="onSearchBarClearBtnClick()">&#10060;
                 </button>
                 <button id="search-input-search" class="btn btn-outline-secondary" type="button"
                         onclick="onSearchBarBtnClick()">&#128269;
+                </button>
+                <button type="button" class="ms-2 btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#show-notes-modal" onclick="loadNotes(null)">
+                    &#128203;
                 </button>
             </div>
             <div style="min-height: 600px; max-height: 600px; overflow: scroll">
@@ -80,10 +83,11 @@
             <hr/>
             <a id="view-all-message-in-tab" href="/new-messenger-all-viewed">Отметить все как прочитанные</a>
         </div>
-        <div class="col-12 col-sm-5 col-md-7 col-lg-8 col-xl-8 mb-4">
+        <div class="col-12 col-md-7 col-lg-8 col-xl-8 mb-4">
             <div id="chat-windows" class="card fs-6">
                 <div class="card-header fw-bold main-font">
-                    <p id="chat-name" class="m-0">Выберите чат для загрузки</p>
+                    <span id="chat-name" class="m-0 me-2">Выберите чат для загрузки</span>
+                    <span id="note-chat-header" class="d-none"></span>
                 </div>
                 <div id="chat-additional-info" class="row p-2 main-font">
                     <div class="col-6 mt-0 d-flex align-items-center">
@@ -91,7 +95,6 @@
                             <span class="fw-bold text-nowrap">Номер ТЗ: </span>
                             <span class="ms-1 text-nowrap" id="additional-tech-number"></span>
                         </a>
-<!--                        <span class="ms-1 text-nowrap"><a target="_blank" href="#">(открыть ТЗ)</a></span>-->
                     </div>
                     <div class="col-6 mt-0 d-flex justify-content-center d-sm-block"><span id="additional-order-status"><button
                             class="btn btn-success">В работе</button></span></div>
@@ -144,6 +147,61 @@
             </div>
         </div>
     </div>
+
+    <!--Модалка просмотра всех заметок-->
+    <div class="modal fade" id="show-notes-modal" tabindex="-1" aria-labelledby="show-notes-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="show-notes-modal-title">Просмотр всех заметок.</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="show-notes-modal-body">
+                    <div class="container-fluid" id="notes-content">
+
+                    </div>
+                    <div id="notes-loader-spin" class="d-flex justify-content-center mt-2">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show-create-note-modal" onclick="clearNote()">Создать заметку без привязки к чату</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Модалка создания заметок-->
+    <div class="modal fade" id="show-create-note-modal" tabindex="-1" aria-labelledby="show-create-note-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="show-create-note-title">Создание / изменение заметки.</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="show-create-note-modal-body">
+                    <input disabled hidden id="note-id" />
+                    <input disabled hidden id="note-chat-id" />
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Чат</span>
+                        <input disabled type="text" class="form-control" id="note-chat-name" placeholder="Не назначен.">
+                    </div>
+                    <div class="mb-3">
+                        <label for="note-text" class="form-label">Текс заметки.</label>
+                        <textarea class="form-control" id="note-text" style="min-height: 300px; height: 80%"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show-notes-modal" onclick="saveNote()">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 <div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3">

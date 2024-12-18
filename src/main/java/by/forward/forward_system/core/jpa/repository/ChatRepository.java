@@ -28,6 +28,9 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
     @Query(nativeQuery = true, value = "select chat.id, chat.chat_name, chat.type, chat.last_message_date from forward_system.chats chat")
     List<ChatProjection> findAllChatsProjection();
 
+    @Query(nativeQuery = true, value = "select chat.id, chat.chat_name, chat.type, chat.last_message_date from forward_system.chats chat where chat.id in :chatIds")
+    List<ChatProjection> findChatsProjection(List<Long> chatIds);
+
     @Query(nativeQuery = true, value = "select chat.* from forward_system.chats chat " +
         "left join forward_system.chat_members chat_members on chat.id = chat_members.chat_id " +
         "where chat_members.user_id = :userId order by chat.last_message_date desc")

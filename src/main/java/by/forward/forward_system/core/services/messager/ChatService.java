@@ -45,6 +45,7 @@ public class ChatService {
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatTabToChatTypeService chatTabToChatTypeService;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
+    private final ChatNoteRepository chatNoteRepository;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -250,6 +251,9 @@ public class ChatService {
 
     @Transactional
     public void deleteChat(Long chatId) {
+        List<ChatNoteEntity> allByChatId = chatNoteRepository.findAllByChatId(chatId);
+        chatNoteRepository.deleteAll(allByChatId);
+
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
         chatMemberRepository.deleteAll(chatEntity.getChatMembers());
 

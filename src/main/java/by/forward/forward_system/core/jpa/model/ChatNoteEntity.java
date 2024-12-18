@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
-@Table(name = "chat_metadata", schema = "forward_system")
+@Table(name = "chat_notes", schema = "forward_system")
 public class ChatNoteEntity {
 
     @Id
@@ -18,7 +20,13 @@ public class ChatNoteEntity {
     @Column(name = "chat_id")
     private Long chatId;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
+
+    @Column(name = "text", length = 5000)
+    private String text;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
 }
