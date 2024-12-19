@@ -15,7 +15,7 @@
     <form th:action="@{/login}" method="post">
         <div class="row mt-5">
             <div th:if="${param.error}" class="alert alert-danger" role="alert">
-                Возможные причины ошибки: <strong>неправльное имя пользователя, неправильный пароль, аккаунт заблокирован.</strong> Уточняйте у администратора.
+                Возможные причины ошибки: <strong>неправильное имя пользователя, неправильный пароль, аккаунт заблокирован.</strong> Уточняйте у администратора.
             </div>
             <div th:if="${param.logout}" class="alert alert-primary" role="alert">
                 Вы вышли из системы
