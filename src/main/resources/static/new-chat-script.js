@@ -265,6 +265,7 @@ function sendMessageViewed() {
 
     fetch(`/api/messenger/message-viewed/${context.chatId}/${context.userId}`, requestOptions)
         .then((response) => response.text())
+        .then(() => loadNewMessageInfo())
         .catch((error) => alert("Произошла ошибка загрузки чатов. " + JSON.stringify(error)));
 }
 
