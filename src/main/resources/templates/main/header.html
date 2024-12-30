@@ -4,7 +4,9 @@
     <div class="container">
         <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start p-3 mb-4" style="min-height: 95px">
             <ul class="nav col-12 col-lg-7 mb-2 justify-content-center justify-content-lg-start mb-md-0 align-items-center">
-                <li id="mem" class="d-none"><img class="rounded-3" src="/static/header-name.png"
+                <li id="mem" class="d-none"><img class="rounded-3 me-3" src="/static/header-name.png"
+                                                 style="height: 95px; width: 95px"/></li>
+                <li id="tree"><img class="rounded-3 me-3" src="/static/tree.gif"
                                                  style="height: 95px; width: 95px"/></li>
                 <li><a th:href="@{/main}" class="nav-link px-2 link-primary fw-medium text-dark">Главное меню</a></li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
@@ -36,7 +38,7 @@
 
         let random = getRandomInt(100);
 
-        if (random < 5) {
+        if (random < 2) {
             mem.classList.remove("d-none");
         }
 
