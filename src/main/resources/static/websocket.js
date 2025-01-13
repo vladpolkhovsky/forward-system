@@ -1,5 +1,10 @@
 function connectToWebSocket(onError) {
-    const brokerUrl = 'ws://' + window.location.host + '/ws'
+    let prefix = "ws:";
+    if (window.location.protocol === 'https:') {
+        prefix = "wss:";
+    }
+
+    const brokerUrl = prefix + '//' + window.location.host + '/ws'
 
     const stompClient = new StompJs.Client({
         brokerURL: brokerUrl
@@ -35,7 +40,7 @@ function connectToStompJs(wsStomp) {
         wsStomp.deactivate();
     }
 
-    const brokerUrl = 'http://' + window.location.host + '/sockjs'
+    const brokerUrl = window.location.protocol + '//' + window.location.host + '/sockjs'
 
     function mySocketFactory() {
         return new SockJS(brokerUrl);

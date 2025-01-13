@@ -1,8 +1,10 @@
 services:
-  app:
+
+  app-server:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
+    container_name: app-server
     env_file:
       - .env
     restart: always
@@ -11,6 +13,8 @@ services:
     profiles:
       - production
       - yandex
+    networks:
+      - nginx-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -38,6 +42,8 @@ services:
       LETSENCRYPT: true
       LE_EMAIL: ${LE_EMAIL}
       LE_FQDN: ${LE_DOMAIN}
+    networks:
+      - nginx-net
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -69,3 +75,7 @@ services:
     profiles:
       - dependency
       - production
+
+networks:
+  nginx-net:
+    driver: bridge
