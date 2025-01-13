@@ -14,6 +14,33 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  nginx:
+    image: umputun/nginx-le:latest
+    hostname: nginx
+    restart: always
+    container_name: nginx
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    volumes:
+      - ./etc/ssl:/etc/nginx/ssl
+      - ./etc/service.conf:/etc/nginx/service.conf
+    ports:
+      - "80:80"
+      - "443:443"
+    profiles:
+      - production
+      - yandex
+    environment:
+      TZ: Europe/Moscow
+      LETSENCRYPT: true
+      LE_EMAIL: ${LE_EMAIL}
+      LE_FQDN: ${LE_DOMAIN}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   postgres-db:
     image: postgres
     restart: always
