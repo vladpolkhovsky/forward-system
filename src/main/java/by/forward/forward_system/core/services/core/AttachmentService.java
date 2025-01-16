@@ -61,10 +61,10 @@ public class AttachmentService {
 
     @SneakyThrows
     public AttachmentEntity saveAttachment(String filenameRaw, byte[] content) {
-        String filename = filenameRaw.replaceAll("\\s+", "_");
+        String filename = filenameRaw.trim().replaceAll("\\s+", "_");
 
         UUID fileUUID = UUID.randomUUID();
-        String filepath = fileUUID + "_" + filename;
+        String filepath = fileUUID + "___" + filename;
         Path filePath = Path.of(filesDerictoryPath.toString(), filepath);
 
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName,
