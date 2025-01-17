@@ -2,6 +2,11 @@
 
 <div th:fragment="header-div" style="background: linear-gradient(var(--p-angle), rgba(7,231,169,0.65) var(--p-a), rgba(240,var(--p-c-g),171,0.60) var(--p-b), rgba(110,177,220,0.80) var(--p-c));">
     <div class="container">
+
+        <div id="new-domain" class="p-2 alert alert-danger d-none" role="alert">
+            <p class="ms-2 me-2 mt-1 mb-1 text-center ">Вы используете старую ссылку. У сайта появился защищённый домен. Ссылка на новый домен: <a th:href="|https://| + @{__${@siteDomain}__}" th:text="@{__${@siteDomain}__}" target="_self"></a>!</p>
+        </div>
+
         <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start p-3 mb-4" style="min-height: 95px">
             <ul class="nav col-12 col-lg-7 mb-2 justify-content-center justify-content-lg-start mb-md-0 align-items-center">
                 <li id="mem" class="d-none"><img class="rounded-3 me-3" src="/static/header-name.png"
@@ -34,6 +39,10 @@
 
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
+        }
+
+        if (window.location.host !== 'writer-link.by') {
+            document.getElementById("new-domain").classList.remove("d-none");
         }
 
         let random = getRandomInt(100);

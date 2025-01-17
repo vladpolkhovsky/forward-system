@@ -28,6 +28,9 @@ public class AppConfig {
     @Value("${telegram.bot_token}")
     private String botToken;
 
+    @Value("${site.domain}")
+    private String siteDomain;
+
     @Bean("telegramToken")
     public String telegramToken() {
         return botToken;
@@ -41,6 +44,11 @@ public class AppConfig {
     @Bean("newMsgCount")
     public MessageCounter newMsgCount(@Autowired MessageRepository messageRepository, @Autowired UserUiService userUiService) {
         return new MessageCounter(messageRepository, userUiService);
+    }
+
+    @Bean("siteDomain")
+    public String siteDomain() {
+        return siteDomain;
     }
 
     @Bean
