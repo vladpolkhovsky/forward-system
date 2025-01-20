@@ -9,9 +9,9 @@
 
         <header class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start p-3 mb-4" style="min-height: 95px">
             <ul class="nav col-12 col-lg-7 mb-2 justify-content-center justify-content-lg-start mb-md-0 align-items-center">
-                <li id="mem" class="d-none"><img class="rounded-3 me-3" src="/static/header-name.png"
+                <li id="mem" class="d-none"><img id="mem-img" class="rounded-3 me-3"
                                                  style="height: 95px; width: 95px"/></li>
-                <li id="tree"><img class="rounded-3 me-3" src="/static/tree.gif"
+                <li id="tree" class="d-none"><img class="rounded-3 me-3" src="/static/tree.gif"
                                                  style="height: 95px; width: 55px"/></li>
                 <li><a th:href="@{/main}" class="nav-link px-2 link-primary fw-medium text-dark">Главное меню</a></li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
@@ -36,6 +36,14 @@
 
     <script>
         let mem = document.getElementById("mem");
+        let memImg = document.getElementById("mem-img");
+        let memUrls = [
+            '/static/header-mem-0.png',
+            '/static/header-mem-1.gif',
+            '/static/header-mem-1.gif',
+            '/static/header-mem-2.gif',
+            '/static/header-mem-2.gif'
+        ]
 
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
@@ -47,7 +55,9 @@
 
         let random = getRandomInt(100);
 
-        if (random < 2) {
+        if (random <= 5) {
+            let memUrl = memUrls[getRandomInt(memUrls.length)];
+            memImg.setAttribute("src", memUrl);
             mem.classList.remove("d-none");
         }
 
