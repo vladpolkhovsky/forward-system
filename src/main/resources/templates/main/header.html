@@ -35,6 +35,10 @@
     </div>
 
     <script>
+        function getRandomInt(max) {
+            return Math.floor(Math.random() * max);
+        }
+
         let mem = document.getElementById("mem");
         let memImg = document.getElementById("mem-img");
         let memUrls = [
@@ -42,23 +46,26 @@
             '/static/header-mem-1.gif',
             '/static/header-mem-1.gif',
             '/static/header-mem-2.gif',
-            '/static/header-mem-2.gif'
+            '/static/header-mem-2.gif',
+            '/static/header-mem-3.gif',
+            '/static/header-mem-3.gif',
+            '/static/header-mem-4.gif',
+            '/static/header-mem-4.gif',
         ]
 
-        function getRandomInt(max) {
-            return Math.floor(Math.random() * max);
-        }
-
-        if (window.location.host !== 'writer-link.by') {
-            document.getElementById("new-domain").classList.remove("d-none");
-        }
-
-        let random = getRandomInt(100);
-
-        if (random <= 5) {
+        function showMem(isShowMem) {
+            if (!isShowMem) {
+                return;
+            }
             let memUrl = memUrls[getRandomInt(memUrls.length)];
             memImg.setAttribute("src", memUrl);
             mem.classList.remove("d-none");
+        }
+
+        showMem(getRandomInt(100) <= 5)
+
+        if (window.location.host !== 'writer-link.by') {
+            document.getElementById("new-domain").classList.remove("d-none");
         }
 
         let time = +(new Date() / 7000);

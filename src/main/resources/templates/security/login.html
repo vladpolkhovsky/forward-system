@@ -29,8 +29,8 @@
                 <div class="text-center">
                     <i>Вам повезло увидеть эту картинку! Повезёт и в работе!</i>
                 </div>
-                <div>
-                    <img src="/static/login-mem.png" class="img-fluid rounded-3" style="height: 350px"/>
+                <div class="text-center">
+                    <img id="mem-img" class="img-fluid rounded-3" style="height: 350px"/>
                 </div>
             </div>
         </div>
@@ -53,16 +53,27 @@
     </form>
     <script>
         let mem = document.getElementById("mem");
+        let memImg = document.getElementById("mem-img");
+        let memUrls = [
+            '/static/login-mem-0.gif',
+            '/static/login-mem-1.png',
+            '/static/login-mem-2.gif'
+        ]
 
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
         }
 
-        let random = getRandomInt(100);
-
-        if (random < 5) {
+        function showMem(isShowMem) {
+            if (!isShowMem) {
+                return;
+            }
+            let memUrl = memUrls[getRandomInt(memUrls.length)];
+            memImg.setAttribute("src", memUrl);
             mem.classList.remove("d-none");
         }
+
+        showMem(getRandomInt(100) <= 15)
     </script>
 </div>
 </body>
