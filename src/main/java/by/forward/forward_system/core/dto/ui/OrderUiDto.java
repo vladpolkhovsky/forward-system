@@ -29,6 +29,7 @@ public class OrderUiDto {
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;
     private String other;
+    private String violationsInformation;
     private Integer takingCost;
     private Integer authorCost;
     private LocalDateTime createdAt;

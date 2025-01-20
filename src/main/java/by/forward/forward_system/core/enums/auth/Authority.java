@@ -13,6 +13,7 @@ public enum Authority implements GrantedAuthority {
     HR("HR", "HR"),
     AUTHOR("AUTHOR", "Автор"),
     BANNED("BANNED", "Заблокирован"),
+    DELETED("DELETED", "Удалён"),
     ACCOUNTANT("ACCOUNTANT", "Бухгалтер"),
 
     ;

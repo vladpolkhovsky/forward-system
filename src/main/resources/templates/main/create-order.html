@@ -125,16 +125,40 @@
                         <textarea id="other" class="form-control" th:field="*{other}" rows="5"></textarea>
                     </div>
                 </div>
+
                 <div class="mb-3 mt-3 row">
-                    <label for="takingCost" class="col-sm-2 col-form-label">Стоимость взятия<strong class="text-danger">*</strong></label>
+                    <label for="takingCost" class="col-sm-2 col-form-label">Стоимость взятия</label>
                     <div class="col-sm-10">
-                        <input required id="takingCost" type="number" class="form-control" th:field="*{takingCost}">
+                        <input id="takingCost" type="number" class="form-control" th:field="*{takingCost}">
                     </div>
                 </div>
+
                 <div class="mb-3 mt-3 row">
                     <label for="authorCost" class="col-sm-2 col-form-label">Стоимость для автора<strong class="text-danger">*</strong></label>
                     <div class="col-sm-10">
                         <input required id="authorCost" type="number" class="form-control" th:field="*{authorCost}">
+                    </div>
+                </div>
+
+                <div class="mb-3 mt-3 row">
+                    <label for="violationsInformation" class="col-12 col-sm-2 col-form-label">Штрафы</label>
+                    <div class="col-12 col-sm-10 col-md-8 mb-2">
+                        <textarea id="violationsInformation" class="form-control" th:field="*{violationsInformation}" rows="5"></textarea>
+                    </div>
+                    <div class="col-12 col-md-2">
+                        <div class="form-check">
+                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceLow" value="low" checked>
+                            <label class="form-check-label" for="orderImportanceLow"><span class="badge rounded-pill text-bg-success">Не срочный заказ</span></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceMedium" value="medium">
+                            <label class="form-check-label" for="orderImportanceMedium"><span class="badge rounded-pill text-bg-warning">Срочный заказ</span></label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceHigh" value="high">
+                            <label class="form-check-label" for="orderImportanceHigh"><span class="badge rounded-pill text-bg-danger">Очень срочный заказ</span></label>
+                        </div>
+                        <button class="btn btn-primary mt-2" onclick="fillViolationsInformation()" type="button">Расчитать штрафы</button>
                     </div>
                 </div>
             </div>
@@ -152,7 +176,6 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
                     <div class="row mb-2 border" th:each="d : ${disciplines}">
                         <div th:id="|name-| + ${d.getId()}" th:for="${d.getId()}" class="col-9" th:text="${d.getName()}"></div>
                         <button th:id="${d.getId()}" class="btn btn-primary col-3" th:onclick="|saveDiscipline(| + ${d.getId()} + |)|" data-bs-dismiss="modal">Выбрать</button>
@@ -198,6 +221,58 @@
     </div>
 
     <script>
+        const violationsValues = {
+            low: {
+                missDeadlineMin: 0.2,
+                missDeadlineMax: 0.25,
+                badCommunicationMin: 0.1,
+                badCommunicationMax: 0.2,
+                useAI: 0.4,
+                cancelOrder: 0.15,
+                badQualityMin: 0.4,
+                badQualityMax: 0.5
+            },
+            medium: {
+                missDeadlineMin: 0.35,
+                missDeadlineMax: 0.5,
+                badCommunicationMin: 0.2,
+                badCommunicationMax: 0.3,
+                useAI: 0.5,
+                cancelOrder: 0.35,
+                badQualityMin: 0.5,
+                badQualityMax: 0.65
+            },
+            high: {
+                missDeadlineMin: 0.55,
+                missDeadlineMax: 0.8,
+                badCommunicationMin: 0.3,
+                badCommunicationMax: 0.4,
+                useAI: 0.7,
+                cancelOrder: 0.6,
+                badQualityMin: 0.65,
+                badQualityMax: 0.8
+            }
+        }
+
+        function fillViolationsInformation() {
+            let checkedValue = document.querySelector("input[name=orderImportance]:checked").value;
+            let cost = document.getElementById("authorCost").value
+            let input = document.getElementById("violationsInformation");
+
+            if (checkedValue === undefined || checkedValue === null || cost === null || cost === undefined || cost === '') {
+                alert("Не заполнены нужные поля. Выберите Срочность и Стоимость для автора.")
+                return;
+            }
+
+            let v = violationsValues[checkedValue];
+            input.value =
+                `Нарушение сроков сдачи: ${Math.ceil(cost * v.missDeadlineMin) + '-' + Math.ceil(cost * v.missDeadlineMax)} ₽
+                Плохая обратная связь: ${Math.ceil(cost * v.badCommunicationMin) + '-' + Math.ceil(cost * v.badCommunicationMax)} ₽
+                Использование нейросети/тех.рерайт: ${Math.ceil(cost * v.useAI)} ₽
+                Отказ от работы за Х дней до сдачи: ${Math.ceil(cost * v.cancelOrder)} ₽
+                Неудовлетворительное качество работы: ${Math.ceil(cost * v.badQualityMin) + '-' + Math.ceil(cost * v.badQualityMax)} ₽`.replace(/  +/g, '')
+        }
+
         let additionalDateDiv = document.getElementById(`additionalDatesDiv`);
         let additionalDate = document.getElementById(`additionalDates`);
         let additionalDateCount = 0;

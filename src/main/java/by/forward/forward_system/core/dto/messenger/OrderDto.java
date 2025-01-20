@@ -25,6 +25,7 @@ public class OrderDto {
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;
     private String other;
+    private String violationsInformation;
     private Integer authorCost;
     private Integer takingCost;
     private LocalDateTime createdAt;

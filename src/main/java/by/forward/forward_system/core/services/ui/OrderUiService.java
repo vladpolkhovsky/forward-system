@@ -279,6 +279,7 @@ public class OrderUiService {
 
     public List<OrderParticipantUiDto> getAllParticipants(Long orderId) {
         OrderEntity orderEntity = orderService.getById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
+
         List<OrderParticipantUiDto> participantUiDtos = new ArrayList<>();
         for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
             OrderParticipantUiDto orderParticipantDto = new OrderParticipantUiDto();
@@ -291,6 +292,7 @@ public class OrderUiService {
             orderParticipantDto.setHasFee(orderParticipant.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR) || orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR));
             participantUiDtos.add(orderParticipantDto);
         }
+
         return participantUiDtos;
     }
 
@@ -317,6 +319,7 @@ public class OrderUiService {
             orderEntity.getIntermediateDeadline(),
             orderEntity.getDeadline(),
             orderEntity.getOther(),
+            orderEntity.getViolationsInformation(),
             orderEntity.getTakingCost(),
             orderEntity.getAuthorCost(),
             orderEntity.getCreatedAt(),
@@ -374,6 +377,7 @@ public class OrderUiService {
         orderEntity.setIntermediateDeadline(orderUiDto.getIntermediateDeadline());
         orderEntity.setDeadline(orderUiDto.getDeadline());
         orderEntity.setOther(orderUiDto.getOther());
+        orderEntity.setViolationsInformation(orderUiDto.getViolationsInformation());
         orderEntity.setTakingCost(orderUiDto.getTakingCost());
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
         orderEntity.setCreatedAt(orderUiDto.getCreatedAt());
@@ -431,7 +435,7 @@ public class OrderUiService {
 
         if (!checkResult.isOk()) {
             return !banService.ban(currentUser.getId(), """
-                Создание/обновление заказа с указанием данных, котоые не прошли проверку.
+                Создание/обновление заказа с указанием данных, которые не прошли проверку.
                 Данные заказа:
                 %s
                 Лог проверки <a href="/ai-log/%d" target="_blank">Лог проверки</a>
@@ -456,7 +460,8 @@ public class OrderUiService {
         data.add("Система проверки: " + orderUiDto.getVerificationSystem());
         data.add("Промежуточный срок сдачи: " + dateToString(orderUiDto.getIntermediateDeadline()));
         data.add("Окончательный срок сдачи: " + dateToString(orderUiDto.getDeadline()));
-        data.add("Доп. информация: " + orderUiDto.getVerificationSystem());
+        data.add("Доп. информация: " + orderUiDto.getOther());
+        data.add("Штрафы: " + orderUiDto.getViolationsInformation());
         data.add("Цена: " + orderUiDto.getAuthorCost().toString());
         data.add("Дополнительные этапы сдачи: " + orderUiDto.getAdditionalDates());
 

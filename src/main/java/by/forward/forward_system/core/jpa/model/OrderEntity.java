@@ -60,7 +60,10 @@ public class OrderEntity {
     @Column(name = "other", length = 65536)
     private String other;
 
-    @Column(name = "taking_cost", nullable = false)
+    @Column(name = "violations_information", length = 65536)
+    private String violationsInformation;
+
+    @Column(name = "taking_cost")
     private Integer takingCost;
 
     @Column(name = "author_cost", nullable = false)

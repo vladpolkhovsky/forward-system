@@ -107,6 +107,7 @@ public class OrderService {
         orderEntity.setIntermediateDeadline(order.getIntermediateDeadline());
         orderEntity.setDeadline(order.getDeadline());
         orderEntity.setOther(order.getOther());
+        orderEntity.setViolationsInformation(order.getViolationsInformation());
         orderEntity.setAuthorCost(order.getAuthorCost());
         orderEntity.setTakingCost(order.getTakingCost());
 
@@ -153,7 +154,10 @@ public class OrderService {
             changes.put("Окончательный срок сдачи", Arrays.asList(dateToString(oldData.getDeadline()), dateToString(newData.getDeadline())));
         }
         if (!Objects.equals(oldData.getOther(), newData.getOther())) {
-            changes.put("Доп. информация", Arrays.asList(oldData.getVerificationSystem(), newData.getVerificationSystem()));
+            changes.put("Доп. информация", Collections.emptyList());
+        }
+        if (!Objects.equals(oldData.getOther(), newData.getOther())) {
+            changes.put("Штрафы", Collections.emptyList());
         }
         if (!oldData.getAuthorCost().equals(newData.getAuthorCost())) {
             changes.put("Цена", Arrays.asList(oldData.getAuthorCost().toString(), newData.getAuthorCost().toString()));
@@ -422,6 +426,7 @@ public class OrderService {
         orderDto.setIntermediateDeadline(orderEntity.getIntermediateDeadline());
         orderDto.setDeadline(orderEntity.getDeadline());
         orderDto.setOther(orderEntity.getOther());
+        orderDto.setViolationsInformation(orderEntity.getViolationsInformation());
         orderDto.setAuthorCost(orderEntity.getAuthorCost());
         orderDto.setTakingCost(orderEntity.getTakingCost());
         orderDto.setCreatedAt(orderEntity.getCreatedAt());

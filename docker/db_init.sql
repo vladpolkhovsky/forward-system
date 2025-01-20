@@ -595,4 +595,19 @@ create table if not exists forward_system.chat_notes
     user_id    bigint    not null references forward_system.users (id),
     text       varchar(5000),
     created_at timestamp not null
+);
+
+alter table forward_system.orders
+    alter column taking_cost drop not null;
+
+alter table forward_system.orders
+    add violations_information varchar(65536);
+
+create table if not exists forward_system.order_request_statistics
+(
+    id bigint primary key,
+    author_id bigint not null references forward_system.users(id),
+    manager_id bigint not null references forward_system.users(id),
+    order_id bigint not null,
+    created_at timestamp not null
 )
