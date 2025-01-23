@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+</head>
+<body>
+
+<div th:insert="~{main/header :: header-div}"></div>
+
+<div class="container p-2 ps-0 pe-0">
+    <span class="p-1 mt-2 me-3">Быстрый фильтр: </span>
+    <a href="/req-stat-redirect?type=last7" class="btn btn-primary p-1 ms-3 mt-1">Последние 7 дней</a>
+    <a href="/req-stat-redirect?type=last14" class="btn btn-primary p-1 ms-3 mt-1">Последние 14 дней</a>
+    <a href="/req-stat-redirect?type=last30" class="btn btn-primary p-1 ms-3 mt-1">Последние 30 дней</a>
+    <a href="/req-stat-redirect?type=last60" class="btn btn-primary p-1 ms-3 mt-1">Последние 60 дней</a>
+    <a href="/req-stat-redirect?type=last90" class="btn btn-primary p-1 ms-3 mt-1">Последние 90 дней</a>
+</div>
+
+<form class="container mt-2" action="/req-stat">
+
+    <hr class="m-1"/>
+
+    <div class="row mt-0 ps-3">
+        <div class="row mt-0 p-0 g-3 align-items-center col-12 col-md-5">
+            <div class="col-auto">
+                <label for="stat-time-start" class="col-form-label">Начало</label>
+            </div>
+            <div class="col-auto">
+                <input type="date"
+                       required
+                       id="stat-time-start"
+                       class="form-control"
+                       name="startDate"
+                       aria-describedby="stat-time-start"
+                       th:max="${#temporals.format(cDate, 'yyyy-MM-dd')}"
+                       th:value="${#temporals.format(startDate, 'yyyy-MM-dd')}">
+            </div>
+            <div class="col-auto">
+                <span id="stat-time-start-inline" class="form-text">Дата начала отсчёта (включая)</span>
+            </div>
+        </div>
+        <div class="row g-3 mt-0 align-items-center col-12 col-md-5">
+            <div class="col-auto">
+                <label for="stat-time-end" class="col-form-label">Конец</label>
+            </div>
+            <div class="col-auto">
+                <input type="date"
+                       required
+                       id="stat-time-end"
+                       class="form-control"
+                       name="endDate"
+                       aria-describedby="stat-time-end"
+                       th:max="${#temporals.format(cDate, 'yyyy-MM-dd')}"
+                       th:value="${#temporals.format(endDate, 'yyyy-MM-dd')}">
+            </div>
+            <div class="col-auto">
+                <span id="stat-time-end-inline" class="form-text">Дата конца отсчёта (включая)</span>
+            </div>
+        </div>
+        <input type="submit" class="col-12 col-md-2 btn btn-primary mt-3" value="Показать">
+    </div>
+
+    <hr class="m-1 mt-3"/>
+
+</form>
+
+<div class="container mt-2 mb-2 p-2 ps-0 pe-0">
+    <p class="m-0 p-1">Статистика с <span class="h5" th:text="${#temporals.format(startDate, 'dd.MM.yyyy')}"></span> по
+        <span class="h5" th:text="${#temporals.format(endDate, 'dd.MM.yyyy')}"></span>. Всего
+        <span class="h5" th:text="${daysCalculator.between(startDate, endDate) + (startDate.equals(endDate) ? 1 : 0)}"></span> дней.
+    </p>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle">
+        <thead>
+            <tr>
+                <th scope="col" class="border-black border-3"></th>
+                <th scope="col" class="border-black border-3">Всего предложено</th>
+                <th scope="col" class="border-black border-3" th:each="m : ${mIds}" th:text="${uMap.get(m)}"></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th class="border-black border-3">Всего предложено</th>
+                <th scope="col" class="text-center border-black border-3" th:text="${dataMap.getTotalCount()}"></th>
+                <th scope="col" class="text-center border-black border-3" th:each="m : ${mIds}" th:text="${dataMap.getCountByManager(m)}"></th>
+            </tr>
+            <tr th:each="a : ${aIds}">
+                <th scope="row" class="border-black border-3" th:text="${uMap.get(a)}"></th>
+                <th scope="row" class="text-center border-black border-3" th:text="${dataMap.getCountByAuthor(a)}">Mark</th>
+                <td th:each="m : ${mIds}" th:class="'text-center ' + ${dataMap.getCount(a, m) > 0 ? 'table-primary' : ''}" th:title="'От ' + ${uMap.get(a)} + ' для ' + ${uMap.get(m)}" th:text="${dataMap.getCount(a, m)}"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

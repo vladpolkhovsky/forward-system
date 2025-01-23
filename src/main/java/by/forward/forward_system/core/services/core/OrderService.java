@@ -56,6 +56,7 @@ public class OrderService {
     private final BotNotificationService botNotificationService;
     private final UpdateOrderRequestRepository updateOrderRequestRepository;
     private final ReviewRepository reviewRepository;
+    private final OrderRequestStatisticRepository orderRequestStatisticRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -325,6 +326,17 @@ public class OrderService {
                 Collections.emptyList(),
                 Collections.singletonList(chatMessageOptionEntity)
             );
+
+            Long authorId = newOrdersChatByUser.get().getChatMetadata().getUser().getId();
+            Long managerId = newOrdersChatByUser.get().getChatMetadata().getManager().getId();
+
+            OrderRequestStatisticEntity orderRequestStatisticEntity = new OrderRequestStatisticEntity();
+            orderRequestStatisticEntity.setAuthor(authorId);
+            orderRequestStatisticEntity.setManager(managerId);
+            orderRequestStatisticEntity.setOrderId(orderId);
+            orderRequestStatisticEntity.setCreatedAt(LocalDateTime.now());
+
+            orderRequestStatisticRepository.save(orderRequestStatisticEntity);
 
             MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
             List<Long> list = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
