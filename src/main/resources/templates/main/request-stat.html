@@ -12,7 +12,13 @@
 
 <div th:insert="~{main/header :: header-div}"></div>
 
-<div class="container p-2 ps-0 pe-0">
+<div class="container">
+    <div class="row">
+        <h3>Статистики предложения заказов</h3>
+    </div>
+</div>
+
+<div class="container mt-3 mb-3">
     <span class="p-1 mt-2 me-3">Быстрый фильтр: </span>
     <a href="/req-stat-redirect?type=last7" class="btn btn-primary p-1 ms-3 mt-1">Последние 7 дней</a>
     <a href="/req-stat-redirect?type=last14" class="btn btn-primary p-1 ms-3 mt-1">Последние 14 дней</a>
@@ -21,11 +27,11 @@
     <a href="/req-stat-redirect?type=last90" class="btn btn-primary p-1 ms-3 mt-1">Последние 90 дней</a>
 </div>
 
-<form class="container mt-2" action="/req-stat">
+<form class="container" action="/req-stat">
 
     <hr class="m-1"/>
 
-    <div class="row mt-0 ps-3">
+    <div class="row mt-0 ps-3 pe-3">
         <div class="row mt-0 p-0 g-3 align-items-center col-12 col-md-5">
             <div class="col-auto">
                 <label for="stat-time-start" class="col-form-label">Начало</label>
@@ -69,14 +75,14 @@
 
 </form>
 
-<div class="container mt-2 mb-2 p-2 ps-0 pe-0">
-    <p class="m-0 p-1">Статистика с <span class="h5" th:text="${#temporals.format(startDate, 'dd.MM.yyyy')}"></span> по
+<div class="container mt-3 mb-2">
+    <p class="m-0 p-1">Статистика предложения заказов с <span class="h5" th:text="${#temporals.format(startDate, 'dd.MM.yyyy')}"></span> по
         <span class="h5" th:text="${#temporals.format(endDate, 'dd.MM.yyyy')}"></span>. Всего
         <span class="h5" th:text="${daysCalculator.between(startDate, endDate) + (startDate.equals(endDate) ? 1 : 0)}"></span> дней.
     </p>
 </div>
 
-<div class="table-responsive">
+<div class="table-responsive p-2">
     <table class="table table-hover table-bordered align-middle">
         <thead>
             <tr>
@@ -94,7 +100,7 @@
             <tr th:each="a : ${aIds}">
                 <th scope="row" class="border-black border-3" th:text="${uMap.get(a)}"></th>
                 <th scope="row" class="text-center border-black border-3" th:text="${dataMap.getCountByAuthor(a)}">Mark</th>
-                <td th:each="m : ${mIds}" th:class="'text-center ' + ${dataMap.getCount(a, m) > 0 ? 'table-primary' : ''}" th:title="'От ' + ${uMap.get(a)} + ' для ' + ${uMap.get(m)}" th:text="${dataMap.getCount(a, m)}"></td>
+                <td th:each="m : ${mIds}" th:class="'text-center ' + ${dataMap.getCount(a, m) > 0 ? 'table-primary' : ''}" th:title="'От ' + ${uMap.get(m)} + ' для ' + ${uMap.get(a)}" th:text="${dataMap.getCount(a, m)}"></td>
             </tr>
         </tbody>
     </table>
