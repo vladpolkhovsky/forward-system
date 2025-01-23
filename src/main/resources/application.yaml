@@ -1,3 +1,13 @@
+server:
+  secret-uuid: ${RANDOM_UUID}
+  port: 8081
+  servlet:
+    session:
+      timeout: 5259600
+      cookie:
+        max-age: 5259600
+        name: JSESSIONID
+
 spring:
   servlet:
     multipart:
@@ -26,6 +36,19 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
+management:
+  emergency-menu-url: /emergency/${server.secret-uuid}
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+      base-path: ${management.emergency-menu-url}/actuator
+      shutdown-path: ${management.endpoints.web.base-path}/shutdown
+  endpoint:
+    shutdown:
+      enabled: true
+
 aws:
   aws_access_key_id: ${aws_access_key_id}
   aws_secret_access_key: ${aws_secret_access_key}
@@ -42,14 +65,8 @@ telegram:
 ai:
   url: ${AI_URL}
 
+secret:
+  emergency_password: ${EMERGENCY_PASSWORD}
+
 site:
   domain: ${SITE_MAIN_DOMAIN}
-
-server:
-  port: 8081
-  servlet:
-    session:
-      timeout: 5259600
-      cookie:
-        max-age: 5259600
-        name: JSESSIONID

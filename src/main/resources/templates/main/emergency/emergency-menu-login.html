@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Черезвычайное меню.</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+</head>
+<body style="font-family: sans-serif">
+
+<a href="/main">Вернуться на главную</a>
+
+<hr/>
+
+<form action="/emergency/password" method="post">
+    <h1>Доступ к черезвычайному меню.</h1>
+    <label for="password" style="color: red" th:if="${param.incorrect}">Неправильный пароль!</label>
+    <label for="password">Введите пароль:</label><br>
+    <input type="text" id="password" name="password" required>
+    <input type="submit" value="Отправить">
+</form>
+
+<hr/>
+
+</body>
+</html>

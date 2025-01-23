@@ -1,9 +1,14 @@
 package by.forward.forward_system.core.bot;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.telegram.telegrambots.longpolling.BotSession;
 import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsumer;
+import org.telegram.telegrambots.longpolling.starter.AfterBotRegistration;
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -14,7 +19,7 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ForwardSystemBot implements SpringLongPollingBot, LongPollingSingleThreadUpdateConsumer {
 
     @Qualifier("telegramToken")
@@ -23,6 +28,8 @@ public class ForwardSystemBot implements SpringLongPollingBot, LongPollingSingle
     private final TelegramClient telegramClient;
 
     private final List<CommandResolver> commandResolverList;
+
+    private BotSession botSession;
 
     @Override
     public void consume(Update update) {
@@ -61,5 +68,16 @@ public class ForwardSystemBot implements SpringLongPollingBot, LongPollingSingle
     @Override
     public LongPollingUpdateConsumer getUpdatesConsumer() {
         return this;
+    }
+
+    @AfterBotRegistration
+    public void afterRegistration(BotSession botSession) {
+        this.botSession = botSession;
+    }
+
+    @EventListener(ContextClosedEvent.class)
+    @SneakyThrows
+    public void onContextClosedEvent(ContextClosedEvent contextClosedEvent) {
+        this.botSession.close();
     }
 }

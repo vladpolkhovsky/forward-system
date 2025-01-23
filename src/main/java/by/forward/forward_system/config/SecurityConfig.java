@@ -31,7 +31,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
             .authorizeHttpRequests(t -> t
-                .requestMatchers("/ws", "/static/**", "/api/new-chat/**", "/api/messenger/file-save-form", "/load-file/**").permitAll()
+                .requestMatchers("/ws", "/static/**", "/api/new-chat/**", "/api/messenger/file-save-form", "/load-file/**", "/emergency/**").permitAll()
                 .anyRequest().authenticated()
             )
             .logout(t -> t.logoutUrl("/logout").permitAll())

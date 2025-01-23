@@ -31,9 +31,38 @@ public class AppConfig {
     @Value("${site.domain}")
     private String siteDomain;
 
+    @Value("${management.endpoints.web.shutdown-path}")
+    private String shutdownUrl;
+
+    @Value("${management.emergency-menu-url}")
+    private String emergencyMenuUrl;
+
+    @Value("${secret.emergency_password}")
+    private String secretPassword;
+
+    @Bean("shutdownUrl")
+    public String shutdownUrl() {
+        return shutdownUrl;
+    }
+
+    @Bean("secretPassword")
+    public String secretPassword() {
+        return secretPassword;
+    }
+
     @Bean("telegramToken")
     public String telegramToken() {
         return botToken;
+    }
+
+    @Bean("siteDomain")
+    public String siteDomain() {
+        return siteDomain;
+    }
+
+    @Bean("emergencyMenuUrl")
+    public String emergencyMenuUrl() {
+        return emergencyMenuUrl;
     }
 
     @Bean
@@ -44,11 +73,6 @@ public class AppConfig {
     @Bean("newMsgCount")
     public MessageCounter newMsgCount(@Autowired MessageRepository messageRepository, @Autowired UserUiService userUiService) {
         return new MessageCounter(messageRepository, userUiService);
-    }
-
-    @Bean("siteDomain")
-    public String siteDomain() {
-        return siteDomain;
     }
 
     @Bean
