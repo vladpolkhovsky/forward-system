@@ -5,7 +5,6 @@ import by.forward.forward_system.core.jpa.repository.fast.FastReadOrderRequestSt
 import by.forward.forward_system.core.jpa.repository.fast.FastUserReadRepository;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -118,20 +117,24 @@ public class RequestStatController {
         private final Set<Long> aIds;
         private final Set<Long> mIds;
 
+        private final Map<Long, Integer> totalByAuthorCache = new HashMap<>();
+        private final Map<Long, Integer> totalByManagerCache = new HashMap<>();
+
         private final int totalSum;
 
         public DataMap(Set<Long> aIds, Set<Long> mIds, List<FastReadOrderRequestStatRepository.StatDto> data) {
-            for (Long aId : aIds) {
-                for (Long mId : mIds) {
-                    dataMap.put(new IdPair(aId, mId), new ArrayList<>());
-                }
-            }
+            int totalSum = 0;
             for (FastReadOrderRequestStatRepository.StatDto datum : data) {
-                dataMap.get(new IdPair(datum.getAuthorId(), datum.getManagerId())).add(datum);
+                if (aIds.contains(datum.getAuthorId()) && mIds.contains(datum.getManagerId())) {
+                    IdPair key = new IdPair(datum.getAuthorId(), datum.getManagerId());
+                    dataMap.putIfAbsent(key, new ArrayList<>());
+                    dataMap.get(key).add(datum);
+                    totalSum++;
+                }
             }
             this.aIds = aIds;
             this.mIds = mIds;
-            this.totalSum = data.size();
+            this.totalSum = totalSum;
         }
 
         public int getCount(Long aId, Long mId) {
@@ -139,18 +142,32 @@ public class RequestStatController {
         }
 
         public int getCountByAuthor(Long aId) {
+            if (totalByAuthorCache.containsKey(aId)) {
+                return totalByAuthorCache.get(aId);
+            }
+
             int sum = 0;
             for (Long mId : mIds) {
                 sum += getCount(aId, mId);
             }
+
+            totalByAuthorCache.put(aId, sum);
+
             return sum;
         }
 
         public int getCountByManager(Long mId) {
+            if (totalByManagerCache.containsKey(mId)) {
+                return totalByManagerCache.get(mId);
+            }
+
             int sum = 0;
             for (Long aId : aIds) {
                 sum += getCount(aId, mId);
             }
+
+            totalByManagerCache.put(mId, sum);
+
             return sum;
         }
 
