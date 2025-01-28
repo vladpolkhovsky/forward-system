@@ -15,6 +15,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,6 +42,7 @@ public class WebsocketMassageService {
     private final UserRepository userRepository;
     private final ChatRepository chatRepository;
 
+    @Transactional
     public void handleWebsocketMessage(WSChatMessage chatMessage) {
         Long chatId = chatMessage.getChatId();
         Long userId = chatMessage.getUserId();
@@ -144,5 +146,19 @@ public class WebsocketMassageService {
         Лог проверки: %s
         Содержат данные, которые не прошли провреку.
         """.formatted(message, files, aiLog);
+    }
+
+    public void notifyError(Long userId, Long chatId) {
+        String chatName = chatRepository.findChatNameById(chatId).orElse("Не найдено имя чата. chatId = " + chatId);
+
+        WSNotification<String> errorMessage = new WSNotification<>();
+        errorMessage.setType(WSNotification.NotificationTypes.ERROR);
+        errorMessage.setValue("Ошибка отправки сообщения в чат: \"%s\"".formatted(chatName));
+
+        simpMessagingTemplate.convertAndSendToUser(
+            userId.toString(),
+            "/queue/messages",
+            errorMessage
+        );
     }
 }

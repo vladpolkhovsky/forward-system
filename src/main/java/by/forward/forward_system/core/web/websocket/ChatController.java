@@ -27,7 +27,11 @@ public class ChatController {
             );
             return;
         }
-        websocketMassageService.handleWebsocketMessage(chatMessage);
+        try {
+            websocketMassageService.handleWebsocketMessage(chatMessage);
+        } catch (Exception e) {
+            websocketMassageService.notifyError(chatMessage.getUserId(), chatMessage.getChatId());
+        }
     }
 
 }

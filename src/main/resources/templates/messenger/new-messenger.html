@@ -242,10 +242,16 @@
 
         if (body.type === "new-chat") {
             notificationAudio.play();
-            showNotification(body.value, "Вас добавили в новый чат.", "Обновите страницу чтобы увидеть новый чат.")
+            showNotification(body.value, "Вас добавили в новый чат.", "Обновите страницу чтобы увидеть новый чат.");
+        }
+
+        if (body.type === "error") {
+            showNotification(body.value, "Ошибка отправки!", body.value);
+            alert(body.value);
         }
 
         if (body.type === "banned") {
+            showNotification(body.value, "Ошибка отправки!", "Вы заблокированы");
             alert("Вы заблокированы.")
         }
     }

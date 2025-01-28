@@ -12,5 +12,6 @@ public class WSNotification<T> {
         public static final String MESSAGE = "message";
         public static final String NEW_CHAT = "new-chat";
         public static final String BANNED = "banned";
+        public static final String ERROR = "error";
     }
 }
