@@ -99,10 +99,6 @@ public class WebsocketMassageService {
 
         MessageDto messageDto = messageService.handleWsMessage(chatId, userId, message, attachmentIds);
 
-        if (true) {
-            throw new RuntimeException("!231");
-        }
-
         List<Long> chatMemberIds = new ArrayList<>(messageDto.getMessageToUser().stream()
             .map(MessageToUserDto::getUserId)
             .toList());
