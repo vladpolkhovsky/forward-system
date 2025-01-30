@@ -7,7 +7,10 @@ import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.utils.ChatNames;
+import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +30,21 @@ public class MessageService {
     private final UserRepository userRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final NotificationOutboxRepository notificationOutboxRepository;
+
+    @Transactional
+    public void sendMessageToErrorChat(String text) {
+        Optional<ChatEntity> chatEntity = chatRepository.findById(ChatNames.ERRORS_CHAT_ID);
+        Optional<ChatMessageTypeEntity> chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName());
+        sendMessage(
+            null,
+            chatEntity.get(),
+            text,
+            true,
+            chatMessageTypeEntity.get(),
+            List.of(),
+            List.of()
+        );
+    }
 
     @Transactional
     public ChatMessageEntity sendMessage(UserEntity fromUserEntity,

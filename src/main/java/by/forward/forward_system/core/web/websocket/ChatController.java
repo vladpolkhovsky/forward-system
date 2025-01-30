@@ -30,7 +30,7 @@ public class ChatController {
         try {
             websocketMassageService.handleWebsocketMessage(chatMessage);
         } catch (Exception e) {
-            websocketMassageService.notifyError(chatMessage.getUserId(), chatMessage.getChatId());
+            websocketMassageService.notifyError(chatMessage.getUserId(), chatMessage.getChatId(), e);
         }
     }
 

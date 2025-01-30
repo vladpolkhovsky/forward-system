@@ -3,6 +3,7 @@ package by.forward.forward_system.core.services.messager.ws;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.dto.websocket.WSChatMessage;
+import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.core.AIDetector;
@@ -13,6 +14,7 @@ import by.forward.forward_system.core.services.messager.SpamDetectorService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,6 +99,10 @@ public class WebsocketMassageService {
 
         MessageDto messageDto = messageService.handleWsMessage(chatId, userId, message, attachmentIds);
 
+        if (true) {
+            throw new RuntimeException("!231");
+        }
+
         List<Long> chatMemberIds = new ArrayList<>(messageDto.getMessageToUser().stream()
             .map(MessageToUserDto::getUserId)
             .toList());
@@ -148,8 +154,18 @@ public class WebsocketMassageService {
         """.formatted(message, files, aiLog);
     }
 
-    public void notifyError(Long userId, Long chatId) {
+    public void notifyError(Long userId, Long chatId, Throwable ex) {
+        String userName = userRepository.findById(userId).map(UserEntity::getUsername).orElse("Не найден пользователь. userId = " + userId);
         String chatName = chatRepository.findChatNameById(chatId).orElse("Не найдено имя чата. chatId = " + chatId);
+
+        String text = """
+            Ошибика отправки сообщения в чате: %s\n
+            Сообщение от пользователя: %s\n
+            Стекстрейс ошибки: \n
+            %s
+            """.formatted(chatName, userName, ExceptionUtils.getStackTrace(ex));
+
+        messageService.sendMessageToErrorChat(text);
 
         WSNotification<String> errorMessage = new WSNotification<>();
         errorMessage.setType(WSNotification.NotificationTypes.ERROR);

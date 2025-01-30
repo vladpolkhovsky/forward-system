@@ -232,9 +232,9 @@
 <script src="/static/new-chat-script.js"></script>
 <script>
     function processWsNotification(body) {
-        console.log("новое сообщение", body)
-
         loadNewMessageInfo()
+
+        console.log("новое сообщение", body)
 
         if (body.type === "message") {
             appendWSMessage(body.value);
@@ -242,11 +242,13 @@
 
         if (body.type === "new-chat") {
             notificationAudio.play();
-            showNotification(body.value, "Вас добавили в новый чат.", "Обновите страницу чтобы увидеть новый чат.");
+            showNotification(Math.random(), "Вас добавили в новый чат.", "Обновите страницу чтобы увидеть новый чат.");
         }
 
         if (body.type === "error") {
-            showNotification(body.value, "Ошибка отправки!", body.value);
+            console.log("ошибка", body)
+            notificationAudio.play();
+            showNotification(Math.random(), "Ошибка отправки!", body.value);
             alert(body.value);
         }
 
