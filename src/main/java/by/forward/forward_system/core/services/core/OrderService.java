@@ -637,7 +637,6 @@ public class OrderService {
         if (orderHost != null) {
             botNotificationService.sendBotNotification(orderHost, "Эксперт проверил работу. ТЗ №" + chatEntity.getOrder().getTechNumber());
         }
-
     }
 
     public void checkOrderAccessEdit(Long orderId, Long currentUserId) {

@@ -24,11 +24,13 @@
         <div class="col-12">
             <p><a target="_blank" th:href="|/request-order/| + ${orderId}">Открыть ТЗ</a></p>
             <hr/>
-            <p>Прошлые вердикты по работе: <span th:if="${olderReviews.isEmpty()}" th:text="|нет прошлых вердиктов|"></span></p>
+            <p>Прошлые вердикты по работе: <span th:if="${olderReviews.isEmpty()}"
+                                                 th:text="|нет прошлых вердиктов|"></span></p>
             <div class="mb-2" th:each="older : ${olderReviews}">
                 <p class="d-inline-flex gap-1">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" th:href="${'#' + older.getId()}" role="button" aria-expanded="false"
-                        th:text="|Проверка от | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"
+                    <a class="btn btn-primary" data-bs-toggle="collapse" th:href="${'#' + older.getId()}" role="button"
+                       aria-expanded="false"
+                       th:text="|Проверка от | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"
                     ></a>
                 </p>
                 <div class="collapse" th:id="${older.getId()}">
@@ -36,17 +38,20 @@
                         <p>Сообщение от менеджера: <span th:text="${older.getReviewMessage()}"></span></p>
                         <p>Сообщение от эксперта: <span th:text="${older.getReviewVerdict()}"></span></p>
                         <p>Оценка эксперта: <span th:text="${older.getReviewVerdictMark()}"></span></p>
-                        <p><a th:href="|/load-file/| + ${older.getAttachmentId()}" target="_blank">Файл на проверку</a></p>
-                        <a th:href="|/load-file/| + ${older.getReviewFileId()}" th:text="|Заполненная форма отчёта|"></a>
+                        <p><a th:href="|/load-file/| + ${older.getAttachmentId()}" target="_blank">Файл на проверку</a>
+                        </p>
+                        <a th:href="|/load-file/| + ${older.getReviewFileId()}"
+                           th:text="|Заполненная форма отчёта|"></a>
                     </div>
                 </div>
             </div>
-            <hr />
+            <hr/>
             <p>Файл на проверку и сообщение от менеджера</p>
             <hr>
             <a th:href="|/load-file/| + ${review.getAttachmentId()}" target="_blank">Файл на проверку</a>
             <hr th:if="${additionalFile}">
-            <a th:if="${additionalFile}" th:href="|/load-file/| + ${additionalFile}" target="_blank">Дополнительно приложенный файл от менеджера</a>
+            <a th:if="${additionalFile}" th:href="|/load-file/| + ${additionalFile}" target="_blank">Дополнительно
+                приложенный файл от менеджера</a>
             <hr>
             <a th:href="|/static/expert-form/expert-form.xlsx|" target="_blank">Форма заполенения отчёта</a>
             <hr>
@@ -58,9 +63,45 @@
                   method="post">
                 <h3 class="mt-3">Общий вывод по работе:</h3>
                 <textarea class="form-control mt-3" name="verdict" rows="10" required></textarea>
-                <h3 class="mt-3">Общая оценка работы (от 0 до 5)</h3>
-                <input class="form-control mt-3" type="text" pattern="^(1|2|3|4|5)(\+|\-)?$" min="0" max="5" step="0.1"
-                       name="verdict-mark" required>
+                <h3 class="mt-3">Общая оценка работы:</h3>
+                <div>
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-5"
+                           autocomplete="off">
+                    <label class="btn btn-outline-success" for="mark-5">5</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-5-"
+                           autocomplete="off">
+                    <label class="btn btn-outline-success" for="mark-5-">5-</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4+"
+                           autocomplete="off">
+                    <label class="btn btn-outline-warning" for="mark-4+">4+</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4"
+                           autocomplete="off">
+                    <label class="btn btn-outline-warning" for="mark-4">4</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4-"
+                           autocomplete="off">
+                    <label class="btn btn-outline-warning" for="mark-4-">4-</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3+"
+                           autocomplete="off">
+                    <label class="btn btn-outline-danger" for="mark-3+">3+</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3"
+                           autocomplete="off">
+                    <label class="btn btn-outline-danger" for="mark-3">3</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3-"
+                           autocomplete="off">
+                    <label class="btn btn-outline-danger" for="mark-3-">3-</label>
+
+                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-2"
+                           autocomplete="off">
+                    <label class="btn btn-outline-dark" for="mark-2">2</label>
+                </div>
+                <input id="verdict-mark" class="form-control mt-3 d-none" type="text" readonly name="verdict-mark" required>
                 <h3 class="mt-3">Заполненная форма отчёта</h3>
                 <input class="form-control mt-3" type="file" name="verdict-file" required>
                 <div class="row">
@@ -69,6 +110,14 @@
             </form>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll("input[name=mark-outlined]").forEach(input => {
+            input.addEventListener('click', e => {
+                document.getElementById('verdict-mark').value = e.target.id.substring(e.target.id.indexOf('-') + 1);
+            })
+        });
+    </script>
 </div>
 </body>
 </html>

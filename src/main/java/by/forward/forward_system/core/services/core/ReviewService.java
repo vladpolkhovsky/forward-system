@@ -3,6 +3,8 @@ package by.forward.forward_system.core.services.core;
 import by.forward.forward_system.core.dto.ui.ReviewDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
@@ -12,12 +14,15 @@ import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -167,6 +172,7 @@ public class ReviewService {
         return reviewRepository.findOldReviews(orderId).stream().map(this::toDto).toList();
     }
 
+    @Transactional
     public void saveVerdict(Long reviewId, String verdict, String verdictMark, Long fileId) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
         AttachmentEntity attachment = attachmentRepository.findById(fileId).orElseThrow(() -> new RuntimeException("Attachment not found"));
@@ -177,7 +183,33 @@ public class ReviewService {
         reviewEntity.setReviewMark(verdictMark);
         reviewEntity.setReviewAttachment(attachment);
 
-        reviewRepository.save(reviewEntity);
+        reviewEntity = reviewRepository.save(reviewEntity);
+
+        if (verdictMark.equals("2")) {
+            String techNumber = reviewEntity.getOrder().getTechNumber();
+            String expertUsername = reviewEntity.getReviewedBy().getUsername();
+
+            Map<ParticipantType, List<OrderParticipantEntity>> typeToUser = reviewEntity.getOrder().getOrderParticipants().stream()
+                .collect(Collectors.groupingBy(op -> op.getParticipantsType().getType()));
+
+            String authorUsername = typeToUser.get(ParticipantType.MAIN_AUTHOR).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
+            String hostUsername = typeToUser.get(ParticipantType.HOST).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
+
+            List<Long> userIds = userRepository.findByRolesContains(Authority.MANAGER.getAuthority()).stream()
+                .map(UserEntity::getId)
+                .toList();
+
+            String text = """
+                По заказу №%s поставлена оценка "2" от эксперта %s.
+                
+                Автор, который писал работу -> %s
+                Менеджер, который ведёт заказ -> %s
+                """.formatted(techNumber, expertUsername, authorUsername, hostUsername);
+
+            for (Long userId : userIds) {
+                botNotificationService.sendBotNotification(userId, text);
+            }
+        }
     }
 
     public void acceptReview(Long orderId, Long reviewId, Boolean verdict, Boolean sendToChat) {
