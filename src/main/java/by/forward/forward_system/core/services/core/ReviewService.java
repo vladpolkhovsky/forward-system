@@ -195,7 +195,7 @@ public class ReviewService {
             String authorUsername = typeToUser.get(ParticipantType.MAIN_AUTHOR).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
             String hostUsername = typeToUser.get(ParticipantType.HOST).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
 
-            List<Long> userIds = userRepository.findByRolesContains(Authority.MANAGER.getAuthority()).stream()
+            List<Long> userIds = userRepository.findByRolesContains(Authority.ADMIN.getAuthority()).stream()
                 .map(UserEntity::getId)
                 .toList();
 
