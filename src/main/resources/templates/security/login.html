@@ -12,7 +12,7 @@
 </head>
 <body>
 <div class="container">
-    <form th:action="@{/login}" method="post">
+    <form th:action="@{/login}" method="post" autocomplete="on">
         <div class="row mt-5">
             <div th:if="${param.error}" class="alert alert-danger" role="alert">
                 Возможные причины ошибки: <strong>неправильное имя пользователя, неправильный пароль, аккаунт
@@ -39,11 +39,11 @@
             <div class="col-12 col-xl-4 text-center">
                 <h1>Авторизация</h1>
                 <div class="mb-3">
-                    <input type="text" name="username" autocomplete="username" class="col-12 col-xl-4 form-control"
+                    <input type="text" name="username" autocomplete="on" class="col-12 col-xl-4 form-control"
                            placeholder="Логин"/>
                 </div>
                 <div class="mb-3">
-                    <input type="password" name="password" autocomplete="current-password"
+                    <input type="password" name="password" autocomplete="on"
                            class="col-12 col-xl-4 form-control" placeholder="Пароль"/>
                 </div>
                 <input type="submit" class="col-12 col-xl-4 btn btn-primary mb-3" value="Войти"/>
