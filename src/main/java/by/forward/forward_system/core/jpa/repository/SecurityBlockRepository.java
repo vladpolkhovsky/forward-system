@@ -18,5 +18,6 @@ public interface SecurityBlockRepository extends JpaRepository<SecurityBlockEnti
 
     List<SecurityBlockEntity> findAllByIsPermanentBlockFalse();
 
+    @Query("select s from SecurityBlockEntity s where not s.user.deleted and s.isPermanentBlock")
     List<SecurityBlockEntity> findAllByIsPermanentBlockTrue();
 }
