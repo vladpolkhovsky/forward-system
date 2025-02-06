@@ -150,6 +150,18 @@ public class WebsocketMassageService {
         """.formatted(message, files, aiLog);
     }
 
+    public void sendErrorMessage(Long userId, String message) {
+        WSNotification<String> errorMessage = new WSNotification<>();
+        errorMessage.setType(WSNotification.NotificationTypes.ERROR);
+        errorMessage.setValue(message);
+
+        simpMessagingTemplate.convertAndSendToUser(
+            userId.toString(),
+            "/queue/messages",
+            errorMessage
+        );
+    }
+
     public void notifyError(Long userId, Long chatId, Throwable ex) {
         String userName = userRepository.findById(userId).map(UserEntity::getUsername).orElse("Не найден пользователь. userId = " + userId);
         String chatName = chatRepository.findChatNameById(chatId).orElse("Не найдено имя чата. chatId = " + chatId);
@@ -163,14 +175,6 @@ public class WebsocketMassageService {
 
         messageService.sendMessageToErrorChat(text);
 
-        WSNotification<String> errorMessage = new WSNotification<>();
-        errorMessage.setType(WSNotification.NotificationTypes.ERROR);
-        errorMessage.setValue("Ошибка отправки сообщения в чат: \"%s\"".formatted(chatName));
-
-        simpMessagingTemplate.convertAndSendToUser(
-            userId.toString(),
-            "/queue/messages",
-            errorMessage
-        );
+        sendErrorMessage(userId, "Ошибка отправки сообщения в чат: \"%s\"".formatted(chatName));
     }
 }

@@ -28,6 +28,10 @@ public class ChatController {
             return;
         }
         try {
+            if (chatMessage.getChatId() == null) {
+                websocketMassageService.sendErrorMessage(chatMessage.getUserId(), "Ошибка отправки. Вы не выбрали чат для отправки.");
+                return;
+            }
             websocketMassageService.handleWebsocketMessage(chatMessage);
         } catch (Exception e) {
             websocketMassageService.notifyError(chatMessage.getUserId(), chatMessage.getChatId(), e);
