@@ -104,6 +104,7 @@ public class MessageService {
             return chatMessageEntity;
         }
 
+        List<ChatMessageToUserEntity> chatMessageToUserEntities = new ArrayList<>();
         for (ChatMemberEntity chatMember : chatMessageEntity.getChat().getChatMembers()) {
             if (fromUserEntity != null && Objects.equals(chatMember.getUser().getId(), fromUserEntity.getId())) {
                 continue;
@@ -115,20 +116,27 @@ public class MessageService {
             chatMessageToUserEntity.setMessage(chatMessageEntity);
             chatMessageToUserEntity.setIsViewed(false);
             chatMessageToUserEntity.setCreatedAt(now);
-            chatMessageToUserEntity = chatMessageToUserRepository.save(chatMessageToUserEntity);
 
-            chatMessageEntity.getChatMessageToUsers().add(chatMessageToUserEntity);
-            chatMessageEntity = messageRepository.save(chatMessageEntity);
+            chatMessageToUserEntities.add(chatMessageToUserEntity);
+        }
 
+        chatMessageToUserEntities = chatMessageToUserRepository.saveAll(chatMessageToUserEntities);
+
+        List<NotificationOutboxEntity> notificationOutboxEntities = new ArrayList<>();
+        for (ChatMessageToUserEntity chatMessageToUserEntity : chatMessageToUserEntities) {
             NotificationOutboxEntity notificationOutboxEntity = new NotificationOutboxEntity();
             notificationOutboxEntity.setChat(chatEntity);
             notificationOutboxEntity.setMessage(chatMessageEntity);
             notificationOutboxEntity.setMessageToUser(chatMessageToUserEntity);
-            notificationOutboxEntity.setUser(chatMember.getUser());
+            notificationOutboxEntity.setUser(chatMessageToUserEntity.getUser());
             notificationOutboxEntity.setCreatedAt(now);
-
-            notificationOutboxRepository.save(notificationOutboxEntity);
+            notificationOutboxEntities.add(notificationOutboxEntity);
         }
+
+        chatMessageEntity.getChatMessageToUsers().addAll(chatMessageToUserEntities);
+        chatMessageEntity = messageRepository.save(chatMessageEntity);
+
+        notificationOutboxRepository.saveAll(notificationOutboxEntities);
 
         return chatMessageEntity;
     }
@@ -189,7 +197,7 @@ public class MessageService {
         messageDto.setContent(chatMessage.getContent());
         messageDto.setIsSystemMessage(chatMessage.getIsSystemMessage());
         messageDto.setIsHidden(chatMessage.getIsHidden());
-        messageDto.setCreatedAt(LocalDateTime.from(chatMessage.getCreatedAt()));
+        messageDto.setCreatedAt(chatMessage.getCreatedAt());
         messageDto.setOptions(getOptions(chatMessage.getChatMessageOptions()));
         messageDto.setAttachments(getAttachments(chatMessage.getChatMessageAttachments()));
         messageDto.setMessageToUser(getMessageToUser(chatMessage.getChatMessageToUsers()));

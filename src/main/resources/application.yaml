@@ -32,10 +32,17 @@ spring:
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-    generate-ddl: true
+    generate-ddl: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 30
+        order_updates: true
+        order_inserts: true
+        generate_statistics: false
 
 management:
   emergency-menu-url: /emergency/${server.secret-uuid}

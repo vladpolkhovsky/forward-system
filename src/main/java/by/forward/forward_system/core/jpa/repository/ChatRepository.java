@@ -65,7 +65,7 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
 
     @Query(nativeQuery = true, value = """
         select c.* from forward_system.chats c
-        	inner join forward_system.chat_members cm on cm.chat_id = c.id
+        	inner join forward_system.chat_metadata cm on cm.id = c.id
         	where cm.user_id = :userId and c."type" = 'ADMIN_TALK_CHAT' and c.id != 0
         """)
     Optional<ChatEntity> findUserAdminChat(Long userId);
