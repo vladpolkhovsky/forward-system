@@ -145,7 +145,7 @@ public class UserUiService {
             chatUtilsService.addAdminToAllChats(save.getId());
         }
 
-        if (userUiDto.getIsManager()) {
+        if (dto.getIsManager()) {
             chatUtilsService.createNewOrderChats(save.getId());
         }
 
@@ -183,6 +183,8 @@ public class UserUiService {
             userEntity.getAuthorities().contains(Authority.HR),
             userEntity.getAuthorities().contains(Authority.ACCOUNTANT),
             userEntity.getAuthorities().contains(Authority.OWNER),
+            userEntity.getAuthorities().contains(Authority.BANNED),
+            userEntity.getDeleted(),
             userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
@@ -201,6 +203,7 @@ public class UserUiService {
         userEntity.setOther(userUiDto.getOther());
         userEntity.setContactTelegram(userUiDto.getContactTelegram());
         userEntity.setPayment(userUiDto.getPayment());
+        userEntity.setDeleted(false);
         userEntity.setRoles("");
 
         if (userUiDto.getIsAuthor() != null && userUiDto.getIsAuthor()) {

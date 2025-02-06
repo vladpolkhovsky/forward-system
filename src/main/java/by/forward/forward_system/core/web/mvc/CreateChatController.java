@@ -10,6 +10,7 @@ import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -96,10 +97,11 @@ public class CreateChatController {
     }
 
     @GetMapping(value = "/delete-chat/{chatId}")
+    @SneakyThrows
     public RedirectView deleteChat(@PathVariable Long chatId) {
         userUiService.checkAccessOwner();
 
-        chatService.deleteChat(chatId);
+        chatService.deleteChat(chatId).get();
 
         return new RedirectView("/update-chat");
     }

@@ -36,8 +36,8 @@ public class BanFilter implements Filter {
 
             if (sci != null) {
                 UserDetails cud = (UserDetails) sci.getAuthentication().getPrincipal();
-                Optional<UserEntity> byUsername = userRepository.findByUsername(cud.getUsername());
-                if (byUsername.isPresent() && byUsername.get().getAuthorities().contains(Authority.BANNED)) {
+                Optional<UserEntity> byUsername = userRepository.findByUsernameAndDeletedIsFalse(cud.getUsername());
+                if (byUsername.isPresent() && (byUsername.get().getAuthorities().contains(Authority.BANNED) || byUsername.get().getDeleted())) {
                     HttpServletResponse response = (HttpServletResponse) servletResponse;
                     response.sendRedirect("/ban");
                 }

@@ -93,35 +93,45 @@
             <div class="col-4">
                 <h4 class="mt-3 mb-3">Роли</h4>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="isOwner"
+                    <input class="form-check-input" type="checkbox" id="isOwner"
+                           th:disabled="*{isOwner}"
+                           th:checked="*{isOwner}"
                            th:field="*{isOwner}">
                     <label class="form-check-label" for="isOwner">
                         Владелец
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="isAdmin"
+                    <input class="form-check-input" type="checkbox" id="isAdmin"
+                           th:disabled="*{isAdmin}"
+                           th:checked="*{isAdmin}"
                            th:field="*{isAdmin}">
                     <label class="form-check-label" for="isAdmin">
                         Администратор
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="isManager"
+                    <input class="form-check-input" type="checkbox" id="isManager"
+                           th:disabled="*{isManager}"
+                           th:checked="*{isManager}"
                            th:field="*{isManager}">
                     <label class="form-check-label" for="isManager">
                         Менеджер
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="isHr"
+                    <input class="form-check-input" type="checkbox" id="isHr"
+                           th:disabled="*{isHr}"
+                           th:checked="*{isHr}"
                            th:field="*{isHr}">
                     <label class="form-check-label" for="isHr">
                         HR
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" value="" id="isAccountant"
+                    <input class="form-check-input" type="checkbox" id="isAccountant"
+                           th:disabled="*{isAccountant}"
+                           th:checked="*{isAccountant}"
                            th:field="*{isAccountant}">
                     <label class="form-check-label" for="isAccountant">
                         Бухгалтер

@@ -612,4 +612,7 @@ create table if not exists forward_system.order_request_statistics
     created_at timestamp not null
 );
 
-create index if not exists order_request_statistics_time_idx on forward_system.order_request_statistics(created_at)
+create index if not exists order_request_statistics_time_idx on forward_system.order_request_statistics(created_at);
+
+alter table forward_system.users
+    add is_deleted boolean not null default false;

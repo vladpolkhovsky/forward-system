@@ -19,7 +19,7 @@ public class FastUserReadRepository {
 
     @Language("SQL")
     private static final String LOAD_ALL_ACTIVE_USERS_SQL = """
-        select distinct u.id as id, u.username as username, u.roles as roles from forward_system.users u where u.roles not like '%DELETED%'
+        select distinct u.id as id, u.username as username, u.roles as roles from forward_system.users u where not u.is_deleted
     """;
 
     public List<UserDto> readAllActiveUsers() {

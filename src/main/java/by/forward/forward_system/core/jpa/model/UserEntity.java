@@ -53,6 +53,9 @@ public class UserEntity {
     @Column(name = "other", length = 2048)
     private String other;
 
+    @Column(name = "is_deleted")
+    private Boolean deleted;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -62,6 +65,10 @@ public class UserEntity {
             authorities.add(grantedAuthority);
         }
         setRoles(toRoles(authorities));
+    }
+
+    public void addRoles(Set<Authority> grantedAuthorities) {
+        grantedAuthorities.forEach(this::addRole);
     }
 
     public void removeRole(Authority grantedAuthority) {

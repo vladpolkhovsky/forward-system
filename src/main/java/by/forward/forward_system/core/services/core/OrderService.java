@@ -30,6 +30,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -840,6 +841,7 @@ public class OrderService {
     }
 
     @Transactional
+    @SneakyThrows
     public void deleteOrder(Long orderId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order with id " + orderId + " not found"));
 
@@ -854,9 +856,17 @@ public class OrderService {
         List<ReviewEntity> reviewEntities = reviewRepository.findAllByOrderId(orderId);
         reviewRepository.deleteAll(reviewEntities);
 
+        List<CompletableFuture<Void>> wait = new ArrayList<>();
+
         for (ChatEntity chat : orderEntity.getChats()) {
-            chatService.deleteChat(chat.getId());
+            CompletableFuture<Void> voidCompletableFuture = chatService.deleteChat(chat.getId());
+            wait.add(voidCompletableFuture);
         }
+
+        for (CompletableFuture<Void> voidCompletableFuture : wait) {
+            voidCompletableFuture.get();
+        }
+
         orderEntity.getChats().clear();
 
         List<UpdateOrderRequestEntity> updateOrderRequestEntities = updateOrderRequestRepository.findByOrderId(orderId);

@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.ui.UserUiDto;
+import by.forward.forward_system.core.services.core.UserDeletionService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.view.RedirectView;
 public class CreateUserController {
 
     private final UserUiService userUiService;
+    private final UserDeletionService userDeletionService;
 
     @GetMapping("/create-user")
     public String createUser(Model model) {
@@ -70,6 +72,15 @@ public class CreateUserController {
         userUiService.checkAccessOwner();
 
         userUiService.updateUser(id, user);
+
+        return new RedirectView("/update-user?userUpdated");
+    }
+
+    @PostMapping(value = "/update-user/delete/{id}", consumes = MediaType.ALL_VALUE)
+    public RedirectView deleteUser(@PathVariable Long id) {
+        userUiService.checkAccessOwner();
+
+        userDeletionService.deleteUser(id);
 
         return new RedirectView("/update-user?userUpdated");
     }

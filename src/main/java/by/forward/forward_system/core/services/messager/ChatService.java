@@ -12,11 +12,14 @@ import by.forward.forward_system.core.services.messager.ws.WebsocketMassageServi
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @AllArgsConstructor
 @Service
@@ -36,16 +39,25 @@ public class ChatService {
 
     private final UserRepository userRepository;
 
-    private final UserService userService;
     private final ChatMemberRepository chatMemberRepository;
+
     private final ChatTypeRepository chatTypeRepository;
+
     private final ChatMessageAttachmentRepository chatMessageAttachmentRepository;
+
     private final ChatMessageOptionRepository chatMessageOptionRepository;
+
     private final MessageRepository messageRepository;
+
     private final NotificationOutboxRepository notificationOutboxRepository;
+
     private final ChatTabToChatTypeService chatTabToChatTypeService;
+
     private final SkipChatNotificationRepository skipChatNotificationRepository;
+
     private final ChatNoteRepository chatNoteRepository;
+
+    private final ChatMetadataRepository chatMetadataRepository;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -250,32 +262,39 @@ public class ChatService {
     }
 
     @Transactional
-    public void deleteChat(Long chatId) {
+    @Async
+    public CompletableFuture<Void> deleteChat(Long chatId) {
         List<ChatNoteEntity> allByChatId = chatNoteRepository.findAllByChatId(chatId);
-        chatNoteRepository.deleteAll(allByChatId);
+        chatNoteRepository.deleteAllInBatch(allByChatId);
 
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
-        chatMemberRepository.deleteAll(chatEntity.getChatMembers());
+        chatMemberRepository.deleteAllInBatch(chatEntity.getChatMembers());
 
         List<SkipChatNotificationEntity> byChatId = skipChatNotificationRepository.findByChatId(chatId);
-        skipChatNotificationRepository.deleteAll(byChatId);
+        skipChatNotificationRepository.deleteAllInBatch(byChatId);
 
         List<NotificationOutboxEntity> notificationOutbox = notificationOutboxRepository.findAllByChatId(chatId);
-        notificationOutboxRepository.deleteAll(notificationOutbox);
+        notificationOutboxRepository.deleteAllInBatch(notificationOutbox);
 
         List<ChatMessageToUserEntity> messagesToUser = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageToUsers().stream()).toList();
-        chatMessageToUserRepository.deleteAll(messagesToUser);
+        chatMessageToUserRepository.deleteAllInBatch(messagesToUser);
 
         List<ChatMessageAttachmentEntity> chatAttachments = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageAttachments().stream()).toList();
-        chatMessageAttachmentRepository.deleteAll(chatAttachments);
+        chatMessageAttachmentRepository.deleteAllInBatch(chatAttachments);
 
         List<ChatMessageOptionEntity> chatMessageOptions = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageOptions().stream()).toList();
-        chatMessageOptionRepository.deleteAll(chatMessageOptions);
+        chatMessageOptionRepository.deleteAllInBatch(chatMessageOptions);
 
-        chatMessageToUserRepository.deleteAll(chatEntity.getChatMessageToUsers());
-        messageRepository.deleteAll(chatEntity.getChatMassages());
+        chatMessageToUserRepository.deleteAllInBatch(chatEntity.getChatMessageToUsers());
+        messageRepository.deleteAllInBatch(chatEntity.getChatMassages());
+
+        if (chatEntity.getChatMetadata() != null) {
+            chatMetadataRepository.delete(chatEntity.getChatMetadata());
+        }
 
         chatRepository.delete(chatEntity);
+
+        return CompletableFuture.completedFuture(null);
     }
 
 }

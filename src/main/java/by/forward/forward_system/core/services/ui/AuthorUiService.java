@@ -52,7 +52,7 @@ public class AuthorUiService {
     public AuthorUiDto createAuthor(AuthorUiDto user) {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
 
-        Optional<UserEntity> byUsername = userRepository.findByUsername(currentUserDetails.getUsername());
+        Optional<UserEntity> byUsername = userRepository.findByUsernameAndDeletedIsFalse(currentUserDetails.getUsername());
         UserEntity createdBy = byUsername.orElseThrow(() -> new UsernameNotFoundException("User not found with username " + currentUserDetails.getUsername()));
 
         AuthorEntity entity = toEntity(user);
@@ -95,6 +95,7 @@ public class AuthorUiService {
             authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
             authorEntity.getUser().getAuthorities().contains(Authority.HR),
             authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
+            authorEntity.getUser().getAuthorities().contains(Authority.BANNED),
             authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
@@ -130,6 +131,7 @@ public class AuthorUiService {
             authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
             authorEntity.getUser().getAuthorities().contains(Authority.HR),
             authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
+            authorEntity.getUser().getAuthorities().contains(Authority.BANNED),
             authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
         );
     }
@@ -167,6 +169,7 @@ public class AuthorUiService {
         userEntity.setContactTelegram(authorUiDto.getContactTelegram());
         userEntity.setPayment(authorUiDto.getPayment());
         userEntity.setRoles("");
+        userEntity.setDeleted(false);
 
         authorEntity.setUser(userEntity);
 

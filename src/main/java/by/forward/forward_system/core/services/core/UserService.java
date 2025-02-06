@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,7 +33,7 @@ public class UserService {
     }
 
     public Optional<UserEntity> getByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return userRepository.findByUsernameAndDeletedIsFalse(username);
     }
 
     public UserEntity save(UserEntity user) {
@@ -49,6 +50,9 @@ public class UserService {
             userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
+        Set<Authority> authorities = userEntity.getAuthorities().stream().collect(Collectors.toSet());
+        authorities.addAll(user.getAuthorities());
+
         userEntity.setFirstname(user.getFirstname());
         userEntity.setLastname(user.getLastname());
         userEntity.setSurname(user.getSurname());
@@ -56,21 +60,23 @@ public class UserService {
         userEntity.setContact(user.getContact());
         userEntity.setEmail(user.getEmail());
         userEntity.setOther(user.getOther());
-        userEntity.setRoles(user.getRoles());
+        userEntity.setDeleted(user.getDeleted());
+
+        userEntity.addRoles(authorities);
 
         return userRepository.save(userEntity);
     }
 
     public List<UserEntity> getAllUsers() {
-        return userRepository.findByRolesNotContains(Authority.AUTHOR.getAuthority());
+        return userRepository.findByRolesNotContainsAndDeletedIsFalse(Authority.AUTHOR.getAuthority());
     }
 
     public List<UserEntity> getAllUserWithoutRole(Authority authority) {
-        return userRepository.findByRolesNotContains(authority.getAuthority());
+        return userRepository.findByRolesNotContainsAndDeletedIsFalse(authority.getAuthority());
     }
 
     public List<UserEntity> findUsersWithRole(String role) {
-        return userRepository.findByRolesContains(role);
+        return userRepository.findByRolesContainsAndDeletedIsFalse(role);
     }
 
     public List<UserDto> getAllUsersConverted() {
@@ -91,4 +97,5 @@ public class UserService {
     public Collection<UserEntity> getAllUsersFast() {
         return userRepository.getUsersFast();
     }
+
 }

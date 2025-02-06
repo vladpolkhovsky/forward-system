@@ -68,7 +68,7 @@ public class ChatUtilsService {
             .toList();
 
         List<UserEntity> admins = new ArrayList<>(
-            userRepository.findByRolesContains(Authority.ADMIN.getAuthority())
+            userRepository.findByRolesContainsAndDeletedIsFalse(Authority.ADMIN.getAuthority())
         );
 
         for (UserEntity author : allAuthors) {

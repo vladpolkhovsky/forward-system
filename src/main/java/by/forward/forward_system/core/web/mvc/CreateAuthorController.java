@@ -2,6 +2,7 @@ package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.ui.AuthorUiDto;
 import by.forward.forward_system.core.services.core.DisciplineService;
+import by.forward.forward_system.core.services.core.UserDeletionService;
 import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
@@ -23,6 +24,7 @@ public class CreateAuthorController {
     private final AuthorUiService authorUiService;
 
     private final DisciplineService disciplineService;
+    private final UserDeletionService userDeletionService;
 
     @GetMapping("/create-author")
     public String createAuthor(Model model) {
@@ -78,6 +80,15 @@ public class CreateAuthorController {
         userUiService.checkAccessOwner();
 
         authorUiService.updateAuthor(id, user);
+
+        return new RedirectView("/update-author?userUpdated");
+    }
+
+    @PostMapping(value = "/update-author/delete/{id}", consumes = MediaType.ALL_VALUE)
+    public RedirectView deleteUser(@PathVariable Long id) {
+        userUiService.checkAccessOwner();
+
+        userDeletionService.deleteUser(id);
 
         return new RedirectView("/update-author?userUpdated");
     }

@@ -53,7 +53,7 @@ public class AuthorService {
             "Чат для связи с администраторами!",
             adminTalkChat,
             null,
-            null
+            authorUser
         );
 
         chatUtilsService.addToNewsChat(authorUser.getId());
@@ -92,7 +92,7 @@ public class AuthorService {
     public ChatEntity addChatToUser(List<UserEntity> users, String chatName, String initMessage, ChatTypeEntity chatTypeEntity, UserEntity manager, UserEntity author) {
         ChatEntity chat = chatService.createChat(users, chatName, null, initMessage, chatTypeEntity);
 
-        if (manager != null && author != null) {
+        if (manager != null || author != null) {
             ChatMetadataEntity chatMetadataEntity = new ChatMetadataEntity();
             chatMetadataEntity.setOwnerTypePermission(false);
             chatMetadataEntity.setManager(manager);

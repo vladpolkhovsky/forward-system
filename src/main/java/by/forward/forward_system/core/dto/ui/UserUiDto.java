@@ -29,5 +29,7 @@ public class UserUiDto {
     private Boolean isHr;
     private Boolean isAccountant;
     private Boolean isOwner;
+    private Boolean isBanned;
+    private Boolean isDeleted;
     private String rolesRus;
 }
