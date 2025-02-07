@@ -20,4 +20,7 @@ public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
         "   inner join forward_system.disciplines d on ad.discipline_id  = d.id" +
         "   where not u.is_deleted")
     List<AuthorWithDisciplineProjection> findAllWithDisciplines();
+
+    @Query(value = "select a from AuthorEntity a where not a.user.deleted")
+    List<AuthorEntity> getNotDeletedAuthors();
 }

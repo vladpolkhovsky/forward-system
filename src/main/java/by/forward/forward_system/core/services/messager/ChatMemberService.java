@@ -18,8 +18,6 @@ public class ChatMemberService {
 
     private final ChatMemberRepository chatMemberRepository;
 
-    private final ChatRepository chatRepository;
-
     public ChatMemberEntity addMemberToChat(UserEntity userEntity, ChatEntity chatEntity) {
         for (ChatMemberEntity chatMember : chatEntity.getChatMembers()) {
             if (chatMember.getUser().getId().equals(userEntity.getId())) {

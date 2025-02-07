@@ -62,7 +62,7 @@ public class ChatUtilsService {
         UserEntity manager = userRepository.findById(managerId).orElseThrow(() -> new RuntimeException("User not found"));
         ChatTypeEntity requestOrderChat = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
 
-        List<UserEntity> allAuthors = authorRepository.findAll().stream()
+        List<UserEntity> allAuthors = authorRepository.getNotDeletedAuthors().stream()
             .map(AuthorEntity::getUser)
             .filter(t -> !t.getAuthorities().contains(Authority.BANNED))
             .toList();

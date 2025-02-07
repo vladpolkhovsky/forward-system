@@ -33,7 +33,7 @@ public class UserTableViewService {
             comparator = comparator.reversed();
         }
 
-        return userRepository.findAll().stream()
+        return userRepository.findAllByDeletedIsFalse().stream()
             .filter(t -> !t.getAuthorities().contains(Authority.AUTHOR))
             .map(this::toViewDto)
             .sorted(comparator)

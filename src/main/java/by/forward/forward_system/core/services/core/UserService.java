@@ -80,7 +80,7 @@ public class UserService {
     }
 
     public List<UserDto> getAllUsersConverted() {
-        return userRepository.findAll().stream().map(this::convertUserToDto).toList();
+        return userRepository.findAllByDeletedIsFalse().stream().map(this::convertUserToDto).toList();
     }
 
     public UserDto convertUserToDto(UserEntity userEntity) {
