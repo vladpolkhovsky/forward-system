@@ -6,12 +6,15 @@ import java.time.LocalDateTime;
 
 public interface PaymentDto {
     Long getId();
+
     String getNumber();
 
     String getStatusName();
+
     String getUsername();
 
     LocalDateTime getCreated();
+
     LocalDateTime getUpdated();
 
     default PaymentStatus getStatus() {

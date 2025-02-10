@@ -2,14 +2,15 @@ package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.OrderStatus;
-import by.forward.forward_system.core.enums.ParticipantType;
-import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.model.OrderEntity;
+import by.forward.forward_system.core.jpa.model.OrderStatusEntity;
+import by.forward.forward_system.core.jpa.model.UpdateOrderRequestEntity;
+import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.OrderStatusRepository;
 import by.forward.forward_system.core.jpa.repository.UpdateOrderRequestRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 

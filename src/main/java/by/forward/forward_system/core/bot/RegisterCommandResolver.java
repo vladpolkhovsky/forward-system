@@ -26,7 +26,7 @@ public class RegisterCommandResolver implements CommandResolver {
 
         if (args.length != 2) {
             SendMessage build = SendMessage.builder()
-                .text("Непраивльная комманда. \nПожалуста зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+                .text("Непраивльная команда. \nПожалуйста, зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
                 .chatId(update.getMessage().getChatId())
                 .build();
             telegramClient.execute(build);

@@ -1,6 +1,5 @@
 package by.forward.forward_system.core.web.mvc;
 
-import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto;
 import by.forward.forward_system.core.services.core.BanService;
 import by.forward.forward_system.core.services.ui.UserUiService;

@@ -90,8 +90,8 @@ public class UserEntity {
 
     public String getFio() {
         return getFirstname() + " " +
-            getLastname().substring(0, 1) + ". " +
-            StringUtils.abbreviate(StringUtils.defaultString(getSurname(), ""), ".", 2);
+               getLastname().substring(0, 1) + ". " +
+               StringUtils.abbreviate(StringUtils.defaultString(getSurname(), ""), ".", 2);
     }
 
     public String getFioFull() {

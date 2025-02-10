@@ -21,9 +21,6 @@ import java.util.stream.Stream;
 public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, FastChatDto> {
 
     private final static String QUERY_IN = ":IN:";
-
-    private final ChatTabToChatTypeService tabToChatType;
-
     @Language("SQL")
     private final static String QUERY = """
         select c.id as id, c.chat_name as chatName, c.last_message_date as lastMessage, count(cmtu.id) as newMsgCount from forward_system.chats c
@@ -34,6 +31,8 @@ public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, Fa
         	order by c.last_message_date desc
         	limit ?;
         """;
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
+    private final ChatTabToChatTypeService tabToChatType;
 
     @Override
     public String getQuery(LoadChatRequestDto request) {
@@ -57,8 +56,6 @@ public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, Fa
             ps.setLong(index, request.getSize());
         };
     }
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public RowMapper<FastChatDto> getRowMapper() {

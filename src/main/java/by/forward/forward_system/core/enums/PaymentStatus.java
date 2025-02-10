@@ -13,14 +13,13 @@ public enum PaymentStatus {
 
     ;
 
+    private final String name;
+    private final String rusName;
+
     PaymentStatus(String name, String rusName) {
         this.name = name;
         this.rusName = rusName;
     }
-
-    private final String name;
-
-    private final String rusName;
 
     public static PaymentStatus byName(String name) {
         for (PaymentStatus type : PaymentStatus.values()) {

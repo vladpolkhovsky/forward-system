@@ -15,10 +15,10 @@ public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
     List<AuthorEntity> getAuthorsFast();
 
     @Query(nativeQuery = true, value = "select u.id as id, u.username as username, d.id as disciplineId, d.\"name\" as discipline, ad.discipline_quality as disciplineQuality from forward_system.authors a" +
-        "   inner join forward_system.users u on a.id = u.id" +
-        "   inner join forward_system.author_disciplines ad on ad.author_id = u.id" +
-        "   inner join forward_system.disciplines d on ad.discipline_id  = d.id" +
-        "   where not u.is_deleted")
+                                       "   inner join forward_system.users u on a.id = u.id" +
+                                       "   inner join forward_system.author_disciplines ad on ad.author_id = u.id" +
+                                       "   inner join forward_system.disciplines d on ad.discipline_id  = d.id" +
+                                       "   where not u.is_deleted")
     List<AuthorWithDisciplineProjection> findAllWithDisciplines();
 
     @Query(value = "select a from AuthorEntity a where not a.user.deleted")

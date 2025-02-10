@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -19,11 +19,12 @@
     <div class="row">
         <form action="/manual-ban-user" method="post">
             <div class="mb-3">
-                <label for="user" class="form-label">Пользователь для блокировки</label>
-                <select id="user" class="form-select form-select-lg mb-3" name="userId">
-                    <option th:each="u : ${users}" th:value="${u.getId()}" th:text="${u.getUsername()} + |(| + ${u.getFio()} + |)|"></option>
+                <label class="form-label" for="user">Пользователь для блокировки</label>
+                <select class="form-select form-select-lg mb-3" id="user" name="userId">
+                    <option th:each="u : ${users}" th:text="${u.getUsername()} + |(| + ${u.getFio()} + |)|"
+                            th:value="${u.getId()}"></option>
                 </select>
-                <label for="reason" class="form-label">Причина блокировки</label>
+                <label class="form-label" for="reason">Причина блокировки</label>
                 <textarea class="form-control" id="reason" name="reason" rows="3"></textarea>
                 <button class="mt-3 btn btn-primary">Заблокировать</button>
             </div>

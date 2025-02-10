@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="/static/popper.min.js"></script>
 
 
     <script src="/static/bootstrap/bootstrap.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -23,14 +23,14 @@
     <div class="row">
         <div class="col-12">
             <p class="mt-3 mb-1">Создание новой дисциплины:</p>
-            <form class="row g-3" action="/settings-new-discipline" method="post" th:object="${newDiscipline}">
+            <form action="/settings-new-discipline" class="row g-3" method="post" th:object="${newDiscipline}">
                 <div class="col-11">
-                    <label for="name" class="visually-hidden">Название новой дисциплины</label>
-                    <input type="text" class="form-control" id="name" th:field="*{name}"
-                           placeholder="Название новой дисциплины">
+                    <label class="visually-hidden" for="name">Название новой дисциплины</label>
+                    <input class="form-control" id="name" placeholder="Название новой дисциплины" th:field="*{name}"
+                           type="text">
                 </div>
                 <div class="col-1">
-                    <button type="submit" class="btn btn-primary mb-3">Создать</button>
+                    <button class="btn btn-primary mb-3" type="submit">Создать</button>
                 </div>
             </form>
         </div>
@@ -53,8 +53,9 @@
                         <p class="mt-0 mb-0"><span th:id="|name-| + ${d.getId()}" th:text="${d.getName()}"></span></p>
                     </td>
                     <td>
-                        <button class="btn" style="font-size: 25px" data-bs-toggle="modal" data-bs-target="#editModal"
-                                th:onclick='|fillData(| + ${d.getId()} + |)|'>&#x270d;</button>
+                        <button class="btn" data-bs-target="#editModal" data-bs-toggle="modal" style="font-size: 25px"
+                                th:onclick='|fillData(| + ${d.getId()} + |)|'>&#x270d;
+                        </button>
                     </td>
                 </tr>
                 </tbody>
@@ -62,23 +63,23 @@
         </div>
     </div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="label" aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="label" class="modal fade" id="editModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="label">Изменить название дисциплины</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <form action="/settings-update-discipline" method="post" th:object="${newDiscipline}">
                     <div class="modal-body">
-                        <label for="name" class="visually-hidden">Название</label>
-                        <input type="text" class="form-control" id="editName" th:field="*{name}"
-                               placeholder="Название новой дисциплины">
-                        <input hidden type="number" class="form-control" id="editId" th:field="*{id}">
+                        <label class="visually-hidden" for="name">Название</label>
+                        <input class="form-control" id="editName" placeholder="Название новой дисциплины" th:field="*{name}"
+                               type="text">
+                        <input class="form-control" hidden id="editId" th:field="*{id}" type="number">
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
-                        <button type="submit" class="btn btn-primary">Изменить</button>
+                        <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
+                        <button class="btn btn-primary" type="submit">Изменить</button>
                     </div>
                 </form>
             </div>

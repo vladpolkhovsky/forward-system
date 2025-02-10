@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -17,11 +17,14 @@
         <div class="col-10 col-md-6 text-start mb-4">
             <h5 th:text="${menuEntry.entryName()}"></h5>
             <ul class="list-group">
-                <li class="list-group-item d-flex justify-content-between align-items-start" th:each="menuItem, menuItemStat : ${menuEntry.menuItems()}">
+                <li class="list-group-item d-flex justify-content-between align-items-start"
+                    th:each="menuItem, menuItemStat : ${menuEntry.menuItems()}">
                     <div class="ms-2 me-auto">
                         <a th:href="${menuItem.link()}" th:text="${menuItem.name()}"></a>
                     </div>
-                    <span class="badge text-bg-primary rounded-pill" th:if="${menuItem.hasNotification() && menuItem.notification() > 0}" th:text="${menuItem.notification()}"></span>
+                    <span class="badge text-bg-primary rounded-pill"
+                          th:if="${menuItem.hasNotification() && menuItem.notification() > 0}"
+                          th:text="${menuItem.notification()}"></span>
                 </li>
             </ul>
         </div>

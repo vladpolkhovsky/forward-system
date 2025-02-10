@@ -26,7 +26,9 @@ public class ChatTabToChatTypeService {
             return ChatType.SPECIAL_CHAT.getName();
         }
         return null;
-    };
+    }
+
+    ;
 
     public String getChatTabByType(String chatType) {
         if (chatType == null) {

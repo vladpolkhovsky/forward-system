@@ -46,9 +46,7 @@ function connectToStompJs(wsStomp) {
         return new SockJS(brokerUrl);
     }
 
-    const stompClient = new StompJs.Client({
-
-    });
+    const stompClient = new StompJs.Client({});
 
     stompClient.webSocketFactory = mySocketFactory;
 

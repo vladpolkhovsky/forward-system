@@ -1,5 +1,7 @@
 package by.forward.forward_system.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -11,12 +13,12 @@ import java.util.concurrent.Executor;
 @EnableAsync
 public class SpringAsyncConfig implements AsyncConfigurer {
 
+    @Autowired
+    @Qualifier("springAsyncTaskExecutor")
+    private ThreadPoolTaskExecutor poolTaskExecutor;
+
     @Override
     public Executor getAsyncExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(2);
-        executor.setKeepAliveSeconds(120);;
-        executor.initialize();
-        return executor;
+        return poolTaskExecutor;
     }
 }

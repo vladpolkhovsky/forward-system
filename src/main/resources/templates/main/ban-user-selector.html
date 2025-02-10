@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -24,8 +24,8 @@
                     th:each="ban, banStat : ${banned}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:text="|Пользователь | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |)|"
-                               th:href="|/auto-ban-user/| + ${ban.getId()}">
+                            <a th:href="|/auto-ban-user/| + ${ban.getId()}"
+                               th:text="|Пользователь | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |)|">
                             </a>
                         </div>
                     </div>

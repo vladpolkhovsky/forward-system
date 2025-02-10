@@ -2,17 +2,19 @@
 <head>
     <meta charset="utf-8">
     <title>Мессенджер</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap"
+          rel="stylesheet">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0/bundles/stomp.umd.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
     <style>
         * {
             font-family: 'Montserrat', sans-serif;
         }
+
         pre {
             font-family: 'Montserrat', sans-serif;
         }
@@ -23,34 +25,34 @@
 <div class="container mt-3">
     <div class="row">
         <div class="mt-1 grid nav nav-underline" style="height: 40px">
-            <a href="/messenger?tab=new-orders"
-               class="text-wrap text-decoration-none align-content-around nav-item g-col-4">
-                <div id="new-orders-tab" class="nav-link">
-                    Новые заказы <strong><span id="new-orders-count" class="fs-5"></span></strong>
+            <a class="text-wrap text-decoration-none align-content-around nav-item g-col-4"
+               href="/messenger?tab=new-orders">
+                <div class="nav-link" id="new-orders-tab">
+                    Новые заказы <strong><span class="fs-5" id="new-orders-count"></span></strong>
                 </div>
             </a>
-            <a href="/messenger?tab=admin"
-               class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4">
-                <div id="admin-tab" class="nav-link">
-                    Администрация <strong><span id="admin-count" class="fs-5"></span></strong>
+            <a class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4"
+               href="/messenger?tab=admin">
+                <div class="nav-link" id="admin-tab">
+                    Администрация <strong><span class="fs-5" id="admin-count"></span></strong>
                 </div>
             </a>
-            <a  href="/messenger?tab=orders"
-                class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4">
-                <div id="orders-tab" class="nav-link">
-                    Заказы в работе <strong><span id="orders-count" class="fs-5"></span></strong>
+            <a class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4"
+               href="/messenger?tab=orders">
+                <div class="nav-link" id="orders-tab">
+                    Заказы в работе <strong><span class="fs-5" id="orders-count"></span></strong>
                 </div>
             </a>
-            <a  href="/messenger?tab=special"
-                class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4">
-                <div id="special-tab" class="nav-link">
-                    Спец. чаты <strong><span id="special-count" class="fs-5"></span></strong>
+            <a class="ms-1 text-wrap text-decoration-none align-content-around nav-item g-col-4"
+               href="/messenger?tab=special">
+                <div class="nav-link" id="special-tab">
+                    Спец. чаты <strong><span class="fs-5" id="special-count"></span></strong>
                 </div>
             </a>
         </div>
         <div class="col-5">
             <div class="row mt-2">
-                <input id="search" type="text" placeholder="Поиск чата">
+                <input id="search" placeholder="Поиск чата" type="text">
             </div>
             <div class="mt-2 col-12 overflow-scroll" style="height: 720px; max-height: 720px;">
                 <ul class="list-group list-group" id="chat-list-box">
@@ -67,7 +69,7 @@
         </div>
         <div class="col-7">
             <h5><strong id="chat-header">Название чата</strong></h5>
-            <div id="orderInfo" hidden="">
+            <div hidden="" id="orderInfo">
                 <div class="row">
                     <div class="col-3"><strong>Номер ТЗ:</strong> <span id="orderTechNumber">123</span></div>
                     <div class="col-3"><strong>Тип работы:</strong> <span id="workType">123</span></div>
@@ -88,29 +90,31 @@
                 <div class="row">
                     <div class="col-7">
                         <strong>Дополнительные этапы сдачи:</strong>
-                        <ul id="add-dates" class="list-group">
+                        <ul class="list-group" id="add-dates">
                         </ul>
                     </div>
                     <div class="col-5">
-                        <a id="orderLink" href="">Просмотреть детали заказа</a>
+                        <a href="" id="orderLink">Просмотреть детали заказа</a>
                     </div>
                 </div>
             </div>
             <hr/>
-            <ul id="chat-messages" class="list-group overflow-scroll" style="height: 680px; max-height: 680px;">
+            <ul class="list-group overflow-scroll" id="chat-messages" style="height: 680px; max-height: 680px;">
             </ul>
             <div class="row">
                 <div class="col-7">
-                    <textarea id="msg-text-area" class="form-control-plaintext border border-5"
+                    <textarea class="form-control-plaintext border border-5" id="msg-text-area"
                               placeholder="Ваше сообщение"
                               rows="3"></textarea>
                 </div>
                 <div class="col-5">
                     <div class="row">
-                        <input id="msg-file" type="file" class="form-control mt-2">
+                        <input class="form-control mt-2" id="msg-file" type="file">
                     </div>
                     <div class="row mt-1">
-                        <button id="sendButton" type="button" class="btn btn-primary" onclick="sendMessage()">Отправить</button>
+                        <button class="btn btn-primary" id="sendButton" onclick="sendMessage()" type="button">
+                            Отправить
+                        </button>
                     </div>
                 </div>
             </div>

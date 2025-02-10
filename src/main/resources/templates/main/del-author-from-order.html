@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -17,23 +17,25 @@
 </div>
 <div class="container">
     <div class="alert alert-danger" role="alert" th:if="${isOneAuthor}">
-        <strong>В заказе есть только один автор</strong>, чтобы удалить данного автора, добавьте в заказ ещё одного автора.
+        <strong>В заказе есть только один автор</strong>, чтобы удалить данного автора, добавьте в заказ ещё одного
+        автора.
     </div>
-    <form class="row" th:action="|/del-author-from-order/| + ${orderId}" method="post">
+    <form class="row" method="post" th:action="|/del-author-from-order/| + ${orderId}">
         <p class="mt-3">Укажите Автора, которого хотите удалить</p>
         <div class="col-12">
             <ul class="list-group">
                 <li class="list-group-item" th:each="author, authorStat : ${authors}">
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" required th:id="|author-| + ${author.getId()}"
-                               th:checked="${author.getChecked()}" name="author" th:value="${author.getId()}">
+                        <input class="form-check-input" name="author" required th:checked="${author.getChecked()}"
+                               th:id="|author-| + ${author.getId()}" th:value="${author.getId()}" type="radio">
                         <label class="form-check-label" th:for="|author-| + ${author.getId()}"
                                th:text="${author.getUsername()} + | (Автор)|"></label>
                     </div>
                 </li>
             </ul>
         </div>
-        <input th:disabled="${isOneAuthor}" class="form-control btn btn-primary mt-3" type="submit" value="Удалить автора">
+        <input class="form-control btn btn-primary mt-3" th:disabled="${isOneAuthor}" type="submit"
+               value="Удалить автора">
     </form>
 </div>
 </body>

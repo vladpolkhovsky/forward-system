@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -30,12 +30,18 @@
         <tbody>
         <tr>
             <th scope="row" th:text="${log.getId()}"></th>
-            <td><pre th:text="${log.getRequestJson()}"></pre></td>
-            <td><pre th:text="${log.getResponseJson()}"></pre></td>
-            <td><pre th:text="${log.getErrorText()}"></pre></td>
             <td>
-                <a th:if="${log.getFileId()}" th:href="|/load-file/| + ${log.getFileId()}" target="_blank">Файл</a>
-                <p th:unless="${log.getFileId()}" th:text="|Файл не приложен|"></p>
+                <pre th:text="${log.getRequestJson()}"></pre>
+            </td>
+            <td>
+                <pre th:text="${log.getResponseJson()}"></pre>
+            </td>
+            <td>
+                <pre th:text="${log.getErrorText()}"></pre>
+            </td>
+            <td>
+                <a target="_blank" th:href="|/load-file/| + ${log.getFileId()}" th:if="${log.getFileId()}">Файл</a>
+                <p th:text="|Файл не приложен|" th:unless="${log.getFileId()}"></p>
             </td>
             <td th:text="${{log.getCreatedAt()}}"></td>
         </tr>

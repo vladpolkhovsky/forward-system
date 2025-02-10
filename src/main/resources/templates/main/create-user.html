@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${param.userCreated}" class="alert alert-primary" role="alert">
+    <div class="alert alert-primary" role="alert" th:if="${param.userCreated}">
         Пользователь создан.
     </div>
     <div class="row">
@@ -20,119 +20,121 @@
 </div>
 <!--/*@thymesVar id="user" type="by.forward.forward_system.core.dto.ui.UserUiDto"*/-->
 <div class="container mt-3">
-    <form class="container g-3 border" th:action="${actionUrl}" th:object="${user}" method="post">
+    <form class="container g-3 border" method="post" th:action="${actionUrl}" th:object="${user}">
         <div class="row">
             <div class="col-8 ">
-                <input type="text" th:field="*{id}" hidden>
+                <input hidden th:field="*{id}" type="text">
                 <div class="mb-3 mt-3 row">
-                    <label for="username" class="col-sm-2 col-form-label">Имя пользователя</label>
+                    <label class="col-sm-2 col-form-label" for="username">Имя пользователя</label>
                     <div class="col-sm-10">
-                        <input required id="username" type="text" class="form-control" th:field="*{username}">
+                        <input class="form-control" id="username" required th:field="*{username}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="lastname" class="col-sm-2 col-form-label">Фамилия</label>
+                    <label class="col-sm-2 col-form-label" for="lastname">Фамилия</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="lastname" th:field="*{lastname}">
-                    </div>
-                </div><div class="mb-3 mt-3 row">
-                <label for="firstname" class="col-sm-2 col-form-label">Имя</label>
-                <div class="col-sm-10">
-                    <input required type="text" class="form-control" id="firstname" th:field="*{firstname}">
-                </div>
-            </div>
-                <div class="mb-3 mt-3 row">
-                    <label for="surname" class="col-sm-2 col-form-label">Отчество</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="surname" th:field="*{surname}">
+                        <input class="form-control" id="lastname" required th:field="*{lastname}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="password" class="col-sm-2 col-form-label">Пароль</label>
+                    <label class="col-sm-2 col-form-label" for="firstname">Имя</label>
                     <div class="col-sm-10">
-                        <input type="password"
-                               class="form-control"
+                        <input class="form-control" id="firstname" required th:field="*{firstname}" type="text">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label class="col-sm-2 col-form-label" for="surname">Отчество</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="surname" th:field="*{surname}" type="text">
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
+                    <label class="col-sm-2 col-form-label" for="password">Пароль</label>
+                    <div class="col-sm-10">
+                        <input class="form-control"
                                id="password"
                                th:field="*{password}"
+                               th:placeholder="${passwordRequired == true} ? 'Введите пароль' : 'Оставьте пустым, если не хотите менять пароль'"
                                th:required="${passwordRequired}"
-                               th:placeholder="${passwordRequired == true} ? 'Введите пароль' : 'Оставьте пустым, если не хотите менять пароль'">
+                               type="password">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="contact" class="col-sm-2 col-form-label">Контакты (телефон)</label>
+                    <label class="col-sm-2 col-form-label" for="contact">Контакты (телефон)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="contact" th:field="*{contact}">
+                        <input class="form-control" id="contact" required th:field="*{contact}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="contactTelegram" class="col-sm-2 col-form-label">Контакты (Телеграмм)</label>
+                    <label class="col-sm-2 col-form-label" for="contactTelegram">Контакты (Телеграмм)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="contactTelegram" th:field="*{contactTelegram}">
+                        <input class="form-control" id="contactTelegram" required th:field="*{contactTelegram}"
+                               type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="email" class="col-sm-2 col-form-label">Почта</label>
+                    <label class="col-sm-2 col-form-label" for="email">Почта</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" id="email" th:field="*{email}">
+                        <input class="form-control" id="email" th:field="*{email}" type="email">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="payment" class="col-sm-2 col-form-label">Реквизиты оплаты</label>
+                    <label class="col-sm-2 col-form-label" for="payment">Реквизиты оплаты</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="payment" th:field="*{payment}">
+                        <input class="form-control" id="payment" th:field="*{payment}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="other" class="col-sm-2 col-form-label">Дополнительная информация</label>
+                    <label class="col-sm-2 col-form-label" for="other">Дополнительная информация</label>
                     <div class="col-sm-10">
-                    <textarea type="text" class="form-control" id="other" rows="5"
-                              th:field="*{other}"></textarea>
+                    <textarea class="form-control" id="other" rows="5" th:field="*{other}"
+                              type="text"></textarea>
                     </div>
                 </div>
             </div>
             <div class="col-4">
                 <h4 class="mt-3 mb-3">Роли</h4>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" id="isOwner"
+                    <input class="form-check-input" id="isOwner" th:checked="*{isOwner}"
                            th:disabled="*{isOwner}"
-                           th:checked="*{isOwner}"
-                           th:field="*{isOwner}">
+                           th:field="*{isOwner}"
+                           type="checkbox">
                     <label class="form-check-label" for="isOwner">
                         Владелец
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" id="isAdmin"
+                    <input class="form-check-input" id="isAdmin" th:checked="*{isAdmin}"
                            th:disabled="*{isAdmin}"
-                           th:checked="*{isAdmin}"
-                           th:field="*{isAdmin}">
+                           th:field="*{isAdmin}"
+                           type="checkbox">
                     <label class="form-check-label" for="isAdmin">
                         Администратор
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" id="isManager"
+                    <input class="form-check-input" id="isManager" th:checked="*{isManager}"
                            th:disabled="*{isManager}"
-                           th:checked="*{isManager}"
-                           th:field="*{isManager}">
+                           th:field="*{isManager}"
+                           type="checkbox">
                     <label class="form-check-label" for="isManager">
                         Менеджер
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" id="isHr"
+                    <input class="form-check-input" id="isHr" th:checked="*{isHr}"
                            th:disabled="*{isHr}"
-                           th:checked="*{isHr}"
-                           th:field="*{isHr}">
+                           th:field="*{isHr}"
+                           type="checkbox">
                     <label class="form-check-label" for="isHr">
                         HR
                     </label>
                 </div>
                 <div class="form-check mt-3 mb-3">
-                    <input class="form-check-input" type="checkbox" id="isAccountant"
+                    <input class="form-check-input" id="isAccountant" th:checked="*{isAccountant}"
                            th:disabled="*{isAccountant}"
-                           th:checked="*{isAccountant}"
-                           th:field="*{isAccountant}">
+                           th:field="*{isAccountant}"
+                           type="checkbox">
                     <label class="form-check-label" for="isAccountant">
                         Бухгалтер
                     </label>
@@ -140,7 +142,7 @@
             </div>
         </div>
         <div class="row">
-            <button type="submit" class="btn btn-primary mb-3">Применить</button>
+            <button class="btn btn-primary mb-3" type="submit">Применить</button>
         </div>
     </form>
 </div>

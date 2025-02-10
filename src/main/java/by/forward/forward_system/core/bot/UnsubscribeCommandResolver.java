@@ -30,7 +30,7 @@ public class UnsubscribeCommandResolver implements CommandResolver {
 
         telegramClient.execute(SendMessage.builder()
             .chatId(update.getMessage().getChatId())
-            .text("Пожалуста зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+            .text("Пожалуйста, зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
             .build());
     }
 }

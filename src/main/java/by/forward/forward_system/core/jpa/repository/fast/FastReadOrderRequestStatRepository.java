@@ -18,19 +18,18 @@ import java.util.List;
 @AllArgsConstructor
 public class FastReadOrderRequestStatRepository {
 
-    private final JdbcTemplate jdbcTemplate;
-
     @Language("SQL")
     private static final String LOAD_ALL_REQUEST_DATA_SQL = """
-        select distinct ors.id     as id,
-                    ors.author_id  as aId,
-                    ors.manager_id as mId,
-                    ors.order_id   as oId,
-                    ors.created_at as createdAt
-        from forward_system.order_request_statistics ors
-        where created_at >= ?
-          and created_at <= ?
-    """;
+            select distinct ors.id     as id,
+                        ors.author_id  as aId,
+                        ors.manager_id as mId,
+                        ors.order_id   as oId,
+                        ors.created_at as createdAt
+            from forward_system.order_request_statistics ors
+            where created_at >= ?
+              and created_at <= ?
+        """;
+    private final JdbcTemplate jdbcTemplate;
 
     public List<FastReadOrderRequestStatRepository.StatDto> readAllStatInInterval(LocalDate from, LocalDate to) {
         LocalDateTime toLDT = to.plusDays(1).atStartOfDay().minusSeconds(1);
@@ -38,7 +37,7 @@ public class FastReadOrderRequestStatRepository {
         Timestamp fromTimestamp = Timestamp.valueOf(from.atStartOfDay());
         Timestamp toTimestamp = Timestamp.valueOf(toLDT);
 
-        return jdbcTemplate.query(LOAD_ALL_REQUEST_DATA_SQL, new Object[] { fromTimestamp, toTimestamp }, new int[] { Types.TIMESTAMP, Types.TIMESTAMP },  (rs, rowNum) -> {
+        return jdbcTemplate.query(LOAD_ALL_REQUEST_DATA_SQL, new Object[]{fromTimestamp, toTimestamp}, new int[]{Types.TIMESTAMP, Types.TIMESTAMP}, (rs, rowNum) -> {
             return new FastReadOrderRequestStatRepository.StatDto(
                 rs.getLong("id"),
                 rs.getLong("aId"),

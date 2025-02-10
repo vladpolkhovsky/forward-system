@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
     <script src="/static/popper.min.js"></script>
 
 
@@ -24,56 +24,69 @@
         <div class="col-12">
             <p>Работу проверял: <span class="fw-bold" th:text="${expertUsername}"></span></p>
 
-            <p class="mb-0" th:text="|Дата создания запроса : | + ${#temporals.format(review.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
-            <p class="mt-1" th:if="${review.getReviewDate()}" th:text="|Дата проверки : | + ${#temporals.format(review.getReviewDate(), 'dd.MM.yyyy HH:mm')}"></p>
-            <p class="mt-1" th:unless="${review.getReviewDate()}" th:text="|Дата проверки : ещё не проверено.|"></p>
+            <p class="mb-0"
+               th:text="|Дата создания запроса : | + ${#temporals.format(review.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+            <p class="mt-1" th:if="${review.getReviewDate()}"
+               th:text="|Дата проверки : | + ${#temporals.format(review.getReviewDate(), 'dd.MM.yyyy HH:mm')}"></p>
+            <p class="mt-1" th:text="|Дата проверки : ещё не проверено.|" th:unless="${review.getReviewDate()}"></p>
 
             <p>Вердикты по работе: <span th:if="${olderReviews.isEmpty()}" th:text="|нет прошлых вердиктов|"></span></p>
             <div class="mb-2" th:each="older : ${olderReviews}">
                 <p class="d-inline-flex gap-1">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" th:href="${'#' + older.getId()}" role="button" aria-expanded="false"
+                    <a aria-expanded="false" class="btn btn-primary" data-bs-toggle="collapse" role="button"
+                       th:href="${'#' + older.getId()}"
                        th:text="|Запрос на проверку от | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"
                     ></a>
                 </p>
                 <div class="collapse" th:id="${older.getId()}">
                     <div class="card card-body">
                         <p th:text="${older.getExpertUsername()}"></p>
-                        <p class="mb-0" th:text="|Дата создания запроса : | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
-                        <p class="mt-1" th:if="${older.getReviewDate()}" th:text="|Дата проверки : | + ${#temporals.format(older.getReviewDate(), 'dd.MM.yyyy HH:mm')}"></p>
-                        <p class="mt-1" th:unless="${older.getReviewDate()}" th:text="|Дата проверки : ещё не проверено.|"></p>
+                        <p class="mb-0"
+                           th:text="|Дата создания запроса : | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+                        <p class="mt-1" th:if="${older.getReviewDate()}"
+                           th:text="|Дата проверки : | + ${#temporals.format(older.getReviewDate(), 'dd.MM.yyyy HH:mm')}"></p>
+                        <p class="mt-1" th:text="|Дата проверки : ещё не проверено.|"
+                           th:unless="${older.getReviewDate()}"></p>
                         <p>Сообщение от менеджера: <span th:text="${older.getReviewMessage()}"></span></p>
                         <p>Сообщение от эксперта: <span th:text="${older.getReviewVerdict()}"></span></p>
                         <p>Оценка эксперта: <span th:text="${older.getReviewVerdictMark()}"></span></p>
-                        <p><a th:href="|/load-file/| + ${older.getAttachmentId()}" target="_blank">Файл, который проверял эксперт.</a></p>
-                        <a th:href="|/load-file/| + ${older.getReviewFileId()}" th:text="|Заполненная форма отчёта|"></a>
+                        <p><a target="_blank" th:href="|/load-file/| + ${older.getAttachmentId()}">Файл, который
+                            проверял эксперт.</a></p>
+                        <a th:href="|/load-file/| + ${older.getReviewFileId()}"
+                           th:text="|Заполненная форма отчёта|"></a>
                     </div>
                 </div>
             </div>
 
-            <hr />
+            <hr/>
 
-            <p><a th:href="|/load-file/| + ${review.getAttachmentId()}" target="_blank">Файл, который проверял эксперт.</a></p>
+            <p><a target="_blank" th:href="|/load-file/| + ${review.getAttachmentId()}">Файл, который проверял
+                эксперт.</a></p>
 
             <p class="mt-3">Сообщение от менеджера</p>
-            <textarea class="form-control mt-3" th:text="${review.getReviewMessage()}" readonly rows="10"></textarea>
-            <p th:if="${additionalFileId}" class="mt-3"><a th:href="|/load-file/| + ${additionalFileId}" target="_blank">Дополнительно приложенный файл от менеджера.</a></p>
+            <textarea class="form-control mt-3" readonly rows="10" th:text="${review.getReviewMessage()}"></textarea>
+            <p class="mt-3" th:if="${additionalFileId}"><a target="_blank"
+                                                           th:href="|/load-file/| + ${additionalFileId}">Дополнительно приложенный файл от
+                менеджера.</a></p>
             <h3 class="mt-3">Отзыв эксперта:</h3>
-            <textarea class="form-control mt-3" th:text="${review.getReviewVerdict()}" rows="10" readonly></textarea>
+            <textarea class="form-control mt-3" readonly rows="10" th:text="${review.getReviewVerdict()}"></textarea>
             <h3 class="mt-3">Общая оценка эксперта:</h3>
-            <input class="form-control mt-3 mb-3" type="text" th:value="${review.getReviewVerdictMark()}" readonly/>
+            <input class="form-control mt-3 mb-3" readonly th:value="${review.getReviewVerdictMark()}" type="text"/>
             <p><a class="mt-3" th:href="|/load-file/| + ${review.getReviewFileId()}">Скачать рецензию</a></p>
             <div class="row mt-3" th:if="${!review.getIsAccepted() && review.getIsReviewed()}">
                 <div class="col-5 mt-3">
                     <div class="row">
-                        <a class="btn btn-success" th:href="|/review-order-answers-accept/| + ${orderId} + |/| + ${reviewId} + |?verdict=true|">
+                        <a class="btn btn-success"
+                           th:href="|/review-order-answers-accept/| + ${orderId} + |/| + ${reviewId} + |?verdict=true|">
                             Отправить заказ на гарантию
                         </a>
                     </div>
                 </div>
                 <div class="col-2"></div>
-                <form class="col-5" method="get" th:action="|/review-order-answers-accept/| + ${orderId} + |/| + ${reviewId}">
+                <form class="col-5" method="get"
+                      th:action="|/review-order-answers-accept/| + ${orderId} + |/| + ${reviewId}">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="send-to-chat" id="send-review-in-chat">
+                        <input class="form-check-input" id="send-review-in-chat" name="send-to-chat" type="checkbox">
                         <input hidden name="verdict" value="false">
                         <label class="form-check-label" for="send-review-in-chat">
                             Отправить рецензию в чат

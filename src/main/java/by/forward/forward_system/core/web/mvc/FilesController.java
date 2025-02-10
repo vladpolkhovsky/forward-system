@@ -1,13 +1,11 @@
 package by.forward.forward_system.core.web.mvc;
 
-import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
 import by.forward.forward_system.core.services.core.AttachmentService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.stereotype.Controller;

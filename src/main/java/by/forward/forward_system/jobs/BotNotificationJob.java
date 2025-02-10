@@ -111,7 +111,7 @@ public class BotNotificationJob {
                 Optional<OrderParticipantEntity> any = orderEntity.getOrderParticipants().stream()
                     .filter(t -> t.getUser().getId().equals(user.getId()))
                     .findAny();
-                isNeedToSend = any.isPresent();;
+                isNeedToSend = any.isPresent();
             }
             if (isNeedToSend) {
                 sendOrderNotification(user, techNumber, chatName, newMessageCount);
@@ -168,9 +168,6 @@ public class BotNotificationJob {
             return true;
         }
         ChatEntity chatEntity = chatRepository.findById(chatId).get();
-        if (chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.OWNER)) {
-            return true;
-        }
-        return false;
+        return chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.OWNER);
     }
 }

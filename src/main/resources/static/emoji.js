@@ -43,7 +43,7 @@ class EmojiPicker {
 
         emojiPicker.addEventListener(
             "blur",
-            function(event) {
+            function (event) {
                 emojiPicker.style.display = "none";
             },
             false

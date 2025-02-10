@@ -19,11 +19,9 @@ import java.util.stream.IntStream;
 @AllArgsConstructor
 public class ViolationsController {
 
-    private final UserUiService userUiService;
-
-    private final AiViolationRepository aiViolationRepository;
-
     private final static int pageSize = 50;
+    private final UserUiService userUiService;
+    private final AiViolationRepository aiViolationRepository;
 
     @GetMapping("/violations")
     public String getViolations(Model model, @RequestParam(name = "page", required = false, defaultValue = "1") int page) {

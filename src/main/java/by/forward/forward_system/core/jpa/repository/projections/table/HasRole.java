@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface HasRole {
     List<String> getRoles();
+
     List<String> getRolesRus();
+
     void addAuthority(Authority authority);
 }

@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${param.userUpdated}" class="alert alert-primary" role="alert">
+    <div class="alert alert-primary" role="alert" th:if="${param.userUpdated}">
         Заказ обновлён.
     </div>
     <div class="row">
@@ -24,15 +24,15 @@
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
                     <li class="page-item">
-                        <a class="page-link" th:href="|/view-order?page=| + ${page - 1}" aria-label="Previous">
+                        <a aria-label="Previous" class="page-link" th:href="|/view-order?page=| + ${page - 1}">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
-                    <li th:each="cPage : ${pages}" th:class="|page-item | + ${cPage == page ? 'active' : ''}">
+                    <li th:class="|page-item | + ${cPage == page ? 'active' : ''}" th:each="cPage : ${pages}">
                         <a class="page-link" th:href="|/view-order?page=| + ${cPage}" th:text="${cPage}"></a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" th:href="|/view-order?page=| + ${page + 1}" aria-label="Next">
+                        <a aria-label="Next" class="page-link" th:href="|/view-order?page=| + ${page + 1}">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -42,8 +42,8 @@
     </div>
     <div class="row" th:if="${showSearch}">
         <div class="col-12 col-sm-6">
-            <form class="d-flex" method="get" action="/view-order">
-                <input class="form-control" name="techNumber" type="number" step="0.1" placeholder="Поиск по номеру ТЗ">
+            <form action="/view-order" class="d-flex" method="get">
+                <input class="form-control" name="techNumber" placeholder="Поиск по номеру ТЗ" step="0.1" type="number">
                 <button class="btn btn-warning ms-2" type="submit">&#128270;</button>
             </form>
         </div>
@@ -55,8 +55,8 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="ms-2 me-0">
                             <div class="fw-bold">
-                                <a th:text="|Заказ (ТЗ) № | + ${order.getTechNumber()}"
-                                   th:href="|/view-order/| + ${order.getId()}"></a>
+                                <a th:href="|/view-order/| + ${order.getId()}"
+                                   th:text="|Заказ (ТЗ) № | + ${order.getTechNumber()}"></a>
                             </div>
                             <p class="mt-1 mb-0" th:text="|Название заказа: | + ${order.getName()}"></p>
                             <p class="mt-1 mb-0" th:text="|Дисциплина: | + ${order.getDiscipline()}"></p>
@@ -79,19 +79,20 @@
                             <p class="mt-1 mb-0"><a th:href="|/order-second-step/| + ${order.getId()}">Отправить
                                 авторам</a></p>
                         </div>
-                        <div th:if="${chatHandler.get(order.getId())}" class="col-6 col-md-3 mt-3 mt-md-0"
-                             style="align-content: center">
+                        <div class="col-6 col-md-3 mt-3 mt-md-0" style="align-content: center"
+                             th:if="${chatHandler.get(order.getId())}">
                             <p class="mt-1 mb-0"><a
-                                    th:href="|/new-messenger?tab=orders&chatId=| + ${chatHandler.get(order.getId()).getChatId()}"
-                                    target="_blank">Чат заказа <span
+                                    target="_blank"
+                                    th:href="|/new-messenger?tab=orders&chatId=| + ${chatHandler.get(order.getId()).getChatId()}">Чат заказа <span
                                     class="fw-bold"
                                     th:if="${chatHandler.get(order.getId()).getNewMessageCount() > 0}"
                                     th:text="|(| + ${chatHandler.get(order.getId()).getNewMessageCount()} + | новых)|"></span></a>
                             </p>
                         </div>
                         <div class="col-6 col-md-3 mt-3 mt-md-0" style="align-content: center">
-                            <form th:attr="delete-order-id=${order.getTechNumber()}"  th:action="|/delete-order/| + ${order.getId()}" method="post">
-                                <button type="submit" class="btn btn-danger">Удалить</button>
+                            <form method="post"
+                                  th:action="|/delete-order/| + ${order.getId()}" th:attr="delete-order-id=${order.getTechNumber()}">
+                                <button class="btn btn-danger" type="submit">Удалить</button>
                             </form>
                         </div>
                     </div>
@@ -102,7 +103,7 @@
 </div>
 <script>
     for (const formDelete of document.querySelectorAll('form[delete-order-id]')) {
-        formDelete.onsubmit = function() {
+        formDelete.onsubmit = function () {
             return confirm(`Вы действительно хотите удалить заказ №${formDelete.getAttribute('delete-order-id')}?`);
         };
     }

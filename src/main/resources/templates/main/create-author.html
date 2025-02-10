@@ -3,18 +3,18 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="/static/popper.min.js"></script>
 
     <script src="/static/bootstrap/bootstrap.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${param.userCreated}" class="alert alert-primary" role="alert">
+    <div class="alert alert-primary" role="alert" th:if="${param.userCreated}">
         Пользователь создан.
     </div>
     <div class="row">
@@ -23,192 +23,193 @@
 </div>
 <!--/*@thymesVar id="user" type="by.forward.forward_system.core.dto.ui.AuthorUiDto"*/-->
 <div class="container mt-3">
-    <form class="container g-3 border" th:action="${actionUrl}" th:object="${user}" method="post">
+    <form class="container g-3 border" method="post" th:action="${actionUrl}" th:object="${user}">
         <div class="row">
             <div class="col-12 ">
-                <input type="text" th:field="*{id}" hidden>
+                <input hidden th:field="*{id}" type="text">
                 <div class="mb-3 mt-3 row">
-                    <label for="username" class="col-sm-2 col-form-label">Имя пользователя</label>
+                    <label class="col-sm-2 col-form-label" for="username">Имя пользователя</label>
                     <div class="col-sm-10">
-                        <input required id="username" type="text" class="form-control" th:field="*{username}">
+                        <input class="form-control" id="username" required th:field="*{username}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="lastname" class="col-sm-2 col-form-label">Фамилия</label>
+                    <label class="col-sm-2 col-form-label" for="lastname">Фамилия</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="lastname" th:field="*{lastname}">
+                        <input class="form-control" id="lastname" required th:field="*{lastname}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="firstname" class="col-sm-2 col-form-label">Имя</label>
+                    <label class="col-sm-2 col-form-label" for="firstname">Имя</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="firstname" th:field="*{firstname}">
+                        <input class="form-control" id="firstname" required th:field="*{firstname}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="surname" class="col-sm-2 col-form-label">Отчество</label>
+                    <label class="col-sm-2 col-form-label" for="surname">Отчество</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="surname" th:field="*{surname}">
+                        <input class="form-control" id="surname" th:field="*{surname}" type="text">
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="excellentSubjects" class="col-sm-2 col-form-label">Предметы на 100% (5 баллов)</label>
+                    <label class="col-sm-2 col-form-label" for="excellentSubjects">Предметы на 100% (5 баллов)</label>
                     <div class="col-sm-10">
-                        <input hidden readonly name="excellentSubjects" id="excellentSubjects" th:field="*{excellentSubjects}">
-                        <textarea rows="2" readonly id="excellentSubjectsText" type="text"
-                                  class="form-control"></textarea>
+                        <input hidden id="excellentSubjects" name="excellentSubjects" readonly
+                               th:field="*{excellentSubjects}">
+                        <textarea class="form-control" id="excellentSubjectsText" readonly rows="2"
+                                  type="text"></textarea>
                         <div class="row">
-                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#modalExcellentSubjects">Выбрать предметы
+                            <button class="mt-2 mb-1 btn btn-primary" data-bs-target="#modalExcellentSubjects" data-bs-toggle="modal"
+                                    type="button">Выбрать предметы
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="goodSubjects" class="col-sm-2 col-form-label">Предметы, которые хорошо напишет (4
+                    <label class="col-sm-2 col-form-label" for="goodSubjects">Предметы, которые хорошо напишет (4
                         балла)</label>
                     <div class="col-sm-10">
-                        <input hidden readonly name="goodSubjects" id="goodSubjects" th:field="*{goodSubjects}">
-                        <textarea rows="2" readonly id="goodSubjectsText" type="text"
-                                  class="form-control"></textarea>
+                        <input hidden id="goodSubjects" name="goodSubjects" readonly th:field="*{goodSubjects}">
+                        <textarea class="form-control" id="goodSubjectsText" readonly rows="2"
+                                  type="text"></textarea>
                         <div class="row">
-                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#modalGoodSubjects">Выбрать предметы
+                            <button class="mt-2 mb-1 btn btn-primary" data-bs-target="#modalGoodSubjects" data-bs-toggle="modal"
+                                    type="button">Выбрать предметы
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="maybeSubjects" class="col-sm-2 col-form-label">Предметы, которые может
+                    <label class="col-sm-2 col-form-label" for="maybeSubjects">Предметы, которые может
                         рассмотреть</label>
                     <div class="col-sm-10">
-                        <input hidden readonly name="maybeSubjects" id="maybeSubjects" th:field="*{maybeSubjects}">
-                        <textarea rows="2" readonly id="maybeSubjectsText" type="text"
-                                  class="form-control"></textarea>
+                        <input hidden id="maybeSubjects" name="maybeSubjects" readonly th:field="*{maybeSubjects}">
+                        <textarea class="form-control" id="maybeSubjectsText" readonly rows="2"
+                                  type="text"></textarea>
                         <div class="row">
-                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal"
-                                    data-bs-target="#modalMaybeSubjects">Выбрать предметы
+                            <button class="mt-2 mb-1 btn btn-primary" data-bs-target="#modalMaybeSubjects" data-bs-toggle="modal"
+                                    type="button">Выбрать предметы
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="password" class="col-sm-2 col-form-label">Пароль</label>
+                    <label class="col-sm-2 col-form-label" for="password">Пароль</label>
                     <div class="col-sm-10">
-                        <input type="password"
-                               class="form-control"
+                        <input class="form-control"
                                id="password"
                                th:field="*{password}"
+                               th:placeholder="${passwordRequired == true}? 'Введите пароль' : 'Оставьте пустым, если не хотите менять пароль'"
                                th:required="${passwordRequired}"
-                               th:placeholder="${passwordRequired == true}? 'Введите пароль' : 'Оставьте пустым, если не хотите менять пароль'">
+                               type="password">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="contact" class="col-sm-2 col-form-label">Контакты (телефон)</label>
+                    <label class="col-sm-2 col-form-label" for="contact">Контакты (телефон)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="contact" th:field="*{contact}">
+                        <input class="form-control" id="contact" required th:field="*{contact}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="contactTelegram" class="col-sm-2 col-form-label">Контакты (Телеграмм)</label>
+                    <label class="col-sm-2 col-form-label" for="contactTelegram">Контакты (Телеграмм)</label>
                     <div class="col-sm-10">
-                        <input required type="text" class="form-control" id="contactTelegram"
-                               th:field="*{contactTelegram}">
+                        <input class="form-control" id="contactTelegram" required th:field="*{contactTelegram}"
+                               type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="email" class="col-sm-2 col-form-label">Почта</label>
+                    <label class="col-sm-2 col-form-label" for="email">Почта</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" id="email" th:field="*{email}">
+                        <input class="form-control" id="email" th:field="*{email}" type="email">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="payment" class="col-sm-2 col-form-label">Реквизиты оплаты</label>
+                    <label class="col-sm-2 col-form-label" for="payment">Реквизиты оплаты</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="payment" th:field="*{payment}">
+                        <input class="form-control" id="payment" th:field="*{payment}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="other" class="col-sm-2 col-form-label">Дополнительная информация</label>
+                    <label class="col-sm-2 col-form-label" for="other">Дополнительная информация</label>
                     <div class="col-sm-10">
-                        <textarea type="text" class="form-control" id="other" rows="5" th:field="*{other}"></textarea>
+                        <textarea class="form-control" id="other" rows="5" th:field="*{other}" type="text"></textarea>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
-            <button type="submit" class="btn btn-primary mb-3">Применить</button>
+            <button class="btn btn-primary mb-3" type="submit">Применить</button>
         </div>
     </form>
 
-    <div class="modal fade" id="modalExcellentSubjects" tabindex="-1" aria-labelledby="excellentLabel"
-         aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="excellentLabel" class="modal fade" id="modalExcellentSubjects"
+         tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="excellentLabel">Выбор предметов на 100%</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-check" th:each="d : ${disciplines}">
-                        <input th:attr="idValue=${d.getId()}" class="form-check-input excellentSubject" type="checkbox"
-                               th:id="|excellent-| + ${d.getId()}">
+                        <input class="form-check-input excellentSubject" th:attr="idValue=${d.getId()}" th:id="|excellent-| + ${d.getId()}"
+                               type="checkbox">
                         <label class="form-check-label" th:for="|excellent-| + ${d.getId()}"
                                th:id="|label-excellent-| + ${d.getId()}" th:text="${d.getName()}"></label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalGoodSubjects" tabindex="-1" aria-labelledby="goodLabel"
-         aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="goodLabel" class="modal fade" id="modalGoodSubjects"
+         tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="goodLabel">Предметы, которые хорошо напишет</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-check" th:each="d : ${disciplines}">
-                        <input th:attr="idValue=${d.getId()}" class="form-check-input goodSubject" type="checkbox"
-                               th:id="|good-| + ${d.getId()}">
+                        <input class="form-check-input goodSubject" th:attr="idValue=${d.getId()}" th:id="|good-| + ${d.getId()}"
+                               type="checkbox">
                         <label class="form-check-label" th:for="|good-| + ${d.getId()}"
                                th:id="|label-good-| + ${d.getId()}" th:text="${d.getName()}"></label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalMaybeSubjects" tabindex="-1" aria-labelledby="maybeLabel"
-         aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="maybeLabel" class="modal fade" id="modalMaybeSubjects"
+         tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="maybeLabel">Предметы, которые может рассмотреть</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-check" th:each="d : ${disciplines}">
-                        <input th:attr="idValue=${d.getId()}" class="form-check-input maybeSubject" type="checkbox"
-                               th:id="|maybe-| + ${d.getId()}">
+                        <input class="form-check-input maybeSubject" th:attr="idValue=${d.getId()}" th:id="|maybe-| + ${d.getId()}"
+                               type="checkbox">
                         <label class="form-check-label" th:for="|maybe-| + ${d.getId()}"
                                th:id="|label-maybe-| + ${d.getId()}" th:text="${d.getName()}"></label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
@@ -302,7 +303,8 @@
 
         for (let subject of maybeSubjectsCheckbox) {
             subject.addEventListener('change', (e) => {
-                let idValue = parseInt(e.target.getAttribute("idValue"));;
+                let idValue = parseInt(e.target.getAttribute("idValue"));
+                ;
                 let isChecked = e.target.checked;
 
                 if (isChecked) {

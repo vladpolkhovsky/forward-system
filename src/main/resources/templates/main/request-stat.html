@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
     <script src="/static/jquery-3.7.1.min.js"></script>
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <link href="/static/datatables/datatables.min.css" rel="stylesheet">
@@ -20,55 +20,55 @@
 
 <div class="container mt-3 mb-3">
     <span class="p-1 mt-2 me-3">Быстрый фильтр: </span>
-    <a href="/req-stat-redirect?type=last7" class="btn btn-primary p-1 ms-3 mt-1">Последние 7 дней</a>
-    <a href="/req-stat-redirect?type=last14" class="btn btn-primary p-1 ms-3 mt-1">Последние 14 дней</a>
-    <a href="/req-stat-redirect?type=last30" class="btn btn-primary p-1 ms-3 mt-1">Последние 30 дней</a>
-    <a href="/req-stat-redirect?type=last60" class="btn btn-primary p-1 ms-3 mt-1">Последние 60 дней</a>
-    <a href="/req-stat-redirect?type=last90" class="btn btn-primary p-1 ms-3 mt-1">Последние 90 дней</a>
+    <a class="btn btn-primary p-1 ms-3 mt-1" href="/req-stat-redirect?type=last7">Последние 7 дней</a>
+    <a class="btn btn-primary p-1 ms-3 mt-1" href="/req-stat-redirect?type=last14">Последние 14 дней</a>
+    <a class="btn btn-primary p-1 ms-3 mt-1" href="/req-stat-redirect?type=last30">Последние 30 дней</a>
+    <a class="btn btn-primary p-1 ms-3 mt-1" href="/req-stat-redirect?type=last60">Последние 60 дней</a>
+    <a class="btn btn-primary p-1 ms-3 mt-1" href="/req-stat-redirect?type=last90">Последние 90 дней</a>
 </div>
 
-<form class="container" action="/req-stat">
+<form action="/req-stat" class="container">
 
     <hr class="m-1"/>
 
     <div class="row mt-0 ps-3 pe-3">
         <div class="row mt-0 p-0 g-3 align-items-center col-12 col-md-5">
             <div class="col-auto">
-                <label for="stat-time-start" class="col-form-label">Начало</label>
+                <label class="col-form-label" for="stat-time-start">Начало</label>
             </div>
             <div class="col-auto">
-                <input type="date"
-                       required
-                       id="stat-time-start"
+                <input aria-describedby="stat-time-start"
                        class="form-control"
+                       id="stat-time-start"
                        name="startDate"
-                       aria-describedby="stat-time-start"
+                       required
                        th:max="${#temporals.format(cDate, 'yyyy-MM-dd')}"
-                       th:value="${#temporals.format(startDate, 'yyyy-MM-dd')}">
+                       th:value="${#temporals.format(startDate, 'yyyy-MM-dd')}"
+                       type="date">
             </div>
             <div class="col-auto">
-                <span id="stat-time-start-inline" class="form-text">Дата начала отсчёта (включая)</span>
+                <span class="form-text" id="stat-time-start-inline">Дата начала отсчёта (включая)</span>
             </div>
         </div>
         <div class="row g-3 mt-0 align-items-center col-12 col-md-5">
             <div class="col-auto">
-                <label for="stat-time-end" class="col-form-label">Конец</label>
+                <label class="col-form-label" for="stat-time-end">Конец</label>
             </div>
             <div class="col-auto">
-                <input type="date"
-                       required
-                       id="stat-time-end"
+                <input aria-describedby="stat-time-end"
                        class="form-control"
+                       id="stat-time-end"
                        name="endDate"
-                       aria-describedby="stat-time-end"
+                       required
                        th:max="${#temporals.format(cDate, 'yyyy-MM-dd')}"
-                       th:value="${#temporals.format(endDate, 'yyyy-MM-dd')}">
+                       th:value="${#temporals.format(endDate, 'yyyy-MM-dd')}"
+                       type="date">
             </div>
             <div class="col-auto">
-                <span id="stat-time-end-inline" class="form-text">Дата конца отсчёта (включая)</span>
+                <span class="form-text" id="stat-time-end-inline">Дата конца отсчёта (включая)</span>
             </div>
         </div>
-        <input type="submit" class="col-12 col-md-2 btn btn-primary mt-3" value="Показать">
+        <input class="col-12 col-md-2 btn btn-primary mt-3" type="submit" value="Показать">
     </div>
 
     <hr class="m-1 mt-3"/>
@@ -87,30 +87,30 @@
 </div>
 
 <div class="d-flex justify-content-center p-2 table-responsive">
-    <table id="req-table" class="table table-hover table-striped align-middle cell-border table-bordered">
+    <table class="table table-hover table-striped align-middle cell-border table-bordered" id="req-table">
         <thead class="table-group-divider">
         <tr class="align-middle">
-            <th scope="col" class="p-3 m-3">Имя пользователя</th>
+            <th class="p-3 m-3" scope="col">Имя пользователя</th>
             <th scope="col">Всего предложено</th>
             <th scope="col" th:each="m : ${mIds}" th:text="${uMap.get(m)}"></th>
         </tr>
         <tr class="align-middle">
             <th data-dt-order="disable">Всего предложено</th>
-            <th scope="col"
-                class="text-center"
-                th:text="${dataMap.getTotalCount()}"
-                data-dt-order="disable"></th>
-            <th scope="col" class="text-center" th:each="m : ${mIds}"
-                th:text="${dataMap.getCountByManager(m)}"
-                data-dt-order="disable"></th>
+            <th class="text-center"
+                data-dt-order="disable"
+                scope="col"
+                th:text="${dataMap.getTotalCount()}"></th>
+            <th class="text-center" data-dt-order="disable" scope="col"
+                th:each="m : ${mIds}"
+                th:text="${dataMap.getCountByManager(m)}"></th>
         </tr>
         </thead>
         <tbody class="table-group-divider">
         <tr th:each="a : ${aIds}">
             <th scope="row" th:text="${uMap.get(a)}"></th>
-            <th scope="row" class="text-center" th:text="${dataMap.getCountByAuthor(a)}">Mark</th>
-            <td th:each="m : ${mIds}" th:class="'text-center ' + ${dataMap.getCount(a, m) > 0 ? 'table-primary' : ''}"
-                th:title="'От ' + ${uMap.get(m)} + ' для ' + ${uMap.get(a)}" th:text="${dataMap.getCount(a, m)}"></td>
+            <th class="text-center" scope="row" th:text="${dataMap.getCountByAuthor(a)}">Mark</th>
+            <td th:class="'text-center ' + ${dataMap.getCount(a, m) > 0 ? 'table-primary' : ''}" th:each="m : ${mIds}"
+                th:text="${dataMap.getCount(a, m)}" th:title="'От ' + ${uMap.get(m)} + ' для ' + ${uMap.get(a)}"></td>
         </tr>
         </tbody>
     </table>

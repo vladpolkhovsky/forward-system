@@ -5,7 +5,6 @@ import by.forward.forward_system.core.jpa.model.ChatEntity;
 import by.forward.forward_system.core.jpa.model.ChatMemberEntity;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.ChatMemberRepository;
-import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

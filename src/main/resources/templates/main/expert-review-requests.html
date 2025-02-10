@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -24,8 +24,8 @@
                     th:each="order, orderStat : ${reviews}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}"
-                               th:href="|/expert-review-order-answer/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}">
+                            <a th:href="|/expert-review-order-answer/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}"
+                               th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}">
                             </a>
                         </div>
                         <p th:text="|Название заказа: | + ${order.getOrderName()}"></p>

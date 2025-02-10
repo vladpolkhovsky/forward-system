@@ -4,7 +4,6 @@ import by.forward.forward_system.core.dto.messenger.fast.LoadChatMessagesRequest
 import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatMessageDto;
 import by.forward.forward_system.core.services.newchat.QueryHandler;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.intellij.lang.annotations.Language;
@@ -30,6 +29,7 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
             order by cm.created_at desc
             limit ?
         """;
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public String getQuery(LoadChatMessagesRequestDto request) {
@@ -52,8 +52,6 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
             ps.setLong(index, request.getSize());
         };
     }
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public RowMapper<SimpleChatMessageDto> getRowMapper() {

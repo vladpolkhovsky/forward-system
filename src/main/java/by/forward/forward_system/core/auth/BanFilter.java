@@ -24,7 +24,9 @@ public class BanFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/logout") ||
-            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ban")) {
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ban") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/static/") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ai-log/")) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;
         }

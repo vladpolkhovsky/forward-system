@@ -13,7 +13,7 @@ import java.util.List;
 public interface ChatMessageToUserRepository extends JpaRepository<ChatMessageToUserEntity, Long> {
 
     @Query(nativeQuery = true, value = "select cmtu.* from forward_system.chat_message_to_user cmtu " +
-        "where cmtu.chat_id = :chatId and cmtu.user_id = :userId")
+                                       "where cmtu.chat_id = :chatId and cmtu.user_id = :userId")
     List<ChatMessageToUserEntity> getAllByUserAndChat(Long userId, Long chatId);
 
     @Modifying

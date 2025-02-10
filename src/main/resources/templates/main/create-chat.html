@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -14,11 +14,12 @@
     <div class="row">
         <h3 th:text="${menuName}"></h3>
     </div>
-    <form class="row" action="/create-chat" method="post">
+    <form action="/create-chat" class="row" method="post">
         <input hidden name="chatId" th:value="${chatId}">
         <div class="mb-3">
-            <label for="chatName" class="form-label">Название чата:</label>
-            <input type="text" class="form-control" id="chatName" name="chatName" placeholder="Название чата" th:value="${chatName}">
+            <label class="form-label" for="chatName">Название чата:</label>
+            <input class="form-control" id="chatName" name="chatName" placeholder="Название чата" th:value="${chatName}"
+                   type="text">
             <hr class="mt-3"/>
             <p>Выберите пользователей чата.</p>
             <hr/>
@@ -26,15 +27,19 @@
                 <div class="col-6 border">
                     <p>Пользователи</p>
                     <div class="form-check" th:each="t : ${users}">
-                        <input class="form-check-input" type="checkbox" name="users" th:value="${t.getId()}" th:checked="${t.getChecked()}" th:id="|id-| + ${t.getId()}">
-                        <label class="form-check-label" th:for="|id-| + ${t.getId()}" th:text="${t.getUsername()} + | : | + ${t.getFio()}"></label>
+                        <input class="form-check-input" name="users" th:checked="${t.getChecked()}" th:id="|id-| + ${t.getId()}"
+                               th:value="${t.getId()}" type="checkbox">
+                        <label class="form-check-label" th:for="|id-| + ${t.getId()}"
+                               th:text="${t.getUsername()} + | : | + ${t.getFio()}"></label>
                     </div>
                 </div>
                 <div class="col-6 border">
                     <p>Авторы</p>
                     <div class="form-check" th:each="t : ${authors}">
-                        <input class="form-check-input" type="checkbox" name="users" th:value="${t.getId()}" th:checked="${t.getChecked()}" th:id="|id-| + ${t.getId()}">
-                        <label class="form-check-label" th:for="|id-| + ${t.getId()}" th:text="${t.getUsername()} + | : | + ${t.getFio()}"></label>
+                        <input class="form-check-input" name="users" th:checked="${t.getChecked()}" th:id="|id-| + ${t.getId()}"
+                               th:value="${t.getId()}" type="checkbox">
+                        <label class="form-check-label" th:for="|id-| + ${t.getId()}"
+                               th:text="${t.getUsername()} + | : | + ${t.getFio()}"></label>
                     </div>
                 </div>
             </div>

@@ -12,8 +12,8 @@ import java.util.List;
 public interface AuthorDisciplineRepository extends JpaRepository<AuthorDisciplineEntity, Long> {
 
     @Query(nativeQuery = true, value = """
-        select ad.id, ad.author_id, d.id as discipline_id, d."name" as discipline_name, ad.discipline_quality from forward_system.author_disciplines ad\s
-    	    inner join forward_system.disciplines d on ad.discipline_id = d.id
-    """)
+            select ad.id, ad.author_id, d.id as discipline_id, d."name" as discipline_name, ad.discipline_quality from forward_system.author_disciplines ad\s
+        	    inner join forward_system.disciplines d on ad.discipline_id = d.id
+        """)
     List<DisciplineProjection> getAllDisciplines();
 }

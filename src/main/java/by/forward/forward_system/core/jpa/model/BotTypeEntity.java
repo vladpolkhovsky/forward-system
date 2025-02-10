@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.jpa.model;
 
 import by.forward.forward_system.core.enums.BotType;
-import by.forward.forward_system.core.enums.ChatType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

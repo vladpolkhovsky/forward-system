@@ -268,7 +268,7 @@ public class OrderService {
 
     private boolean isAssignedAuthor(OrderParticipantEntity orderParticipant) {
         return orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
-            || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
+               || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
     private void sendDeclineMessage(Long userId, Long managerId, String techNumber) {
@@ -281,7 +281,8 @@ public class OrderService {
         Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(userEntity.getId(), manager.getId());
 
         ChatMessageTypeEntity chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
-            .orElseThrow(() -> new RuntimeException("Chat message type not found " + managerId));;
+            .orElseThrow(() -> new RuntimeException("Chat message type not found " + managerId));
+        ;
 
         ChatMessageEntity chatMessageEntity = messageService.sendMessage(
             null,

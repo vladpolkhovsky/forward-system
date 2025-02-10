@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -17,23 +17,24 @@
 </div>
 <div class="container">
     <div class="row">
-        <p class="mt-3" th:text="|Заблокированный пользователь:  | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
+        <p class="mt-3"
+           th:text="|Заблокированный пользователь:  | + ${ban.getUser().getUsername()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
         <pre class="mt-3 mb-3" th:utext="|Причина блокировки: | + ${ban.getReason()}"></pre>
-        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|"
-           class="btn btn-danger mt-3">Заблокировать</a>
-        <a th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=false|" class="btn btn-primary mt-3 mb-3">Разблокировать</a>
+        <a class="btn btn-danger mt-3"
+           th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=true|">Заблокировать</a>
+        <a class="btn btn-primary mt-3 mb-3" th:href="|/auto-ban-user-verdict/| + ${ban.getId()} + |?ban=false|">Разблокировать</a>
         <div class="col-12" th:if="${ban.getMessage()}">
             <p th:text="|Сообщение за которое забанили пользовтаеля | + ${ban.getUser().getFio()} + | (| + ${ban.getUser().getRolesRus()} + |): |"></p>
             <ul class="list-group mb-3">
                 <li class="list-group-item align-items-start">
                     <!--/*@thymesVar id="msg" type="by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto"*/-->
                     <div>
-                        <p th:id="|msg-| + ${ban.getMessage().getId()}" th:hidden="${!ban.getMessage().getIsHidden()}"
-                           style="color: indianred">
+                        <p style="color: indianred" th:hidden="${!ban.getMessage().getIsHidden()}"
+                           th:id="|msg-| + ${ban.getMessage().getId()}">
                             <strong>Удалено</strong></p>
                     </div>
                     <div>
-                        <pre th:text="${ban.getMessage().getContent()}" style="white-space: pre-wrap"></pre>
+                        <pre style="white-space: pre-wrap" th:text="${ban.getMessage().getContent()}"></pre>
                     </div>
                     <div th:each="att : ${ban.getMessage().getAttachments()}">
                         <a th:href="|/load-file/| + ${att.getAttachmentId()}" th:text="${att.getAttachmentName()}"></a>
@@ -57,11 +58,11 @@
                 <li class="list-group-item align-items-start"
                     th:each="msg : ${ban.getLastMessages()}">
                     <div>
-                        <p th:id="|msg-| + ${msg.getId()}" th:hidden="${!msg.getIsHidden()}" style="color: indianred">
+                        <p style="color: indianred" th:hidden="${!msg.getIsHidden()}" th:id="|msg-| + ${msg.getId()}">
                             <strong>Удалено</strong></p>
                     </div>
                     <div>
-                        <pre th:text="${msg.getContent()}" style="white-space: pre-wrap"></pre>
+                        <pre style="white-space: pre-wrap" th:text="${msg.getContent()}"></pre>
                     </div>
                     <div th:each="att : ${msg.getAttachments()}">
                         <a th:href="|/load-file/| + ${att.getAttachmentId()}" th:text="${att.getAttachmentName()}"></a>

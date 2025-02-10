@@ -8,7 +8,6 @@ import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
-
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
@@ -28,13 +27,10 @@ import java.util.function.Function;
 @AllArgsConstructor
 public class CreateChatController {
 
-    private final UserUiService userUiService;
-
-    private final ChatService chatService;
-
-    private final AuthorUiService authorUiService;
-
     private final static String namePattern = "%s (%s)";
+    private final UserUiService userUiService;
+    private final ChatService chatService;
+    private final AuthorUiService authorUiService;
 
     @GetMapping(value = "/create-chat")
     public String createChat(Model model) {

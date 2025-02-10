@@ -1,7 +1,5 @@
 package by.forward.forward_system.core.services.newchat.handlers;
 
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatsStatusRequestDto;
-import by.forward.forward_system.core.dto.messenger.fast.LoadChatsStatusResponseDto;
 import by.forward.forward_system.core.dto.messenger.fast.LoadIsChatMemberRequestDto;
 import by.forward.forward_system.core.dto.messenger.fast.LoadIsChatMemberResponseDto;
 import by.forward.forward_system.core.services.newchat.QueryHandler;

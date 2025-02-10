@@ -27,6 +27,7 @@ public class SearchChatQueryHandler implements QueryHandler<SearchChatRequestDto
         	order by c.last_message_date desc
         	limit ?;
         """;
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public String getQuery(SearchChatRequestDto request) {
@@ -37,8 +38,6 @@ public class SearchChatQueryHandler implements QueryHandler<SearchChatRequestDto
     public PreparedStatementSetter getPreparedStatementSetter(SearchChatRequestDto request) {
         return null;
     }
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public RowMapper<FastChatDto> getRowMapper() {

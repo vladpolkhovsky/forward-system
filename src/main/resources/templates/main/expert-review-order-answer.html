@@ -3,14 +3,14 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="/static/popper.min.js"></script>
 
 
     <script src="/static/bootstrap/bootstrap.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -28,8 +28,8 @@
                                                  th:text="|нет прошлых вердиктов|"></span></p>
             <div class="mb-2" th:each="older : ${olderReviews}">
                 <p class="d-inline-flex gap-1">
-                    <a class="btn btn-primary" data-bs-toggle="collapse" th:href="${'#' + older.getId()}" role="button"
-                       aria-expanded="false"
+                    <a aria-expanded="false" class="btn btn-primary" data-bs-toggle="collapse" role="button"
+                       th:href="${'#' + older.getId()}"
                        th:text="|Проверка от | + ${#temporals.format(older.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"
                     ></a>
                 </p>
@@ -38,7 +38,7 @@
                         <p>Сообщение от менеджера: <span th:text="${older.getReviewMessage()}"></span></p>
                         <p>Сообщение от эксперта: <span th:text="${older.getReviewVerdict()}"></span></p>
                         <p>Оценка эксперта: <span th:text="${older.getReviewVerdictMark()}"></span></p>
-                        <p><a th:href="|/load-file/| + ${older.getAttachmentId()}" target="_blank">Файл на проверку</a>
+                        <p><a target="_blank" th:href="|/load-file/| + ${older.getAttachmentId()}">Файл на проверку</a>
                         </p>
                         <a th:href="|/load-file/| + ${older.getReviewFileId()}"
                            th:text="|Заполненная форма отчёта|"></a>
@@ -48,62 +48,63 @@
             <hr/>
             <p>Файл на проверку и сообщение от менеджера</p>
             <hr>
-            <a th:href="|/load-file/| + ${review.getAttachmentId()}" target="_blank">Файл на проверку</a>
+            <a target="_blank" th:href="|/load-file/| + ${review.getAttachmentId()}">Файл на проверку</a>
             <hr th:if="${additionalFile}">
-            <a th:if="${additionalFile}" th:href="|/load-file/| + ${additionalFile}" target="_blank">Дополнительно
+            <a target="_blank" th:href="|/load-file/| + ${additionalFile}" th:if="${additionalFile}">Дополнительно
                 приложенный файл от менеджера</a>
             <hr>
-            <a th:href="|/static/expert-form/expert-form.xlsx|" target="_blank">Форма заполенения отчёта</a>
+            <a target="_blank" th:href="|/static/expert-form/expert-form.xlsx|">Форма заполенения отчёта</a>
             <hr>
             <p class="mt-3">Сообщение от менеджера:</p>
-            <textarea class="form-control mt-3" th:text="${review.getReviewMessage()}" readonly rows="10"></textarea>
-            <form th:action="|/expert-review-order-answer/| + ${review.getOrderId()} + |/| + ${review.getId()}"
-                  th:object="${review}"
-                  enctype="multipart/form-data"
-                  method="post">
+            <textarea class="form-control mt-3" readonly rows="10" th:text="${review.getReviewMessage()}"></textarea>
+            <form enctype="multipart/form-data"
+                  method="post"
+                  th:action="|/expert-review-order-answer/| + ${review.getOrderId()} + |/| + ${review.getId()}"
+                  th:object="${review}">
                 <h3 class="mt-3">Общий вывод по работе:</h3>
-                <textarea class="form-control mt-3" name="verdict" rows="10" required></textarea>
+                <textarea class="form-control mt-3" name="verdict" required rows="10"></textarea>
                 <h3 class="mt-3">Общая оценка работы:</h3>
                 <div>
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-5"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-5" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-success" for="mark-5">5</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-5-"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-5-" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-success" for="mark-5-">5-</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4+"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-4+" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-warning" for="mark-4+">4+</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-4" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-warning" for="mark-4">4</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-4-"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-4-" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-warning" for="mark-4-">4-</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3+"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-3+" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-danger" for="mark-3+">3+</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-3" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-danger" for="mark-3">3</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-3-"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-3-" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-danger" for="mark-3-">3-</label>
 
-                    <input required type="radio" class="btn-check" name="mark-outlined" id="mark-2"
-                           autocomplete="off">
+                    <input autocomplete="off" class="btn-check" id="mark-2" name="mark-outlined" required
+                           type="radio">
                     <label class="btn btn-outline-dark" for="mark-2">2</label>
                 </div>
-                <input id="verdict-mark" class="form-control mt-3 d-none" type="text" readonly name="verdict-mark" required>
+                <input class="form-control mt-3 d-none" id="verdict-mark" name="verdict-mark" readonly required
+                       type="text">
                 <h3 class="mt-3">Заполненная форма отчёта</h3>
-                <input class="form-control mt-3" type="file" name="verdict-file" required>
+                <input class="form-control mt-3" name="verdict-file" required type="file">
                 <div class="row">
                     <input class="btn btn-primary mt-3 mb-3" type="submit" value="Отправить">
                 </div>

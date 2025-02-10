@@ -50,7 +50,7 @@ public class ForwardSystemBot implements SpringLongPollingBot, LongPollingSingle
         if (!isAnyResolverAccept) {
             SendMessage sendMessage = SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
-                .text("Неправильная комманда. \nПожалуста зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+                .text("Неправильная команда. \nПожалуйста, зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
                 .build();
             try {
                 telegramClient.execute(sendMessage);

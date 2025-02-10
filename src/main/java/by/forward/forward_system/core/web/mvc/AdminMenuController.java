@@ -72,7 +72,7 @@ public class AdminMenuController {
         UpdateOrderRequestDto byId = updateRequestOrderService.getById(requestId);
 
         if (byId.getIsViewed()) {
-           return new RedirectView("/main");
+            return new RedirectView("/main");
         }
 
         Boolean verdict = BooleanUtils.toBoolean(body.getFirst("verdict"));

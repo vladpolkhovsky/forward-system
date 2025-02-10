@@ -11,11 +11,6 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 @AllArgsConstructor
 public class HelpCommandResolver implements CommandResolver {
 
-    @Override
-    public boolean accept(String command) {
-        return command.startsWith("/help");
-    }
-
     private static final String HELP_TEXT = """
         Доступны следующие комманды для бота.
         
@@ -25,6 +20,11 @@ public class HelpCommandResolver implements CommandResolver {
         /user-list - список всех зарегистрированных в боте пользователей
         /unsubscribe - отписатья от рассылки сообщений
         """;
+
+    @Override
+    public boolean accept(String command) {
+        return command.startsWith("/help");
+    }
 
     @Override
     public void resolve(TelegramClient telegramClient, Update update) throws TelegramApiException {

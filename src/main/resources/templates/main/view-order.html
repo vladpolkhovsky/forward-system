@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -16,129 +16,132 @@
     </div>
 </div>
 <div class="container">
-    <a class="mt-3 mb-3" th:if="hasMainChat" th:href="|/new-messenger?tab=orders&chatId=| + ${mainChatId}">Перейти в чат заказа</a>
+    <a class="mt-3 mb-3" th:href="|/new-messenger?tab=orders&chatId=| + ${mainChatId}" th:if="hasMainChat">Перейти в чат
+        заказа</a>
     <div class="row mb-3 mt-3">
-        <label for="status" class="col-sm-2 col-form-label">Статус</label>
+        <label class="col-sm-2 col-form-label" for="status">Статус</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="status"
-                   th:value="${order.getOrderStatusRus()}">
+            <input class="form-control-plaintext" id="status" readonly th:value="${order.getOrderStatusRus()}"
+                   type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="name" class="col-sm-2 col-form-label">Название заказа</label>
+        <label class="col-sm-2 col-form-label" for="name">Название заказа</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="name" th:value="${order.getName()}">
+            <input class="form-control-plaintext" id="name" readonly th:value="${order.getName()}" type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="techNumber" class="col-sm-2 col-form-label">Номер ТЗ</label>
+        <label class="col-sm-2 col-form-label" for="techNumber">Номер ТЗ</label>
         <div class="col-sm-10">
-            <input type="number" readonly class="form-control-plaintext" id="techNumber"
-                   th:value="${order.getTechNumber()}">
+            <input class="form-control-plaintext" id="techNumber" readonly th:value="${order.getTechNumber()}"
+                   type="number">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="workType" class="col-sm-2 col-form-label">Тип работы</label>
+        <label class="col-sm-2 col-form-label" for="workType">Тип работы</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="workType" th:value="${order.getWorkType()}">
+            <input class="form-control-plaintext" id="workType" readonly th:value="${order.getWorkType()}" type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="discipline" class="col-sm-2 col-form-label">Дисциплина</label>
+        <label class="col-sm-2 col-form-label" for="discipline">Дисциплина</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="discipline"
-                   th:value="${order.getDiscipline()}">
+            <input class="form-control-plaintext" id="discipline" readonly th:value="${order.getDiscipline()}"
+                   type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="subject" class="col-sm-2 col-form-label">Тема</label>
+        <label class="col-sm-2 col-form-label" for="subject">Тема</label>
         <div class="col-sm-10">
-            <textarea rows="2" readonly class="form-control-plaintext" id="subject" th:text="${order.getSubject()}"></textarea>
+            <textarea class="form-control-plaintext" id="subject" readonly rows="2"
+                      th:text="${order.getSubject()}"></textarea>
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="originality" class="col-sm-2 col-form-label">Оригинальность от</label>
+        <label class="col-sm-2 col-form-label" for="originality">Оригинальность от</label>
         <div class="col-sm-10">
-            <input type="number" readonly min="0" max="100" class="form-control-plaintext" id="originality"
-                   th:value="${order.getOriginality()}">
+            <input class="form-control-plaintext" id="originality" max="100" min="0" readonly th:value="${order.getOriginality()}"
+                   type="number">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="verificationSystem" class="col-sm-2 col-form-label">Система проверки</label>
+        <label class="col-sm-2 col-form-label" for="verificationSystem">Система проверки</label>
         <div class="col-sm-10">
-            <input type="text" readonly class="form-control-plaintext" id="verificationSystem"
-                   th:value="${order.getVerificationSystem()}">
+            <input class="form-control-plaintext" id="verificationSystem" readonly th:value="${order.getVerificationSystem()}"
+                   type="text">
         </div>
     </div>
     <div class="mb-3 mt-3 row">
-        <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
+        <label class="col-sm-2 col-form-label" for="amount">Объем работы (страниц)</label>
         <div class="col-sm-10">
-            <input readonly id="amount" type="text" class="form-control-plaintext"
-                   th:value="${order.getAmount()}">
+            <input class="form-control-plaintext" id="amount" readonly th:value="${order.getAmount()}"
+                   type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="intermediateDeadline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
+        <label class="col-sm-2 col-form-label" for="intermediateDeadline">Промежуточные сроки сдачи</label>
         <div class="col-sm-10">
-            <input type="datetime-local" readonly class="form-control-plaintext" id="intermediateDeadline"
-                   th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
+            <input class="form-control-plaintext" id="intermediateDeadline" readonly th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}"
+                   type="datetime-local">
         </div>
     </div>
     <div class="mb-3 mt-3 row">
-        <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
-        <input id="additionalDates" type="text" hidden th:value="${order.getAdditionalDates()}">
-        <div id="additionalDatesDiv" class="col-sm-9">
+        <label class="col-sm-2 col-form-label" for="additionalDates">Дополнительный этапы сдачи</label>
+        <input hidden id="additionalDates" th:value="${order.getAdditionalDates()}" type="text">
+        <div class="col-sm-9" id="additionalDatesDiv">
         </div>
     </div>
     <div class="row mb-3 mt-3">
         <p class="col-sm-2 col-form-label">Файлы заказа:</p>
         <div class="col-sm-10">
             <div class="row mb-3" th:each="d : ${order.getAttachments()}">
-                <a target="_blank" th:href="|/load-file/| + ${d.getAttachmentId()}" th:text="${d.getAttachmentName()}"></a>
+                <a target="_blank" th:href="|/load-file/| + ${d.getAttachmentId()}"
+                   th:text="${d.getAttachmentName()}"></a>
             </div>
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="deadline" class="col-sm-2 col-form-label">Окончательный срок сдачи</label>
+        <label class="col-sm-2 col-form-label" for="deadline">Окончательный срок сдачи</label>
         <div class="col-sm-10">
-            <input type=datetime-local readonly class="form-control-plaintext" id="deadline"
-                   th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}">
+            <input class="form-control-plaintext" id="deadline" readonly th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}"
+                   type=datetime-local>
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="other" class="col-sm-2 col-form-label">Дополнительные требования и пожелания</label>
+        <label class="col-sm-2 col-form-label" for="other">Дополнительные требования и пожелания</label>
         <div class="col-sm-10">
-            <textarea readonly class="form-control-plaintext" id="other" rows="15"
+            <textarea class="form-control-plaintext" id="other" readonly rows="15"
                       th:text="${order.getOther()}"></textarea>
         </div>
     </div>
 
     <div class="row mb-3 mt-3">
-        <label for="violationsInformation" class="col-sm-2 col-form-label">Штрафы</label>
+        <label class="col-sm-2 col-form-label" for="violationsInformation">Штрафы</label>
         <div class="col-sm-10">
-            <textarea readonly class="form-control-plaintext" id="violationsInformation" rows="8"
+            <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="8"
                       th:text="${order.getViolationsInformation()}"></textarea>
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="takingCost" class="col-sm-2 col-form-label">Стоимость взятия</label>
+        <label class="col-sm-2 col-form-label" for="takingCost">Стоимость взятия</label>
         <div class="col-sm-10">
-            <input readonly type="number" class="form-control-plaintext" id="takingCost"
-                   th:value="${order.getTakingCost()}">
+            <input class="form-control-plaintext" id="takingCost" readonly th:value="${order.getTakingCost()}"
+                   type="number">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="authorCost" class="col-sm-2 col-form-label">Стоимость для автора</label>
+        <label class="col-sm-2 col-form-label" for="authorCost">Стоимость для автора</label>
         <div class="col-sm-10">
-            <input readonly type="number" class="form-control-plaintext" id="authorCost"
-                   th:value="${authorsCost}">
+            <input class="form-control-plaintext" id="authorCost" readonly th:value="${authorsCost}"
+                   type="number">
         </div>
     </div>
     <div class="row mb-3 mt-3">
-        <label for="createdAt" class="col-sm-2 col-form-label">Дата создания заказа</label>
+        <label class="col-sm-2 col-form-label" for="createdAt">Дата создания заказа</label>
         <div class="col-sm-10">
-            <input type=datetime-local readonly class="form-control-plaintext" id="createdAt"
-                   th:value="${#temporals.format(order?.getCreatedAt(), 'yyyy-MM-dd HH:mm')}">
+            <input class="form-control-plaintext" id="createdAt" readonly th:value="${#temporals.format(order?.getCreatedAt(), 'yyyy-MM-dd HH:mm')}"
+                   type=datetime-local>
         </div>
     </div>
     <hr/>

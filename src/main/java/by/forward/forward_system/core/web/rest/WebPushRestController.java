@@ -33,7 +33,7 @@ public class WebPushRestController {
 
     @PostMapping(value = "/subscribe", consumes = MediaType.ALL_VALUE)
     private ResponseEntity<SubscriptionResult> subscribe(@RequestBody SubscriptionRequest subscriptionRequest) {
-        webPushNotification.subscribe(userUiService.getCurrentUserId(), subscriptionRequest.notificationId(),  subscriptionRequest.subscription());
+        webPushNotification.subscribe(userUiService.getCurrentUserId(), subscriptionRequest.notificationId(), subscriptionRequest.subscription());
         return ResponseEntity.ok(new SubscriptionResult(true));
     }
 

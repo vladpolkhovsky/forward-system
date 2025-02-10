@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface BotNotificationCodeRepository extends JpaRepository<BotNotificationCodeEntity, Long> {
     boolean existsByCode(String code);
+
     Optional<BotNotificationCodeEntity> findByCode(String code);
 }

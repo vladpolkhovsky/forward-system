@@ -19,14 +19,14 @@ import java.util.UUID;
 @EnableScheduling
 public class ForwardSystemApplication {
 
-    @PostConstruct
-    public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
-    }
-
     public static void main(String[] args) {
         System.setProperty("RANDOM_UUID", UUID.randomUUID().toString());
         SpringApplication.run(ForwardSystemApplication.class, args);
+    }
+
+    @PostConstruct
+    public void init() {
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
     }
 
     @EventListener(ContextClosedEvent.class)

@@ -1,14 +1,10 @@
 package by.forward.forward_system.core.services.core;
 
-import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.jpa.model.AiLogEntity;
-import by.forward.forward_system.core.jpa.model.ChatEntity;
-import by.forward.forward_system.core.jpa.model.ChatMessageTypeEntity;
 import by.forward.forward_system.core.jpa.repository.AiLogRepository;
 import by.forward.forward_system.core.jpa.repository.ChatMessageTypeRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.services.messager.MessageService;
-import by.forward.forward_system.core.utils.ChatNames;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
@@ -23,15 +19,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class AIDetector {
 
+    private static final String FILE_CHECK_PATH = "/check_file";
+    private static final String MESSAGE_CHECK_PATH = "/check_message";
+    private static final boolean ENABLE_FILE_CHECK = false;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
     @Value("${ai.url}")
     private String aiUrl;
-
 
     @Autowired
     private AttachmentService attachmentService;
@@ -39,24 +38,10 @@ public class AIDetector {
     @Autowired
     private AiLogRepository aiLogRepository;
 
-    private static final String FILE_CHECK_PATH = "/check_file";
-
-    private static final String MESSAGE_CHECK_PATH = "/check_message";
-
-    private static final boolean ENABLE_FILE_CHECK = false;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
-
-    private WebClient webClient;
-
     @Autowired
     private MessageService messageService;
 
-    @Autowired
-    private ChatRepository chatRepository;
-
-    @Autowired
-    private ChatMessageTypeRepository chatMessageTypeRepository;
+    private WebClient webClient;
 
     @PostConstruct
     public void init() {
@@ -150,17 +135,7 @@ public class AIDetector {
             <a href="/ai-log/%d" target="_blank">Лог</a>
             """.formatted(logId);
 
-        ChatEntity chat = chatRepository.findById(ChatNames.ERRORS_CHAT_ID).orElseThrow(() -> new RuntimeException("Chat not found"));
-        ChatMessageTypeEntity chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("message type not found"));
-
-        messageService.sendMessage(null,
-            chat,
-            message,
-            true,
-            chatMessageType,
-            Collections.emptyList(),
-            Collections.emptyList()
-        );
+        messageService.sendMessageToErrorChat(message);
     }
 
     private String toBase64(byte[] content) {

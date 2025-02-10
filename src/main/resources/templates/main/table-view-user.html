@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${param.userUpdated}" class="alert alert-primary" role="alert">
+    <div class="alert alert-primary" role="alert" th:if="${param.userUpdated}">
         Заказ обновлён.
     </div>
     <div class="row">

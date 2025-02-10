@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
     <script src="/static/popper.min.js"></script>
 
     <script src="/static/bootstrap/bootstrap.min.js"></script>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -20,198 +20,228 @@
 </div>
 <!--/*@thymesVar id="order" type="by.forward.forward_system.core.dto.ui.OrderUiDto"*/-->
 <div class="container mt-3">
-    <form class="container g-3 border" th:action="${actionUrl}" th:object="${order}" method="post">
+    <form class="container g-3 border" method="post" th:action="${actionUrl}" th:object="${order}">
         <div class="row">
             <div class="col-12">
-                <input type="text" th:field="*{id}" hidden>
+                <input hidden th:field="*{id}" type="text">
                 <div class="mb-3 mt-3 row">
-                    <label for="name" class="col-sm-2 col-form-label">Название заказа</label>
+                    <label class="col-sm-2 col-form-label" for="name">Название заказа</label>
                     <div class="col-sm-10">
-                        <input id="name" type="text" class="form-control" th:field="*{name}">
+                        <input class="form-control" id="name" th:field="*{name}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="techName" class="col-sm-2 col-form-label">Номер ТЗ<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="techName">Номер ТЗ<strong class="text-danger">*</strong></label>
                     <div class="col-sm-10">
                         <div class="input-group">
                             <span class="input-group-text" th:text="|Последний номер ТЗ: | + ${lastTechNumber}"></span>
-                            <input required id="techName" type="number" min="0" step="0.01" class="form-control"
-                                   th:field="*{techNumber}">
+                            <input class="form-control" id="techName" min="0" required step="0.01" th:field="*{techNumber}"
+                                   type="number">
                         </div>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="workType" class="col-sm-2 col-form-label">Тип работы<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="workType">Тип работы<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="workType" type="text" class="form-control" th:field="*{workType}">
+                        <input class="form-control" id="workType" required th:field="*{workType}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="discipline" class="col-sm-2 col-form-label">Дисциплина<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="discipline">Дисциплина<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required readonly id="discipline" type="text" class="form-control"
-                               th:field="*{discipline}">
-                        <input required hidden readonly id="disciplineId" type="text" class="form-control"
-                               th:field="*{disciplineId}">
+                        <input class="form-control" id="discipline" readonly required th:field="*{discipline}"
+                               type="text">
+                        <input class="form-control" hidden id="disciplineId" readonly required th:field="*{disciplineId}"
+                               type="text">
                         <div class="row">
-                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalDiscipline">Выбрать дисциплину</button>
+                            <button class="mt-2 mb-1 btn btn-primary" data-bs-target="#modalDiscipline" data-bs-toggle="modal"
+                                    type="button">Выбрать дисциплину
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="subject" class="col-sm-2 col-form-label">Тема<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="subject">Тема<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="subject" type="text" class="form-control" th:field="*{subject}">
+                        <input class="form-control" id="subject" required th:field="*{subject}" type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="originality" class="col-sm-2 col-form-label">Оригинальность от<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="originality">Оригинальность от<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="originality" type="number" min="0" max="100" class="form-control"
-                               th:field="*{originality}">
+                        <input class="form-control" id="originality" max="100" min="0" required th:field="*{originality}"
+                               type="number">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="discipline" class="col-sm-2 col-form-label">Система проверки<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="discipline">Система проверки<strong class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="verificationSystem" type="text" class="form-control"
-                               th:field="*{verificationSystem}">
+                        <input class="form-control" id="verificationSystem" required th:field="*{verificationSystem}"
+                               type="text">
                         <div class="row">
-                            <button type="button" class="mt-2 mb-1 btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalVerificationSystem">Выбрать систему проверки</button>
+                            <button class="mt-2 mb-1 btn btn-primary" data-bs-target="#modalVerificationSystem" data-bs-toggle="modal"
+                                    type="button">Выбрать систему проверки
+                            </button>
                         </div>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="amount" class="col-sm-2 col-form-label">Объем работы (страниц)</label>
+                    <label class="col-sm-2 col-form-label" for="amount">Объем работы (страниц)</label>
                     <div class="col-sm-10">
-                        <input id="amount" type="text" class="form-control"
-                               th:field="*{amount}">
+                        <input class="form-control" id="amount" th:field="*{amount}"
+                               type="text">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="discipline" class="col-sm-2 col-form-label">Промежуточные сроки сдачи</label>
+                    <label class="col-sm-2 col-form-label" for="discipline">Промежуточные сроки сдачи</label>
                     <div class="col-sm-10">
-                        <input id="intermediateDeadline" type="datetime-local" class="form-control"
-                               name="intermediateDeadline"
-                               th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}">
+                        <input class="form-control" id="intermediateDeadline" name="intermediateDeadline"
+                               th:value="${#temporals.format(order?.getIntermediateDeadline(), 'yyyy-MM-dd HH:mm')}"
+                               type="datetime-local">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="additionalDates" class="col-sm-2 col-form-label">Дополнительный этапы сдачи</label>
-                    <input id="additionalDates" type="text" hidden th:field="*{additionalDates}">
-                    <div id="additionalDatesDiv" class="col-sm-9">
+                    <label class="col-sm-2 col-form-label" for="additionalDates">Дополнительный этапы сдачи</label>
+                    <input hidden id="additionalDates" th:field="*{additionalDates}" type="text">
+                    <div class="col-sm-9" id="additionalDatesDiv">
                     </div>
                     <div class="col-sm-1">
-                        <button type="button" class="btn" onclick="addNewAdditionalDate()">&#x2795;</button>
-                        <button type="button" class="btn" onclick="removeAdditionalDate()">&#x2796;</button>
-                        <button type="button" class="btn" onclick="saveAdditionalDates()">&#x1f4be;</button>
+                        <button class="btn" onclick="addNewAdditionalDate()" type="button">&#x2795;</button>
+                        <button class="btn" onclick="removeAdditionalDate()" type="button">&#x2796;</button>
+                        <button class="btn" onclick="saveAdditionalDates()" type="button">&#x1f4be;</button>
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="deadline" class="col-sm-2 col-form-label">Окончательный срок сдачи<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="deadline">Окончательный срок сдачи<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="deadline" type="datetime-local" class="form-control"
-                               name="deadline"
-                               th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}">
+                        <input class="form-control" id="deadline" name="deadline" required
+                               th:value="${#temporals.format(order?.getDeadline(), 'yyyy-MM-dd HH:mm')}"
+                               type="datetime-local">
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
-                    <label for="other" class="col-sm-2 col-form-label">Дополнительные требования и
+                    <label class="col-sm-2 col-form-label" for="other">Дополнительные требования и
                         пожелания</label>
                     <div class="col-sm-10">
-                        <textarea id="other" class="form-control" th:field="*{other}" rows="5"></textarea>
+                        <textarea class="form-control" id="other" rows="5" th:field="*{other}"></textarea>
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="takingCost" class="col-sm-2 col-form-label">Стоимость взятия</label>
+                    <label class="col-sm-2 col-form-label" for="takingCost">Стоимость взятия</label>
                     <div class="col-sm-10">
-                        <input id="takingCost" type="number" class="form-control" th:field="*{takingCost}">
+                        <input class="form-control" id="takingCost" th:field="*{takingCost}" type="number">
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="authorCost" class="col-sm-2 col-form-label">Стоимость для автора<strong class="text-danger">*</strong></label>
+                    <label class="col-sm-2 col-form-label" for="authorCost">Стоимость для автора<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input required id="authorCost" type="number" class="form-control" th:field="*{authorCost}">
+                        <input class="form-control" id="authorCost" required th:field="*{authorCost}" type="number">
                     </div>
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label for="violationsInformation" class="col-12 col-sm-2 col-form-label">Штрафы</label>
+                    <label class="col-12 col-sm-2 col-form-label" for="violationsInformation">Штрафы</label>
                     <div class="col-12 col-sm-10 col-md-8 mb-2">
-                        <textarea id="violationsInformation" class="form-control" th:field="*{violationsInformation}" rows="8"></textarea>
+                        <textarea class="form-control" id="violationsInformation" rows="8"
+                                  th:field="*{violationsInformation}"></textarea>
                     </div>
                     <div class="col-12 col-md-2">
                         <div class="form-check">
-                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceLow" value="low" checked>
-                            <label class="form-check-label" for="orderImportanceLow"><span class="badge rounded-pill text-bg-success">Не срочный заказ</span></label>
+                            <input checked class="form-check-input eval-violation" id="orderImportanceLow"
+                                   name="orderImportance" type="radio" value="low">
+                            <label class="form-check-label" for="orderImportanceLow"><span
+                                    class="badge rounded-pill text-bg-success">Не срочный заказ</span></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceMedium" value="medium">
-                            <label class="form-check-label" for="orderImportanceMedium"><span class="badge rounded-pill text-bg-warning">Срочный заказ</span></label>
+                            <input class="form-check-input eval-violation" id="orderImportanceMedium" name="orderImportance"
+                                   type="radio" value="medium">
+                            <label class="form-check-label" for="orderImportanceMedium"><span
+                                    class="badge rounded-pill text-bg-warning">Срочный заказ</span></label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input eval-violation" type="radio" name="orderImportance" id="orderImportanceHigh" value="high">
-                            <label class="form-check-label" for="orderImportanceHigh"><span class="badge rounded-pill text-bg-danger">Очень срочный заказ</span></label>
+                            <input class="form-check-input eval-violation" id="orderImportanceHigh" name="orderImportance"
+                                   type="radio" value="high">
+                            <label class="form-check-label" for="orderImportanceHigh"><span
+                                    class="badge rounded-pill text-bg-danger">Очень срочный заказ</span></label>
                         </div>
-                        <button class="btn btn-primary mt-2" onclick="fillViolationsInformation()" type="button">Расчитать штрафы</button>
+                        <button class="btn btn-primary mt-2" onclick="fillViolationsInformation()" type="button">
+                            Расчитать штрафы
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
-            <button type="submit" class="btn btn-primary mb-3">Продолжить</button>
+            <button class="btn btn-primary mb-3" type="submit">Продолжить</button>
         </div>
     </form>
 
-    <div class="modal fade" id="modalDiscipline" tabindex="-1" aria-labelledby="labelDiscipline" aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="labelDiscipline" class="modal fade" id="modalDiscipline" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="labelDiscipline">Выбор дисциплины</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-2 border" th:each="d : ${disciplines}">
-                        <div th:id="|name-| + ${d.getId()}" th:for="${d.getId()}" class="col-9" th:text="${d.getName()}"></div>
-                        <button th:id="${d.getId()}" class="btn btn-primary col-3" th:onclick="|saveDiscipline(| + ${d.getId()} + |)|" data-bs-dismiss="modal">Выбрать</button>
+                        <div class="col-9" th:for="${d.getId()}" th:id="|name-| + ${d.getId()}"
+                             th:text="${d.getName()}"></div>
+                        <button class="btn btn-primary col-3" data-bs-dismiss="modal"
+                                th:id="${d.getId()}" th:onclick="|saveDiscipline(| + ${d.getId()} + |)|">Выбрать
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal fade" id="modalVerificationSystem" tabindex="-1" aria-labelledby="labelVerif" aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="labelVerif" class="modal fade" id="modalVerificationSystem" tabindex="-1">
         <div class="modal-dialog modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="labelVerif">Выбор системы проверки</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row mb-2 border">
-                        <div id="verif-1" class="col-9">ап.вуз</div>
-                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(1)" data-bs-dismiss="modal">Выбрать</button>
+                        <div class="col-9" id="verif-1">ап.вуз</div>
+                        <button class="btn btn-primary col-3" data-bs-dismiss="modal"
+                                onclick="saveVerificationSystem(1)">Выбрать
+                        </button>
                     </div>
                     <div class="row mb-2 border">
-                        <div id="verif-2" class="col-9">ап.ру</div>
-                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(2)" data-bs-dismiss="modal">Выбрать</button>
+                        <div class="col-9" id="verif-2">ап.ру</div>
+                        <button class="btn btn-primary col-3" data-bs-dismiss="modal"
+                                onclick="saveVerificationSystem(2)">Выбрать
+                        </button>
                     </div>
                     <div class="row mb-2 border">
-                        <div id="verif-3" class="col-9">etxt</div>
-                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(3)" data-bs-dismiss="modal">Выбрать</button>
+                        <div class="col-9" id="verif-3">etxt</div>
+                        <button class="btn btn-primary col-3" data-bs-dismiss="modal"
+                                onclick="saveVerificationSystem(3)">Выбрать
+                        </button>
                     </div>
                     <div class="row mb-2 border">
-                        <div id="verif-4" class="col-9">Не требуется</div>
-                        <button class="btn btn-primary col-3" onclick="saveVerificationSystem(4)" data-bs-dismiss="modal">Выбрать</button>
+                        <div class="col-9" id="verif-4">Не требуется</div>
+                        <button class="btn btn-primary col-3" data-bs-dismiss="modal"
+                                onclick="saveVerificationSystem(4)">Выбрать
+                        </button>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>

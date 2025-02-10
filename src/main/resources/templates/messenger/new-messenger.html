@@ -2,10 +2,10 @@
 <head>
     <meta charset="utf-8">
     <title>Мессенджер</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&amp;display=swap"
           rel="stylesheet">
 
@@ -16,8 +16,8 @@
     <script src="/static/stomp.umd.min.js"></script>
     <script src="/static/sockjs.min.js"></script>
 
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
-    <link rel="stylesheet" href="/static/chat-style.css">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+    <link href="/static/chat-style.css" rel="stylesheet">
 
     <style>
         .border-select {
@@ -32,19 +32,19 @@
     <div class="main-font p-2">
         <ul class="nav nav-underline">
             <li class="nav-item">
-                <a id="nav-new-orders-tab" class="nav-link" href="/new-messenger?tab=new-orders">Новые заказы<span
+                <a class="nav-link" href="/new-messenger?tab=new-orders" id="nav-new-orders-tab">Новые заказы<span
                         class="fs-5" id="nav-new-orders-tab-count"></span></a>
             </li>
             <li class="nav-item">
-                <a id="nav-admin-tab" class="nav-link" href="/new-messenger?tab=admin">Администрация<span
+                <a class="nav-link" href="/new-messenger?tab=admin" id="nav-admin-tab">Администрация<span
                         class="fs-5" id="nav-admin-tab-count"></span></a>
             </li>
             <li class="nav-item">
-                <a id="nav-orders-tab" class="nav-link" href="/new-messenger?tab=orders">Заказы в работе<span
+                <a class="nav-link" href="/new-messenger?tab=orders" id="nav-orders-tab">Заказы в работе<span
                         class="fs-5" id="nav-orders-tab-count"></span></a>
             </li>
             <li class="nav-item">
-                <a id="nav-special-tab" class="nav-link" href="/new-messenger?tab=special">Спец. чаты<span
+                <a class="nav-link" href="/new-messenger?tab=special" id="nav-special-tab">Спец. чаты<span
                         class="fs-5" id="nav-special-tab-count"></span></a>
             </li>
         </ul>
@@ -55,41 +55,42 @@
     <div class="row mt-3">
         <div class="col-12 col-md-5 col-lg-4 col-xl-4 mb-4">
             <div class="input-group mb-3">
-                <input id="search-input" type="text" class="form-control" placeholder="Поиск в чате">
-                <button id="search-input-clear" class="btn btn-outline-secondary" type="button"
-                        onclick="onSearchBarClearBtnClick()">&#10060;
+                <input class="form-control" id="search-input" placeholder="Поиск в чате" type="text">
+                <button class="btn btn-outline-secondary" id="search-input-clear" onclick="onSearchBarClearBtnClick()"
+                        type="button">&#10060;
                 </button>
-                <button id="search-input-search" class="btn btn-outline-secondary" type="button"
-                        onclick="onSearchBarBtnClick()">&#128269;
+                <button class="btn btn-outline-secondary" id="search-input-search" onclick="onSearchBarBtnClick()"
+                        type="button">&#128269;
                 </button>
-                <button type="button" class="ms-2 btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#show-notes-modal" onclick="loadNotes(null)">
+                <button class="ms-2 btn btn-outline-secondary" data-bs-target="#show-notes-modal" data-bs-toggle="modal"
+                        onclick="loadNotes(null)" type="button">
                     &#128203;
                 </button>
             </div>
             <div style="min-height: 600px; max-height: 600px; overflow: scroll">
-                <ul id="chat-window" class="list-group mt-2 mb-2">
+                <ul class="list-group mt-2 mb-2" id="chat-window">
                 </ul>
-                <div id="chat-loader-spin" class="d-flex justify-content-center mt-2">
+                <div class="d-flex justify-content-center mt-2" id="chat-loader-spin">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
-                <div id="chat-load-more" class="d-flex justify-content-center mt-2">
-                    <button id="chat-load-more-btn" type="button" class="btn btn-primary"
-                            onclick="onLoadNewChatsBtnClick()">Загрузить ещё
+                <div class="d-flex justify-content-center mt-2" id="chat-load-more">
+                    <button class="btn btn-primary" id="chat-load-more-btn" onclick="onLoadNewChatsBtnClick()"
+                            type="button">Загрузить ещё
                     </button>
                 </div>
             </div>
             <hr/>
-            <a id="view-all-message-in-tab" href="/new-messenger-all-viewed">Отметить все как прочитанные</a>
+            <a href="/new-messenger-all-viewed" id="view-all-message-in-tab">Отметить все как прочитанные</a>
         </div>
         <div class="col-12 col-md-7 col-lg-8 col-xl-8 mb-4">
-            <div id="chat-windows" class="card fs-6">
+            <div class="card fs-6" id="chat-windows">
                 <div class="card-header fw-bold main-font">
-                    <span id="note-chat-header" class="ms-2 me-3 d-none"></span>
-                    <span id="chat-name" class="m-0">Выберите чат для загрузки</span>
+                    <span class="ms-2 me-3 d-none" id="note-chat-header"></span>
+                    <span class="m-0" id="chat-name">Выберите чат для загрузки</span>
                 </div>
-                <div id="chat-additional-info" class="row p-2 main-font">
+                <div class="row p-2 main-font" id="chat-additional-info">
                     <div class="col-6 mt-0 d-flex align-items-center">
                         <a id="additional-view-full">
                             <span class="fw-bold text-nowrap">Номер ТЗ: </span>
@@ -110,15 +111,15 @@
                             id="additional-dates"></span></div>
                 </div>
                 <hr/>
-                <div id="scroll-window" class="card-body"
+                <div class="card-body" id="scroll-window"
                      style="min-height: 550px; max-height: 550px; overflow: scroll;">
                     <div>
-                        <div id="message-load-more" class="d-flex justify-content-center mb-2">
-                            <button type="button" class="btn btn-primary" onclick="onLoadMoreMessagesBtnClick()">
+                        <div class="d-flex justify-content-center mb-2" id="message-load-more">
+                            <button class="btn btn-primary" onclick="onLoadMoreMessagesBtnClick()" type="button">
                                 Загрузить ещё
                             </button>
                         </div>
-                        <div id="message-loader-spin" class="d-flex justify-content-center mb-2">
+                        <div class="d-flex justify-content-center mb-2" id="message-loader-spin">
                             <div class="spinner-border" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -127,18 +128,18 @@
                     <div id="messages-window">
                     </div>
                 </div>
-                <div id="message-div" class="row p-3 mt-2">
+                <div class="row p-3 mt-2" id="message-div">
                     <div class="col-12 col-lg-8">
-                        <textarea id="message-area" class="form-control" rows="7"
-                                  style="min-height: 100%; min-width: 100%" data-emoji-picker="true"></textarea>
+                        <textarea class="form-control" data-emoji-picker="true" id="message-area"
+                                  rows="7" style="min-height: 100%; min-width: 100%"></textarea>
                     </div>
                     <div class="col-12 col-lg-4 d-flex flex-column justify-content-center">
                         <div class="input-group input-group-lg">
-                            <input id="file-area" type="file" class="form-control col-6 col-sm-12 mt-2">
+                            <input class="form-control col-6 col-sm-12 mt-2" id="file-area" type="file">
                         </div>
-                        <div id="loaded-file-area" class="mt-2 mb-1"></div>
+                        <div class="mt-2 mb-1" id="loaded-file-area"></div>
                         <div class="row mt-2">
-                            <button id="send-btn" class="btn btn-primary col-12 col-sm-12" onclick="sendMessage()">
+                            <button class="btn btn-primary col-12 col-sm-12" id="send-btn" onclick="sendMessage()">
                                 Отправить
                             </button>
                         </div>
@@ -149,54 +150,61 @@
     </div>
 
     <!--Модалка просмотра всех заметок-->
-    <div class="modal fade" id="show-notes-modal" tabindex="-1" aria-labelledby="show-notes-modal-label" aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="show-notes-modal-label" class="modal fade" id="show-notes-modal"
+         tabindex="-1">
         <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="show-notes-modal-title">Просмотр всех заметок.</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body" id="show-notes-modal-body">
                     <div class="container-fluid" id="notes-content">
 
                     </div>
-                    <div id="notes-loader-spin" class="d-flex justify-content-center mt-2">
+                    <div class="d-flex justify-content-center mt-2" id="notes-loader-spin">
                         <div class="spinner-border" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show-create-note-modal" onclick="clearNote()">Создать заметку без привязки к чату</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-primary" data-bs-target="#show-create-note-modal" data-bs-toggle="modal"
+                            onclick="clearNote()" type="button">Создать заметку без привязки
+                        к чату
+                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
     </div>
 
     <!--Модалка создания заметок-->
-    <div class="modal fade" id="show-create-note-modal" tabindex="-1" aria-labelledby="show-create-note-modal-label" aria-hidden="true">
+    <div aria-hidden="true" aria-labelledby="show-create-note-modal-label" class="modal fade" id="show-create-note-modal"
+         tabindex="-1">
         <div class="modal-dialog modal-fullscreen-sm-down modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="show-create-note-title">Создание / изменение заметки.</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="modal" type="button"></button>
                 </div>
                 <div class="modal-body" id="show-create-note-modal-body">
-                    <input disabled hidden id="note-id" />
-                    <input disabled hidden id="note-chat-id" />
+                    <input disabled hidden id="note-id"/>
+                    <input disabled hidden id="note-chat-id"/>
                     <div class="input-group mb-3">
                         <span class="input-group-text">Чат</span>
-                        <input disabled type="text" class="form-control" id="note-chat-name" placeholder="Не назначен.">
+                        <input class="form-control" disabled id="note-chat-name" placeholder="Не назначен." type="text">
                     </div>
                     <div class="mb-3">
-                        <label for="note-text" class="form-label">Текст заметки.</label>
+                        <label class="form-label" for="note-text">Текст заметки.</label>
                         <textarea class="form-control" id="note-text" style="min-height: 300px; height: 80%"></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#show-notes-modal" onclick="saveNote()">Сохранить</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыть</button>
+                    <button class="btn btn-primary" data-bs-target="#show-notes-modal" data-bs-toggle="modal"
+                            onclick="saveNote()" type="button">Сохранить
+                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Закрыть</button>
                 </div>
             </div>
         </div>
@@ -204,7 +212,7 @@
 
 </div>
 
-<div id="notification-container" class="toast-container position-fixed top-0 end-0 p-3">
+<div class="toast-container position-fixed top-0 end-0 p-3" id="notification-container">
 
 </div>
 <script src="/static/jquery-3.7.1.min.js"></script>

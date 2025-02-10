@@ -3,7 +3,6 @@ package by.forward.forward_system.core.services.core;
 import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
-import by.forward.forward_system.core.jpa.model.AuthorDisciplineEntity;
 import by.forward.forward_system.core.jpa.model.AuthorEntity;
 import by.forward.forward_system.core.jpa.repository.AuthorDisciplineRepository;
 import by.forward.forward_system.core.jpa.repository.AuthorRepository;

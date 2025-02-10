@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -21,15 +21,15 @@
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
                     <li class="page-item">
-                        <a class="page-link" th:href="|/violations?page=| + ${page - 1}" aria-label="Previous">
+                        <a aria-label="Previous" class="page-link" th:href="|/violations?page=| + ${page - 1}">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
-                    <li th:each="cPage : ${pages}" th:class="|page-item | + ${cPage == page ? 'active' : ''}">
+                    <li th:class="|page-item | + ${cPage == page ? 'active' : ''}" th:each="cPage : ${pages}">
                         <a class="page-link" th:href="|/violations?page=| + ${cPage}" th:text="${cPage}"></a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" th:href="|/violations?page=| + ${page + 1}" aria-label="Next">
+                        <a aria-label="Next" class="page-link" th:href="|/violations?page=| + ${page + 1}">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>

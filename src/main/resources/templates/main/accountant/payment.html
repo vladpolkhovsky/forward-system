@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -29,11 +29,11 @@
         <ul>
             <li>Файл для подписи: <a target="_blank" th:href="|/load-file/| + ${toSignFileId}">Скачать</a></li>
             <li>Подписанный файл:
-                <a target="_blank" th:if="${signedFileId}" th:href="|/load-file/| + ${signedFileId}">Скачать</a>
+                <a target="_blank" th:href="|/load-file/| + ${signedFileId}" th:if="${signedFileId}">Скачать</a>
                 <span th:unless="${signedFileId}">Файл ещё не добавлен</span>
             </li>
             <li>Файл чека:
-                <a target="_blank" th:if="${fileCheckId}" th:href="|/load-file/| + ${fileCheckId}">Скачать</a>
+                <a target="_blank" th:href="|/load-file/| + ${fileCheckId}" th:if="${fileCheckId}">Скачать</a>
                 <span th:unless="${fileCheckId}">Файл ещё не добавлен</span>
             </li>
         </ul>
@@ -43,17 +43,18 @@
     <textarea class="form-control" readonly th:text="${accMessage}"></textarea>
 
     <p class="mt-3" th:if="${userMessage}">Сообщение от автора:</p>
-    <textarea th:if="${userMessage}" readonly class="form-control" th:text="${userMessage}"></textarea>
+    <textarea class="form-control" readonly th:if="${userMessage}" th:text="${userMessage}"></textarea>
 
     <hr/>
 
     <div class="row" th:if="${isUser && isTimeToSendSigned}">
-        <form th:action="|/send-signed-payment/| + ${paymentId}" method="post" enctype="multipart/form-data">
+        <form enctype="multipart/form-data" method="post" th:action="|/send-signed-payment/| + ${paymentId}">
             <h5>Прикрепите подписанный файл</h5>
-            <p class="m-0">Вам необходимо подписать файл, который прислал бухгалтер. Пожалуйста прикрепите подписанный файл
+            <p class="m-0">Вам необходимо подписать файл, который прислал бухгалтер. Пожалуйста, прикрепите подписанный
+                файл
                 ниже. Так же вы можете написать сообщение для бухгалтера.</p>
             <textarea class="form-control mt-2 mb-2" name="user-message"></textarea>
-            <input required class="form-control" type="file" name="signed-file">
+            <input class="form-control" name="signed-file" required type="file">
             <input class="form-control btn btn-primary mt-3" type="submit" value="Отправить файл">
         </form>
     </div>
@@ -71,19 +72,20 @@
     </div>
 
     <div class="row" th:if="${isAcc && isTimeToPay}">
-        <form th:action="|/confirm-payment/| + ${paymentId}" method="post" enctype="multipart/form-data">
+        <form enctype="multipart/form-data" method="post" th:action="|/confirm-payment/| + ${paymentId}">
             <h5>Файлы подготовлены. Произведите выплату.</h5>
-            <p class="m-0">Автор прислал подписанный файл. После того, как оплата будет произведена, нажмите на кнопку ниже, чтобы
+            <p class="m-0">Автор прислал подписанный файл. После того, как оплата будет произведена, нажмите на кнопку
+                ниже, чтобы
                 подтвердить выплату.</p>
             <input class="form-control btn btn-primary mt-3" type="submit" value="Подтвердить выплату">
         </form>
     </div>
 
     <div class="row" th:if="${isUser && isTimeToSendCheck}">
-        <form th:action="|/send-check-payment/| + ${paymentId}" method="post" enctype="multipart/form-data">
+        <form enctype="multipart/form-data" method="post" th:action="|/send-check-payment/| + ${paymentId}">
             <h5>Прикрепите чек</h5>
             <p class="m-0">Выплата была произведена. Прикрепите файл чека, который подтверждает уплату налога.</p>
-            <input required class="form-control" type="file" name="check-file">
+            <input class="form-control" name="check-file" required type="file">
             <input class="form-control btn btn-primary mt-3" type="submit" value="Отправить файл">
         </form>
     </div>
@@ -122,17 +124,17 @@
     <hr/>
 
     <div class="row">
-        <div th:if="${isAcc && isVerification && !isAnnulled}" class="col-12 col-sm-6 border border-success p-3">
-            <form th:action="|/close-payment/| + ${paymentId}" method="post" enctype="multipart/form-data">
+        <div class="col-12 col-sm-6 border border-success p-3" th:if="${isAcc && isVerification && !isAnnulled}">
+            <form enctype="multipart/form-data" method="post" th:action="|/close-payment/| + ${paymentId}">
                 <h5>Завершить выплату</h5>
                 <input class="form-control btn btn-success mt-3" type="submit" value="Завершить выплату">
             </form>
         </div>
-        <div th:if="${isAcc && !isAnnulled}" class="col-12 col-sm-6 border border-danger p-3">
-            <form th:action="|/annull-payment/| + ${paymentId}" method="post" enctype="multipart/form-data">
+        <div class="col-12 col-sm-6 border border-danger p-3" th:if="${isAcc && !isAnnulled}">
+            <form enctype="multipart/form-data" method="post" th:action="|/annull-payment/| + ${paymentId}">
                 <h5>Аннулировать выплату</h5>
-                <label for="annull-reason" class="form-label">Причина аннулирования:</label>
-                <textarea required class="form-control" id="annull-reason" name="annull-reason" rows="3"></textarea>
+                <label class="form-label" for="annull-reason">Причина аннулирования:</label>
+                <textarea class="form-control" id="annull-reason" name="annull-reason" required rows="3"></textarea>
                 <input class="form-control btn btn-danger mt-3" type="submit" value="Аннулировать выплату">
             </form>
         </div>

@@ -10,9 +10,11 @@ import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
@@ -89,10 +91,20 @@ public class AppConfig {
             .withCredentials(new AWSStaticCredentialsProvider(credentials))
             .withEndpointConfiguration(
                 new AmazonS3ClientBuilder.EndpointConfiguration(
-                    "storage.yandexcloud.net","ru-central1"
+                    "storage.yandexcloud.net", "ru-central1"
                 )
             )
             .build();
     }
 
+    @Bean
+    @Qualifier("springAsyncTaskExecutor")
+    public ThreadPoolTaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setThreadNamePrefix("async-thread-");
+        threadPoolTaskExecutor.setCorePoolSize(2);
+        threadPoolTaskExecutor.setMaxPoolSize(2);
+        threadPoolTaskExecutor.setQueueCapacity(120);
+        return threadPoolTaskExecutor;
+    }
 }

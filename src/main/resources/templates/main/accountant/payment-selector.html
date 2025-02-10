@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -19,15 +19,18 @@
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
                     <li class="page-item">
-                        <a class="page-link" th:href="|/| + ${type} + |-view-payment?page=| + ${page - 1}" aria-label="Previous">
+                        <a aria-label="Previous" class="page-link"
+                           th:href="|/| + ${type} + |-view-payment?page=| + ${page - 1}">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
-                    <li th:each="cPage : ${pages}" th:class="|page-item | + ${cPage == page ? 'active' : ''}">
-                        <a class="page-link" th:href="|/| + ${type} + |-view-payment?page=| + ${cPage}" th:text="${cPage}"></a>
+                    <li th:class="|page-item | + ${cPage == page ? 'active' : ''}" th:each="cPage : ${pages}">
+                        <a class="page-link" th:href="|/| + ${type} + |-view-payment?page=| + ${cPage}"
+                           th:text="${cPage}"></a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" th:href="|/| + ${type} + |-view-payment?page=| + ${page + 1}" aria-label="Next">
+                        <a aria-label="Next" class="page-link"
+                           th:href="|/| + ${type} + |-view-payment?page=| + ${page + 1}">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -42,10 +45,13 @@
             <li class="list-group-item d-flex justify-content-between align-items-start"
                 th:each="payment : ${payments}">
                 <div class="ms-1 me-auto">
-                    <p><a th:href="|/payment/| + ${payment.getId()}"><strong th:text="|Выплата: | + ${payment.getNumber()}"></strong></a></p>
+                    <p><a th:href="|/payment/| + ${payment.getId()}"><strong
+                            th:text="|Выплата: | + ${payment.getNumber()}"></strong></a></p>
                     <p class="m-0" th:text="|Получатель выплаты: | + ${payment.getUsername()}"></p>
-                    <p class="m-0" th:text="|Дата обновления: | +  ${#temporals.format(payment.getUpdated(), 'dd.MM.yyyy HH:mm')}"></p>
-                    <p class="m-0" th:text="|Дата создания: | +  ${#temporals.format(payment.getCreated(), 'dd.MM.yyyy HH:mm')}"></p>
+                    <p class="m-0"
+                       th:text="|Дата обновления: | +  ${#temporals.format(payment.getUpdated(), 'dd.MM.yyyy HH:mm')}"></p>
+                    <p class="m-0"
+                       th:text="|Дата создания: | +  ${#temporals.format(payment.getCreated(), 'dd.MM.yyyy HH:mm')}"></p>
                 </div>
                 <span class="badge text-bg-primary rounded-pill" th:text="${payment.getStatus().getRusName()}"></span>
             </li>

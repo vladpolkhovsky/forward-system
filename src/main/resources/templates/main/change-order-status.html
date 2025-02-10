@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
@@ -18,13 +18,13 @@
 <div class="container">
     <h5 class="mt-5" th:text="|Заказ №| + ${order.getTechNumber()}"></h5>
     <h5 class="mt-3" th:text="|Текущий статус: | + ${order.getOrderStatusRus()}"></h5>
-    <form class="row" th:action="|/change-order-status/| + ${orderId}" method="post">
+    <form class="row" method="post" th:action="|/change-order-status/| + ${orderId}">
         <div class="mt-3 mb-3">
             <p>Изменить статус на:</p>
-            <select id="select" name="status" required class="form-select form-select-lg mt-1" aria-label="">
+            <select aria-label="" class="form-select form-select-lg mt-1" id="select" name="status" required>
                 <option th:each="status : ${statuses}"
-                        th:value="${status.getName()}"
-                        th:text="${status.getRusName()}"></option>
+                        th:text="${status.getRusName()}"
+                        th:value="${status.getName()}"></option>
             </select>
         </div>
         <input class="form-control btn btn-primary mt-3" type="submit" value="Изменить">

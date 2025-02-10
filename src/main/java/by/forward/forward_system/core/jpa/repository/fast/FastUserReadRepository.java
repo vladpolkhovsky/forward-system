@@ -15,12 +15,11 @@ import java.util.List;
 @AllArgsConstructor
 public class FastUserReadRepository {
 
-    private final JdbcTemplate jdbcTemplate;
-
     @Language("SQL")
     private static final String LOAD_ALL_ACTIVE_USERS_SQL = """
-        select distinct u.id as id, u.username as username, u.roles as roles from forward_system.users u where not u.is_deleted
-    """;
+            select distinct u.id as id, u.username as username, u.roles as roles from forward_system.users u where not u.is_deleted
+        """;
+    private final JdbcTemplate jdbcTemplate;
 
     public List<UserDto> readAllActiveUsers() {
         return jdbcTemplate.query(LOAD_ALL_ACTIVE_USERS_SQL, (rs, rowNum) -> {

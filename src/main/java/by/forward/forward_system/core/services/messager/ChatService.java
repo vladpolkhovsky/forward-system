@@ -7,13 +7,11 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
-import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

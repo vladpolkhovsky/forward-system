@@ -16,10 +16,10 @@ public class LoadChatDetailsQueryHandler implements QueryHandler<LoadChatInfoReq
 
     @Language("SQL")
     private final static String QUERY = """
-            select c.id as id, c.chat_name as chatName, c.order_id as orderId, c.type as type, cm.owner_type_permission as onlyOwner from forward_system.chats c
-            	left join forward_system.chat_metadata cm on c.id = cm.id
-            	where c.id = ?
-            """;
+        select c.id as id, c.chat_name as chatName, c.order_id as orderId, c.type as type, cm.owner_type_permission as onlyOwner from forward_system.chats c
+        	left join forward_system.chat_metadata cm on c.id = cm.id
+        	where c.id = ?
+        """;
 
     @Override
     public String getQuery(LoadChatInfoRequestDto request) {

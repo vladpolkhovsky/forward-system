@@ -31,23 +31,15 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class OrderUiService {
 
-    private final OrderService orderService;
-
-    private final UserService userService;
-
-    private final AuthorService authorService;
-
-    private final UserUiService userUiService;
-
-    private final UserRepository userRepository;
-
-    private final DisciplineRepository disciplineRepository;
-
-    private final BanService banService;
-
-    private AIDetector aiDetector;
-
     private final static ObjectMapper MAPPER = new ObjectMapper();
+    private final OrderService orderService;
+    private final UserService userService;
+    private final AuthorService authorService;
+    private final UserUiService userUiService;
+    private final UserRepository userRepository;
+    private final DisciplineRepository disciplineRepository;
+    private final BanService banService;
+    private AIDetector aiDetector;
 
     public OrderUiDto getOrder(Long id) {
         Optional<OrderEntity> byId = orderService.getById(id);
@@ -298,7 +290,7 @@ public class OrderUiService {
 
     private boolean isAssignedAuthor(OrderParticipantEntity t) {
         return t.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
-            || t.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
+               || t.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
     private OrderUiDto toDto(OrderEntity orderEntity) {
@@ -435,11 +427,11 @@ public class OrderUiService {
 
         if (!checkResult.isOk()) {
             return !banService.ban(currentUser.getId(), """
-                Создание/обновление заказа с указанием данных, которые не прошли проверку.
-                Данные заказа:
-                %s
-                Лог проверки <a href="/ai-log/%d" target="_blank">Лог проверки</a>
-                """.formatted(orderText, checkResult.aiLogId()),
+                    Создание/обновление заказа с указанием данных, которые не прошли проверку.
+                    Данные заказа:
+                    %s
+                    Лог проверки <a href="/ai-log/%d" target="_blank">Лог проверки</a>
+                    """.formatted(orderText, checkResult.aiLogId()),
                 List.of(checkResult.aiLogId())
             );
         }

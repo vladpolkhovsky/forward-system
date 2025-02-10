@@ -28,6 +28,7 @@ public class LoadChatByIdsQueryHandler implements QueryHandler<LoadChatByIdsDto,
         	group by c.id
         	order by c.last_message_date desc
         """;
+    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public String getQuery(LoadChatByIdsDto request) {
@@ -46,8 +47,6 @@ public class LoadChatByIdsQueryHandler implements QueryHandler<LoadChatByIdsDto,
             }
         };
     }
-
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
 
     @Override
     public RowMapper<FastChatDto> getRowMapper() {

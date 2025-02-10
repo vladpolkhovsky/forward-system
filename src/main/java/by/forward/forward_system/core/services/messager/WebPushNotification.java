@@ -23,22 +23,17 @@ import java.util.List;
 @Service
 public class WebPushNotification {
 
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     @Value("${vapid.private.key}")
     private String privateKey;
-
     @Getter
     @Value("${vapid.public.key}")
     private String publicKey;
-
     private PushService pushService;
-
     @Autowired
     private NotificationDataRepository notificationDataRepository;
-
     @Autowired
     private UserRepository userRepository;
-
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @PostConstruct
     private void inti() throws GeneralSecurityException {

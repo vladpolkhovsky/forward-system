@@ -3,15 +3,15 @@
 <head>
     <meta charset="utf-8">
     <title>Главное меню</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="/static/favicon.png">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
 </head>
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div th:if="${param.userUpdated}" class="alert alert-primary" role="alert">
+    <div class="alert alert-primary" role="alert" th:if="${param.userUpdated}">
         Заказ обновлён.
     </div>
     <div class="row">
@@ -23,8 +23,8 @@
         <div class="col-12">
             <p class="display-6" th:text="|Выбрана дисциплина: | + ${discipline}"></p>
             <form action="/author-view" method="post">
-                <label for="form-select" class="form-label">Искать дисциплину:</label>
-                <select id="form-select" class="form-select" aria-label="Disabled select example" name="discipline">
+                <label class="form-label" for="form-select">Искать дисциплину:</label>
+                <select aria-label="Disabled select example" class="form-select" id="form-select" name="discipline">
                     <option selected value="all">Все дисциплины</option>
                     <option th:each="d : ${disciplines}" th:text="${d.getName()}" th:value="${d.getId()}"></option>
                 </select>
@@ -71,7 +71,8 @@
             </td>
             <td>
                 <ul class="list-group">
-                    <li class="pt-0 pb-0 list-group-item" th:each="d : ${u.orderTechNumbers()}" th:text="|ТЗ №| + ${d}"></li>
+                    <li class="pt-0 pb-0 list-group-item" th:each="d : ${u.orderTechNumbers()}"
+                        th:text="|ТЗ №| + ${d}"></li>
                 </ul>
             </td>
             <td th:text="${u.activeOrderCount()}"></td>

@@ -70,8 +70,8 @@ public class AuthorUiService {
 
     private AuthorUiDto toDtoWithoutDisciplines(AuthorEntity authorEntity) {
         String fioFull = authorEntity.getUser().getLastname() + " " +
-            authorEntity.getUser().getFirstname() + " " +
-            StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
+                         authorEntity.getUser().getFirstname() + " " +
+                         StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
 
         return new AuthorUiDto(
             authorEntity.getId(),
@@ -102,8 +102,8 @@ public class AuthorUiService {
 
     private AuthorUiDto toDto(AuthorEntity authorEntity) {
         String fioFull = authorEntity.getUser().getLastname() + " " +
-            authorEntity.getUser().getFirstname() + " " +
-            StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
+                         authorEntity.getUser().getFirstname() + " " +
+                         StringUtils.defaultIfEmpty(authorEntity.getUser().getSurname(), "");
 
         String excellentSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.EXCELLENT);
         String goodSubjects = getDisciplineIds(authorEntity.getAuthorDisciplines(), DisciplineQualityType.GOOD);

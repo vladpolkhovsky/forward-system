@@ -12,36 +12,28 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
 
 @Component
 @AllArgsConstructor
 public class AttachmentService {
 
+    private final static String bucketName = "forward-system-file-storage";
+    private final static Path filesDerictoryPath = Path.of("cloud-yandex");
     private final AttachmentRepository attachmentRepository;
-
     private final AmazonS3 amazonS3;
 
-    private final static String bucketName = "forward-system-file-storage";
-
-    private final static Path filesDerictoryPath = Path.of("cloud-yandex");
-
     public List<Long> getAttachment(List<WSAttachment> wsAttachment) {
-        List<AttachmentEntity> attachmentEntities = new ArrayList<>();
+        List<Long> ids = wsAttachment.stream().map(WSAttachment::getFileAttachmentId).toList();
 
-        for (WSAttachment attachment : wsAttachment) {
-            AttachmentEntity attachmentEntity = attachmentRepository.findById(attachment.getFileAttachmentId()).orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachment.getFileAttachmentId()));
-            attachmentEntities.add(attachmentEntity);
-        }
-
-        return attachmentEntities.stream()
+        return attachmentRepository.findAllById(ids).stream()
             .map(AttachmentEntity::getId)
             .toList();
     }

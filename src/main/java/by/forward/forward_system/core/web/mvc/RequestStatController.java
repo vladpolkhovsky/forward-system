@@ -21,9 +21,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class RequestStatController {
 
-    private final UserUiService userUiService;
-
     private static final DateTimeFormatter htmlDateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private final UserUiService userUiService;
     private final FastUserReadRepository fastUserReadRepository;
     private final FastReadOrderRequestStatRepository fastOrderRequestReadRepository;
 
@@ -175,7 +174,8 @@ public class RequestStatController {
             return this.totalSum;
         }
 
-        private record IdPair(Long authorId, Long managerId) {}
+        private record IdPair(Long authorId, Long managerId) {
+        }
     }
 
 }

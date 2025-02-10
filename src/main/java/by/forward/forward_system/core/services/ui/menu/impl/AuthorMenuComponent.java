@@ -2,10 +2,7 @@ package by.forward.forward_system.core.services.ui.menu.impl;
 
 import by.forward.forward_system.core.dto.ui.MenuEntry;
 import by.forward.forward_system.core.enums.auth.Authority;
-import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
-import by.forward.forward_system.core.services.core.ReviewService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
-import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.services.ui.menu.MenuComponent;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
