@@ -21,7 +21,7 @@
             <div class="mb-3">
                 <label class="form-label" for="user">Пользователь для блокировки</label>
                 <select class="form-select form-select-lg mb-3" id="user" name="userId">
-                    <option th:each="u : ${users}" th:text="${u.getUsername()} + |(| + ${u.getFio()} + |)|"
+                    <option th:each="u : ${users}" th:text="${u.getUsername()}"
                             th:value="${u.getId()}"></option>
                 </select>
                 <label class="form-label" for="reason">Причина блокировки</label>
