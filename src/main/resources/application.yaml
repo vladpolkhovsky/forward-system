@@ -23,8 +23,8 @@ spring:
   datasource:
     hikari:
       maximum-pool-size: 30
-      max-lifetime: 100000
-      validationTimeout: 10000
+      max-lifetime: 60000
+      validationTimeout: 3000
     driver-class-name: org.postgresql.Driver
     username: ${DB_USERNAME:localDB}
     password: ${DB_PASSWORD:localPS}
@@ -35,7 +35,7 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         jdbc:
