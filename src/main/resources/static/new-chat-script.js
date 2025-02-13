@@ -1069,9 +1069,16 @@ function createNoteItem(note) {
 }
 
 function chatSaveAction(chatId) {
+    $(`#chat-save-${chatId}`).prop("disabled", true);
     changeSavedStatus(chatId);
 }
 
 function processSavedChat(saveChatResult) {
+    if (context.chatTab === 'saved' && !saveChatResult.saved) {
+        $(`#chat-${saveChatResult.chatId}`).addClass("d-none");
+    }
     $(`#chat-save-${saveChatResult.chatId}`).html(saveChatResult.saved ? '&#10060;' : '&#128190;')
+    setTimeout(() => {
+        $(`#chat-save-${saveChatResult.chatId}`).prop("disabled", false);
+    }, 3000);
 }

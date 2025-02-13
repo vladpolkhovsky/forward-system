@@ -270,7 +270,7 @@ public class FastChatService {
             mapNullToZero.apply(map.get(ChatType.ADMIN_TALK_CHAT.getName())),
             mapNullToZero.apply(map.get(ChatType.ORDER_CHAT.getName())),
             mapNullToZero.apply(map.get(ChatType.SPECIAL_CHAT.getName())),
-            0
+            mapNullToZero.apply(map.get("saved"))
         );
     }
 
