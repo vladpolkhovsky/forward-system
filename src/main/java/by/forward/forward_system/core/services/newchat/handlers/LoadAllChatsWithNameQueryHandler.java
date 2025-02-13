@@ -18,7 +18,8 @@ public class LoadAllChatsWithNameQueryHandler implements QueryHandler<SearchChat
     private final static String QUERY = """
         select c.id as id, c.chat_name as chatName from forward_system.chats c
             inner join forward_system.chat_members cm on c.id = cm.chat_id and cm.user_id = ?
-            where c.type = ?;
+            left join forward_system.chat_saved_to_user cs on cs.chat_id = c.id and cs.user_id = cm.user_id
+            where (c.type = ? or (? and cs.id is not null));
         """;
 
     private final ChatTabToChatTypeService tabToChatType;
@@ -33,6 +34,7 @@ public class LoadAllChatsWithNameQueryHandler implements QueryHandler<SearchChat
         return ps -> {
             ps.setLong(1, request.getUserId());
             ps.setString(2, tabToChatType.getChatTypeByTab(request.getChatTab()));
+            ps.setBoolean(3, "use-saved".equals(tabToChatType.getChatTypeByTab(request.getChatTab())));
         };
     }
 
