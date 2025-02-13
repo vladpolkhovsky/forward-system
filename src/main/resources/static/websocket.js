@@ -43,7 +43,10 @@ function connectToStompJs(wsStomp) {
     const brokerUrl = window.location.protocol + '//' + window.location.host + '/sockjs'
 
     function mySocketFactory() {
-        return new SockJS(brokerUrl);
+        sockJsProtocols = ["xhr-streaming", "xhr-polling"];
+        return new SockJS(brokerUrl, null, {
+            transports: sockJsProtocols
+        });
     }
 
     const stompClient = new StompJs.Client({});
