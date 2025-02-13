@@ -9,10 +9,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewMessageCountResponseDto {
-    private int newOrders;
-    private int admin;
-    private int orders;
-    private int special;
-    private int saved;
+public class FastChatSaveChatResponseDto {
+    private long chatId;
+    private boolean saved;
 }

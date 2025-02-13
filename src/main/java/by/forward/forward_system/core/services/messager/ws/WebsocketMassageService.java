@@ -12,6 +12,9 @@ import by.forward.forward_system.core.services.core.BanService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.SpamDetectorService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RegExUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -25,6 +28,7 @@ import java.util.Optional;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class WebsocketMassageService {
 
     private final SimpMessagingTemplate simpMessagingTemplate;
@@ -51,8 +55,16 @@ public class WebsocketMassageService {
             .map(WSAttachment::getFileAttachmentId)
             .toList();
 
+        log.info(
+            "Новое сообщение в чате {} от пользователя {}, контент = \"{}\", приложенные файлы = {}",
+            chatId,
+            userId,
+            RegExUtils.replaceAll(StringUtils.abbreviate(message, 100), "\\R+", " "),
+            attachmentIds
+        );
+
         if (spamDetectorService.isSpam(chatId)) {
-            if (banService.ban(userId, "Превышен лимит сообщений в чате.", true, Collections.emptyList())) {
+            if (banService.ban(userId, "Превышен лимит сообщений в чате.", true, List.of())) {
                 notifyBanned(Collections.singletonList(userId), chatId);
                 return;
             }
@@ -72,7 +84,22 @@ public class WebsocketMassageService {
             attachmentIds
         ));
 
-        MessageDto messageDto = messageService.handleWsMessage(chatId, userId, message, attachmentIds);
+        MessageDto messageDto = null;
+
+        for (int i = 0; i < 3; i++) {
+            try {
+                messageDto = messageService.handleWsMessage(chatId, userId, message, attachmentIds);
+            } catch (Exception ex) {
+                log.error("Error in handleWsMessage userId = {}. Attempt = {}", userId, i, ex);
+                continue;
+            }
+            break;
+        }
+
+        if (messageDto == null) {
+            log.error("Ошибка обработки сообщения от пользователя userId = {}", userId);
+            throw new RuntimeException("Error in handleWsMessage userId = " + userId + ", message = " + message);
+        }
 
         List<Long> chatMemberIds = new ArrayList<>(messageDto.getMessageToUser().stream()
             .map(MessageToUserDto::getUserId)

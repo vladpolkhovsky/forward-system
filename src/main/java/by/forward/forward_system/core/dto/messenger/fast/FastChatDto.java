@@ -13,6 +13,7 @@ public class FastChatDto {
     private String chatName;
     private String lastMessageDate;
     private String type;
+    private boolean saved;
     private long newMessageCount;
     private long id;
 }

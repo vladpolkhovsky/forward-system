@@ -21,9 +21,10 @@ public class LoadChatByIdsQueryHandler implements QueryHandler<LoadChatByIdsDto,
 
     @Language("SQL")
     private final static String QUERY = """
-        select c.id as id, c.chat_name as chatName, c.type as type, c.last_message_date as lastMessage, count(cmtu.id) as newMsgCount from forward_system.chats c
+        select c.id as id, c.chat_name as chatName, c.type as type, c.last_message_date as lastMessage, count(cmtu.id) as newMsgCount, count(cs.id) > 0 as saved from forward_system.chats c
         	inner join forward_system.chat_members cm on cm.chat_id = c.id
         	left join forward_system.chat_message_to_user cmtu on cmtu.chat_id = c.id and cmtu.user_id = ? and not cmtu.is_viewed
+            left join forward_system.chat_saved_to_user cs on cs.chat_id = c.id and cs.user_id = cm.user_id
         	where cm.user_id = ? :IN:
         	group by c.id
         	order by c.last_message_date desc
@@ -57,6 +58,7 @@ public class LoadChatByIdsQueryHandler implements QueryHandler<LoadChatByIdsDto,
             fastChatDto.setChatName(rs.getString("chatName"));
             fastChatDto.setType(rs.getString("type"));
             fastChatDto.setNewMessageCount(rs.getLong("newMsgCount"));
+            fastChatDto.setSaved(rs.getBoolean("saved"));
             fastChatDto.setLastMessageDate(rs.getTimestamp("lastMessage").toLocalDateTime().format(dateTimeFormatter));
 
             return fastChatDto;

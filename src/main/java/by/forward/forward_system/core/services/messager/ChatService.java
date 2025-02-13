@@ -56,6 +56,7 @@ public class ChatService {
     private final ChatNoteRepository chatNoteRepository;
 
     private final ChatMetadataRepository chatMetadataRepository;
+    private final SavedChatRepository savedChatRepository;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -262,6 +263,9 @@ public class ChatService {
     @Transactional
     @Async
     public CompletableFuture<Void> deleteChat(Long chatId) {
+        List<SavedChatEntity> savedChats = savedChatRepository.findAllByChatId(chatId);
+        savedChatRepository.deleteAllInBatch(savedChats);
+
         List<ChatNoteEntity> allByChatId = chatNoteRepository.findAllByChatId(chatId);
         chatNoteRepository.deleteAllInBatch(allByChatId);
 

@@ -616,3 +616,11 @@ create index if not exists order_request_statistics_time_idx on forward_system.o
 
 alter table forward_system.users
     add is_deleted boolean not null default false;
+
+create table if not exists forward_system.chat_saved_to_user
+(
+    id         bigint primary key,
+    chat_id    bigint references forward_system.chats (id),
+    user_id    bigint    not null references forward_system.users (id),
+    created_at timestamp not null
+);

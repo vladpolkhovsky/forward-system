@@ -2,6 +2,7 @@ context.loadedChats = new Set();
 context.loadedMessages = new Set();
 context.chatId = null;
 context.loadNewMessagesCount = 30;
+context.loadNewChatsCount = 50;
 
 context.chatsCache = {};
 context.chatsQueue = [];
@@ -19,6 +20,7 @@ const loadChatByIdUrl = '/api/new-chat/chat-by-id';
 const loadChatInfoUrl = '/api/new-chat/load-chat-info';
 const loadMoreMessagesUrl = '/api/new-chat/messages';
 const loadNewMessagesCount = '/api/new-chat/new-message-info';
+const changeSavedStatusUrl = "/api/new-chat/update-saved-chat";
 
 const chatTitle = document.getElementById("chat-name");
 const techNumber = document.getElementById("additional-tech-number");
@@ -98,6 +100,28 @@ function loadSaveNote(noteChatId, noteText) {
         .catch((error) => alert("Произошла ошибка загрузки заметок. " + JSON.stringify(error)));
 }
 
+function changeSavedStatus(chatId) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const rawJson = JSON.stringify({
+        "chatId": chatId,
+        "userId": context.userId,
+    });
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: rawJson,
+        redirect: "follow"
+    };
+
+    fetch(changeSavedStatusUrl, requestOptions)
+        .then((response) => response.json())
+        .then((result) => processSavedChat(result))
+        .catch((error) => alert("Произошла ошибка сохранения чата. " + JSON.stringify(error)));
+}
+
 function loadUpdateNote(noteId, noteText) {
     const myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/json; charset=UTF-8");
@@ -144,7 +168,7 @@ function searchForChat(searchText) {
         "chatName": searchText,
         "userId": context.userId,
         "chatTab": context.chatTab,
-        "size": 50
+        "size": context.loadNewChatsCount
     });
 
     const requestOptions = {
@@ -172,7 +196,7 @@ function loadNewChats() {
         "loaded": [...context.loadedChats],
         "userId": context.userId,
         "chatTab": context.chatTab,
-        "size": 50
+        "size": context.loadNewChatsCount
     });
 
     const requestOptions = {
@@ -387,10 +411,22 @@ function postProcessChat(chatIds) {
 }
 
 function processNewMessagesCount(count) {
-    $("#nav-new-orders-tab-count").text(" (" + count.newOrders + ")");
-    $("#nav-admin-tab-count").text(" (" + count.admin + ")");
-    $("#nav-orders-tab-count").text(" (" + count.orders + ")");
-    $("#nav-special-tab-count").text(" (" + count.special + ")");
+    processNewMessagesCountEx("#nav-new-orders-tab-count", count.newOrders);
+    processNewMessagesCountEx("#nav-admin-tab-count", count.admin);
+    processNewMessagesCountEx("#nav-orders-tab-count", count.orders);
+    processNewMessagesCountEx("#nav-special-tab-count", count.special);
+    processNewMessagesCountEx("#nav-saved-tab-count", count.saved);
+}
+
+function processNewMessagesCountEx(id, count) {
+    let f = (e) => e ? e + " сообщений" : "";
+
+    $(id).addClass("d-none")
+    if (count > 0) {
+        $(id).removeClass("d-none")
+    }
+
+    $(id).text(f(count));
 }
 
 function markMyChats(chatStatusArray) {
@@ -421,6 +457,14 @@ function appendChatToChatsWindows(chatJson) {
 function appendChatsToChatsWindows(chatsArray) {
     for (let chat of chatsArray) {
         appendChatToChatsWindows(chat);
+    }
+    if (chatsArray.length < context.loadNewChatsCount) {
+        $("#chat-load-more-btn").prop("disabled", true);
+        $("#chat-load-more-btn").text("Чаты закончились.");
+    }
+    if (chatsArray.length === 0) {
+        $("#chat-load-more-btn").prop("disabled", true);
+        $("#chat-load-more-btn").text("Тут нет чатов.");
     }
 }
 
@@ -454,6 +498,7 @@ function createChatWindowElement(chatJson) {
             <p class="m-0 mt-1">
                 <span id="chat-${chatJson.id}-date" class="me-2">${chatJson.lastMessageDate}</span>
                 <span id="chat-1-chat-id" class="me-2">(chat-id = ${chatJson.id})</span>
+                <button id="chat-save-${chatJson.id}" type="button" class="btn btn-primary me-2 p-1" onclick="chatSaveAction(${chatJson.id})">${chatJson.saved ? '&#10060;' : '&#128190;'}</button>
                 <button type="button" class="btn btn-primary me-2 p-1" data-bs-toggle="modal" data-bs-target="#show-create-note-modal" onclick="updateNote(null, ${chatJson.id}, '${chatJson.chatName}', null)">&#9997;</button>
             </p>
         </div>
@@ -1021,4 +1066,12 @@ function createNoteItem(note) {
             <hr class="m-0 mt-2 mb-2">
         </div>
     `
+}
+
+function chatSaveAction(chatId) {
+    changeSavedStatus(chatId);
+}
+
+function processSavedChat(saveChatResult) {
+    $(`#chat-save-${saveChatResult.chatId}`).html(saveChatResult.saved ? '&#10060;' : '&#128190;')
 }

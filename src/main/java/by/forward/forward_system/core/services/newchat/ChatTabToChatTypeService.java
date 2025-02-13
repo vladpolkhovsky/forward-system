@@ -12,7 +12,9 @@ public class ChatTabToChatTypeService {
         if (tabName == null) {
             return null;
         }
-        if (tabName.equals("new-orders")) {
+        if (tabName.equals("saved")) {
+            return "use-saved";
+        } else if (tabName.equals("new-orders")) {
 
             return ChatType.REQUEST_ORDER_CHAT.getName();
         } else if (tabName.equals("admin")) {

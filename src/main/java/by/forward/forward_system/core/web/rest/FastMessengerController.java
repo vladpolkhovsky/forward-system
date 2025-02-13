@@ -55,4 +55,9 @@ public class FastMessengerController {
     public ResponseEntity<LoadIsChatMemberResponseDto> loadChatMemberByChats(@RequestBody LoadIsChatMemberRequestDto requestDto) {
         return ResponseEntity.ok(fastChatService.loadIsChatMember(requestDto));
     }
+
+    @PostMapping(value = "/update-saved-chat", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<FastChatSaveChatResponseDto> updateSavedChat(@RequestBody FastChatSaveChatRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.changeSavedStatus(requestDto));
+    }
 }

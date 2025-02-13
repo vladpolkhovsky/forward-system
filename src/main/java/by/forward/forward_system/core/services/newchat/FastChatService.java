@@ -7,8 +7,10 @@ import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatM
 import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatMessageOptionDto;
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.jpa.model.ChatNoteEntity;
+import by.forward.forward_system.core.jpa.model.SavedChatEntity;
 import by.forward.forward_system.core.jpa.repository.ChatNoteRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.SavedChatRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.newchat.handlers.*;
 import lombok.AllArgsConstructor;
@@ -63,6 +65,7 @@ public class FastChatService {
     private final ChatNoteRepository chatNoteRepository;
 
     private final ChatRepository chatRepository;
+    private final SavedChatRepository savedChatRepository;
 
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
@@ -266,7 +269,8 @@ public class FastChatService {
             mapNullToZero.apply(map.get(ChatType.REQUEST_ORDER_CHAT.getName())),
             mapNullToZero.apply(map.get(ChatType.ADMIN_TALK_CHAT.getName())),
             mapNullToZero.apply(map.get(ChatType.ORDER_CHAT.getName())),
-            mapNullToZero.apply(map.get(ChatType.SPECIAL_CHAT.getName()))
+            mapNullToZero.apply(map.get(ChatType.SPECIAL_CHAT.getName())),
+            0
         );
     }
 
@@ -351,6 +355,21 @@ public class FastChatService {
         chatNoteRepository.save(chatNote);
 
         return loadAllChatNotes(userId);
+    }
+
+    @Transactional
+    public FastChatSaveChatResponseDto changeSavedStatus(FastChatSaveChatRequestDto requestDto) {
+        Optional<SavedChatEntity> byUserIdAndChatId = savedChatRepository.findByUserIdAndChatId(requestDto.getUserId(), requestDto.getChatId());
+
+        byUserIdAndChatId.ifPresentOrElse(savedChatRepository::delete, () -> {
+            SavedChatEntity savedChat = new SavedChatEntity();
+            savedChat.setChatId(requestDto.getChatId());
+            savedChat.setUserId(requestDto.getUserId());
+            savedChat.setCreatedAt(LocalDateTime.now());
+            savedChatRepository.save(savedChat);
+        });
+
+        return new FastChatSaveChatResponseDto(requestDto.getChatId(), byUserIdAndChatId.isEmpty());
     }
 
     private <T> List<T> emptyIfNull(List<T> list) {
