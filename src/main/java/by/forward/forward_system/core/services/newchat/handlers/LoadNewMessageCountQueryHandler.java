@@ -23,7 +23,7 @@ public class LoadNewMessageCountQueryHandler implements QueryHandler<Long, Map<S
         union select 'saved' as type, count(distinct c.id) as count from forward_system.chat_saved_to_user cstu
         	inner join forward_system.chats c on c.id = cstu.chat_id
             inner join forward_system.chat_message_to_user cmtu on cmtu.chat_id = c.id
-        	where cmtu.is_viewed = false and cmtu.user_id = ?
+        	where cmtu.is_viewed = false and cmtu.user_id = ? and cstu.user_id = ?
         """;
 
     @Override
@@ -36,6 +36,7 @@ public class LoadNewMessageCountQueryHandler implements QueryHandler<Long, Map<S
         return ps -> {
             ps.setLong(1, request);
             ps.setLong(2, request);
+            ps.setLong(3, request);
         };
     }
 
