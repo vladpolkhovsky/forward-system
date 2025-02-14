@@ -15,7 +15,6 @@ public class LoadNewMessageCountQueryHandler implements QueryHandler<Long, Map<S
 
     @Language("SQL")
     private final static String QUERY = """
-        
         select c."type" as type, count(distinct c.id) as count from forward_system.chat_message_to_user cmtu
         	inner join forward_system.chats c on c.id = cmtu.chat_id
         	where cmtu.is_viewed = false and cmtu.user_id = ?
