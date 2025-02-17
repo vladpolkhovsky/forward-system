@@ -21,6 +21,9 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     @Query(nativeQuery = true, value = "select * from forward_system.reviews order by created_at desc limit :limit offset :offset")
     List<ReviewEntity> findPage(int offset, int limit);
 
+    @Query(nativeQuery = true, value = "select r.* from forward_system.reviews r inner join forward_system.orders o on r.order_id = o.id where o.tech_number = :techNumber order by created_at desc")
+    List<ReviewEntity> findByTechNumber(String techNumber);
+
     @Query(nativeQuery = true, value = "select count(*) from forward_system.reviews where is_reviewed = false")
     long countNotReviewed();
 

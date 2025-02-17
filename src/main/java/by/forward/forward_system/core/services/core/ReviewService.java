@@ -131,6 +131,11 @@ public class ReviewService {
         return getReviewProjectionDtos(all);
     }
 
+    public List<ReviewProjectionDto> getAllReviews(String techNumber) {
+        List<ReviewEntity> all = reviewRepository.findByTechNumber(techNumber);
+        return getReviewProjectionDtos(all);
+    }
+
     private String getStatusRus(ReviewEntity t) {
         if (!t.getIsReviewed())
             return "Не проверено";

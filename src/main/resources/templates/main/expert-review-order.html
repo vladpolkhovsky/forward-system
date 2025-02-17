@@ -11,12 +11,17 @@
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
+    <div th:if="${!isOkStatus}" class="alert alert-danger" role="alert">
+        Заказ в неправильном статусе. Отправить на проверку можно заказ в статусе: <strong>В работе, Доработка</strong>
+    </div>
     <div class="row">
         <h3 th:text="${menuName}"></h3>
     </div>
 </div>
 <div class="container">
     <div class="row">
+        <p class="fs-4 mt-2 mb-2"><a th:href="'/view-order/' + ${orderId}">ТЗ <strong
+                th:text="'№' + ${techNumber}"></strong></a></p>
         <p>Выберите файл, который хотите отправить на проверку и укажите сообщение для проверяющего.</p>
         <form enctype="multipart/form-data" method="post" th:action="|/expert-review-order/| + ${orderId}">
             <input hidden name="reviewId" th:if="${reviewId}" th:value="${reviewId}">
@@ -40,7 +45,8 @@
             <label class="form-label mt-3" for="select-expert">Выберите эксперта:</label>
             <select aria-label="Size 3 select example" class="form-select" id="select-expert" name="expertId" required
                     size="15">
-                <option th:each="expert : ${experts}" th:selected="${expert.getChecked()}" th:text="${expert.getUsername()}"
+                <option th:each="expert : ${experts}" th:selected="${expert.getChecked()}"
+                        th:text="${expert.getUsername()}"
                         th:value="${expert.getId()}"></option>
             </select>
 
@@ -56,7 +62,7 @@
 
             <input class="form-control" name="additionalFile" type="file">
 
-            <div class="row mt-3">
+            <div class="row mt-3" th:if="${isOkStatus}">
                 <input class="form-control btn btn-primary" type="submit">
             </div>
         </form>

@@ -30,6 +30,7 @@ const discipline = document.getElementById("additional-discipline");
 const deadline = document.getElementById("additional-deadline");
 const intermediateDeadline = document.getElementById("additional-intermediate-deadline");
 const additionalDates = document.getElementById("additional-dates");
+const sendToReview = document.getElementById("send-to-review");
 const additionalViewFull = document.getElementById("additional-view-full");
 
 const chatWindow = document.getElementById("scroll-window");
@@ -583,6 +584,7 @@ function formatChatHeader(chatId, chatName, orderInfo) {
         discipline.innerText = orderInfo.discipline;
         status.innerHTML = createStatus(orderInfo.orderStatus, orderInfo.id);
         intermediateDeadline.innerText = orderInfo.intermediateDeadline;
+        sendToReview.setAttribute("href", `/expert-review-order/${orderInfo.id}`)
         additionalDates.innerHTML = createDates(JSON.parse(orderInfo.dates));
 
         additionalViewFull.setAttribute("href", `/order-info/${orderInfo.id}`)

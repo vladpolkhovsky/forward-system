@@ -22,6 +22,9 @@
 <div class="container">
     <div class="row">
         <div class="col-12">
+            <p class="fs-4 mt-2 mb-2"><a th:href="'/view-order/' + ${orderId}">ТЗ <strong
+                    th:text="'№' + ${techNumber}"></strong></a></p>
+
             <p>Работу проверял: <span class="fw-bold" th:text="${expertUsername}"></span></p>
 
             <p class="mb-0"
