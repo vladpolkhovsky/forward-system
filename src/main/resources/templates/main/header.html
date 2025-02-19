@@ -28,7 +28,11 @@
                           th:if="@{__${@newMsgCount.newMessageCount() > 0}__}"
                           th:text="@{__${@newMsgCount.newMessageCount()}__}"></span>
                 </li>
-                <li><a class="nav-link px-2 link-primary fw-medium text-dark" href="/push-subscription">Уведомления</a>
+                <li>
+                    <a class="nav-link px-2 link-primary fw-medium text-dark" href="/calendar">Календарь</a>
+                </li>
+                <li>
+                    <a class="nav-link px-2 link-primary fw-medium text-dark" href="/push-subscription">Уведомления</a>
                 </li>
             </ul>
             <div class="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end">

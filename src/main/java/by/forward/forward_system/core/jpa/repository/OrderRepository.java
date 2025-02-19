@@ -3,6 +3,7 @@ package by.forward.forward_system.core.jpa.repository;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
+import by.forward.forward_system.core.jpa.repository.projections.UserOrderDates;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -58,11 +59,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         """)
     List<String> getAllTechNumberByParticipant(Long userId, List<String> participantType, List<String> excludeStatus);
 
-    @Query(nativeQuery = true, value = "select count(*) > 0 from forward_system.orders where tech_number = :techNumber")
+    @Query(nativeQuery = true, value = "select count(*) > 0 from forward_system.orders where tech_number::text = :techNumber")
     boolean isTechNumberExists(String techNumber);
 
     List<OrderEntity> findByTechNumberEquals(String techNumber);
 
     @Query(nativeQuery = true, value = "select * from forward_system.orders o order by o.tech_number::int desc limit :limit offset :offset")
     List<OrderEntity> findOrderPage(int limit, int offset);
+
+    @Query(nativeQuery = true, value = "select distinct o.id as id, o.tech_number as techNumber, o.intermediate_deadline as intermediateDeadline, o.deadline as deadline, o.additional_dates as additionalDates from forward_system.orders o " +
+                                       "inner join forward_system.order_participants op on op.order_id = o.id " +
+                                       "where op.user_id = :userId and o.order_status not in ('CREATED', 'DISTRIBUTION', 'ADMIN_REVIEW') and op.type in ('HOST', 'MAIN_AUTHOR')")
+    List<UserOrderDates> findAllUserOrderEvents(Long userId);
 }

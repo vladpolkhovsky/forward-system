@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div class="row">
+        <h3 th:text="${menuName}"></h3>
+    </div>
+</div>
+<div id="calendar" class="container"></div>
+
+<style>
+    #calendar {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    a {
+        text-decoration: none !important;
+        color: black;
+    }
+
+    .tooltip.show {
+        opacity: 1;
+    }
+
+    .tooltip-inner {
+        background-color: #716d6a;
+        box-shadow: 0px 0px 4px black;
+        opacity: 1 !important;
+    }
+
+    .tooltip.bs-tooltip-right .arrow:before {
+        border-right-color: #716d6a !important;
+    }
+
+    .tooltip.bs-tooltip-left .arrow:before {
+        border-left-color: #716d6a !important;
+    }
+
+    .tooltip.bs-tooltip-bottom .arrow:before {
+        border-bottom-color: #716d6a !important;
+    }
+
+    .tooltip.bs-tooltip-top .arrow:before {
+        border-top-color: #716d6a !important;
+    }
+
+    .onTop {
+        z-index: 10000;
+    }
+</style>
+
+<script src="/static/popper.min.js"></script>
+<script src="/static/full-calendar/index.global.min.js"></script>
+<script src="/static/full-calendar/ru.global.min.js"></script>
+<script src="/static/bootstrap/bootstrap.min.js"></script>
+<script src="/static/jquery-3.7.1.min.js"></script>
+
+<script th:inline="javascript">
+
+    let userId = [[${userId}]]
+
+    function drawCalendar(events) {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            themeSystem: 'bootstrap5',
+            timeZone: 'Europe/Moscow',
+            headerToolbar: {
+                start: 'title',
+                center: '',
+                end: 'today dayGridMonth,dayGridWeek prev,next'
+            },
+            eventDidMount: function (info) {
+                var tooltip = new bootstrap.Tooltip(info.el, {
+                    title: `<h5>${info.event.title}</h5><hr class="mt-1 mb-1"/><p class="mb-1">${info.event.extendedProps.description}</p>`,
+                    placement: 'top',
+                    trigger: 'hover',
+                    container: 'body',
+                    customClass: "onTop",
+                    html: true
+                });
+            },
+            views: {
+                dayGridMonth: {
+                    dayMaxEventRows: 4
+                }
+            },
+            navLinks: false, // can click day/week names to navigate views
+            businessHours: false, // display business hours
+            editable: false,
+            selectable: false,
+            firstDay: 1,
+            locale: 'ru',
+            events: events,
+            aspectRatio: 1.5,
+            contentHeight: 600
+        });
+
+        /**
+         * events: [
+         *                 {
+         *                     title: 'Business Lunch 1231 23 123 1231223 123 123 12',
+         *                     start: '2023-01-03T13:20:00',
+         *                     allDay: false,
+         *                     description: '123123123123132 123 123123 12'
+         *                 }
+         *             ]
+         */
+
+        calendar.render();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+        fetch(`/calendar/user/${userId}/events`, {
+            method: 'get',
+            headers: myHeaders
+        }).then(r => r.json())
+            .then(events => drawCalendar(events));
+    });
+</script>
+</body>

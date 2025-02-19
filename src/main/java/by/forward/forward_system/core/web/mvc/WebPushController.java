@@ -18,7 +18,6 @@ public class WebPushController {
     @GetMapping("/push-subscription")
     public String subscription(Model model) {
 
-        model.addAttribute("menu", menuUiService.getMenuEntries());
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("userId", userUiService.getCurrentUserId());
 

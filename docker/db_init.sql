@@ -53,7 +53,7 @@ create table if not exists forward_system.orders
 (
     id                    bigint primary key,
     name                  varchar(2048) not null,
-    tech_number           int           not null,
+    tech_number           varchar(255)  not null,
     order_status          varchar(255)  not null references forward_system.order_statuses (name),
     work_type             varchar(255)  not null,
     discipline_id         bigint        not null references forward_system.disciplines (id),
@@ -605,14 +605,14 @@ alter table forward_system.orders
 
 create table if not exists forward_system.order_request_statistics
 (
-    id bigint primary key,
-    author_id bigint not null references forward_system.users(id),
-    manager_id bigint not null references forward_system.users(id),
-    order_id bigint not null,
+    id         bigint primary key,
+    author_id  bigint    not null references forward_system.users (id),
+    manager_id bigint    not null references forward_system.users (id),
+    order_id   bigint    not null,
     created_at timestamp not null
 );
 
-create index if not exists order_request_statistics_time_idx on forward_system.order_request_statistics(created_at);
+create index if not exists order_request_statistics_time_idx on forward_system.order_request_statistics (created_at);
 
 alter table forward_system.users
     add is_deleted boolean not null default false;
