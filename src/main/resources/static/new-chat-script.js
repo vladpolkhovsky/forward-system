@@ -237,7 +237,7 @@ function loadChatById(chatId) {
     fetch(loadChatByIdUrl, requestOptions)
         .then((response) => response.json())
         .then((result) => {
-            processNewLoadedChats(result.chats)
+            processNewLoadedChats(result.chats, false)
             return result;
         })
         .then((result) => postProcessChat(extractChatIds(result.chats)))
@@ -455,15 +455,15 @@ function appendChatToChatsWindows(chatJson) {
     $("#chat-window").append(chatWindowElement);
 }
 
-function appendChatsToChatsWindows(chatsArray) {
+function appendChatsToChatsWindows(chatsArray, needToDisableButtonWhenNoMoreData) {
     for (let chat of chatsArray) {
         appendChatToChatsWindows(chat);
     }
-    if (chatsArray.length < context.loadNewChatsCount) {
+    if (needToDisableButtonWhenNoMoreData && chatsArray.length < context.loadNewChatsCount) {
         $("#chat-load-more-btn").prop("disabled", true);
         $("#chat-load-more-btn").text("Чаты закончились.");
     }
-    if (chatsArray.length === 0) {
+    if (needToDisableButtonWhenNoMoreData && chatsArray.length === 0) {
         $("#chat-load-more-btn").prop("disabled", true);
         $("#chat-load-more-btn").text("Тут нет чатов.");
     }
@@ -778,10 +778,10 @@ function extractChatIds(chatArray) {
     return ids;
 }
 
-function processNewLoadedChats(chatsArray) {
+function processNewLoadedChats(chatsArray, needToDisableButtonWhenNoMoreData = true) {
     hideLoadChatSpinner();
     updateChatsCache(chatsArray);
-    appendChatsToChatsWindows(chatsArray);
+    appendChatsToChatsWindows(chatsArray, needToDisableButtonWhenNoMoreData);
 }
 
 function drawChatsByChatQueue() {

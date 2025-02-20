@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.messenger.MessageDto;
+import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.dto.ui.ReviewDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.OrderStatus;
@@ -11,6 +13,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectio
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
+import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,17 +31,16 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class ReviewService {
 
-
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final AttachmentRepository attachmentRepository;
     private final ReviewRepository reviewRepository;
     private final OrderService orderService;
     private final MessageService messageService;
-    private final ChatService chatService;
     private final ChatRepository chatRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final BotNotificationService botNotificationService;
+    private final WebsocketMassageService websocketMassageService;
 
     public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = new ReviewEntity();
@@ -235,7 +237,7 @@ public class ReviewService {
             ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
             attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
 
-            messageService.sendMessage(null,
+            ChatMessageEntity chatMessageEntity = messageService.sendMessage(null,
                 chatEntity,
                 "Получена рецензия от экспертного отдела. Изучите внимательно файл и выполните доработку.",
                 true,
@@ -243,6 +245,11 @@ public class ReviewService {
                 Collections.singletonList(attachmentEntity),
                 Collections.emptyList()
             );
+
+            MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
+            List<Long> users = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
+
+            websocketMassageService.sendMessageToUsers(users, messageDto);
         }
 
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
