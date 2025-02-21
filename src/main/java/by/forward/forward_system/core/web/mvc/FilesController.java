@@ -5,7 +5,6 @@ import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
@@ -19,7 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.view.RedirectView;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
@@ -34,12 +32,9 @@ public class FilesController {
 
     @GetMapping(value = "/load-file/{fileId}")
     @SneakyThrows
-    public Object loadFile(@PathVariable("fileId") Long fileId,
-                           @RequestParam(value = "download", defaultValue = "false") Boolean download,
-                           Model model) {
-        if (download) {
-            return new RedirectView("/download-file/" + fileId);
-        }
+    public Object downloadFile(@PathVariable("fileId") Long fileId,
+                               @RequestParam(value = "download", defaultValue = "false") Boolean download,
+                               Model model) {
 
         UserShortUiDto currentUserOrAnonymous = userUiService.getCurrentUserOrAnonymous();
         model.addAttribute("userShort", currentUserOrAnonymous);
@@ -55,8 +50,8 @@ public class FilesController {
         boolean isImage = fileExtension.map(this::isImage).orElse(false);
         boolean fileNotFound = filename.isEmpty();
 
-        if (!fileNotFound && !(isMicrosoftFile || isImage)) {
-            return new RedirectView("/download-file/" + fileId);
+        if (download || (!fileNotFound && !(isMicrosoftFile || isImage))) {
+            return downloadFile(fileId);
         }
 
         model.addAttribute("filename", filename.orElse("Файл не найден."));
@@ -70,7 +65,7 @@ public class FilesController {
 
     @GetMapping(value = "/download-file/{fileId}")
     @SneakyThrows
-    public ResponseEntity<Resource> loadFile(@PathVariable("fileId") Long fileId) {
+    public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) {
         AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(fileId);
 
         Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(attachmentFile.filepath());
