@@ -16,10 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Component
 @AllArgsConstructor
@@ -36,6 +33,10 @@ public class AttachmentService {
         return attachmentRepository.findAllById(ids).stream()
             .map(AttachmentEntity::getId)
             .toList();
+    }
+
+    public Optional<String> getFilename(Long fileId) {
+        return attachmentRepository.findById(fileId).map(AttachmentEntity::getFilename);
     }
 
     public List<Long> saveAttachment(List<AttachmentDto> attachmentDtos) {

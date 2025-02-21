@@ -26,6 +26,8 @@ public class BanFilter implements Filter {
         if (((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/logout") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ban") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/static/") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/download-file/") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/load-file/") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/ai-log/")) {
             filterChain.doFilter(servletRequest, servletResponse);
             return;

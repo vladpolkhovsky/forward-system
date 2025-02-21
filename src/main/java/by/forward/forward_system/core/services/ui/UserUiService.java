@@ -24,6 +24,33 @@ public class UserUiService {
 
     private final ChatUtilsService chatUtilsService;
 
+    public UserShortUiDto getCurrentUserOrAnonymous() {
+        try {
+            UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+            Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
+
+            if (byUsername.isEmpty()) {
+                return new UserShortUiDto(
+                    null,
+                    "Аноним",
+                    "ФИО не найдено",
+                    "Анонимный пользователь"
+                );
+            }
+
+            UserEntity userEntity = byUsername.get();
+
+            return new UserShortUiDto(
+                userEntity.getId(),
+                userEntity.getUsername(),
+                userEntity.getFioFull(),
+                userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+            );
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public UserShortUiDto getCurrentUser() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
