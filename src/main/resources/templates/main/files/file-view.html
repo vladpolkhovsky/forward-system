@@ -25,7 +25,7 @@
     <iframe id="docViewer" style="width:60vw; min-width: min(800px, 100vw); height:80vh;" src="" class="mx-auto d-block"></iframe>
     <script th:inline="javascript">
         const fileId = [[${fileId}]];
-        const url = `https://writer-link.by/load-file/${fileId}`
+        const url = `https://writer-link.by/download-file/${fileId}`
         let viewerUrl = `https://docs.google.com/gview?url=${url}&embedded=true`;
         document.getElementById("docViewer").setAttribute("src", viewerUrl);
     </script>
