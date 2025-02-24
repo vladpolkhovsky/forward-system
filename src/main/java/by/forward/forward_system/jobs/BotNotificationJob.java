@@ -205,7 +205,11 @@ public class BotNotificationJob {
         if (skippedChatIdsByUserId.contains(chatId)) {
             return true;
         }
+        if (user.hasAuthority(Authority.BANNED) || user.getDeleted()) {
+            return true;
+        }
         ChatEntity chatEntity = chatRepository.findById(chatId).get();
-        return chatEntity.getChatType().getType().equals(ChatType.ADMIN_TALK_CHAT) && user.getAuthorities().contains(Authority.OWNER);
+        return chatEntity.isChatTypeIs(ChatType.ADMIN_TALK_CHAT)
+               && user.hasAuthority(Authority.OWNER);
     }
 }

@@ -34,7 +34,7 @@ public class UserTableViewService {
         }
 
         return userRepository.findAllByDeletedIsFalse().stream()
-            .filter(t -> !t.getAuthorities().contains(Authority.AUTHOR))
+            .filter(t -> !t.hasAuthority(Authority.AUTHOR))
             .map(this::toViewDto)
             .sorted(comparator)
             .toList();

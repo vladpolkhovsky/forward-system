@@ -57,7 +57,7 @@ public class BanService {
 
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.OWNER)) {
             return false;
         }
 
@@ -107,7 +107,7 @@ public class BanService {
     public boolean isBanned(Long userId) {
         Optional<SecurityBlockEntity> byId = securityBlockRepository.findByUserId(userId);
         Optional<UserEntity> userEntity = userRepository.findById(userId);
-        boolean isUserBanned = userEntity.isPresent() && userEntity.get().getAuthorities().contains(Authority.BANNED);
+        boolean isUserBanned = userEntity.isPresent() && userEntity.get().hasAuthority(Authority.BANNED);
         return byId.isPresent() || isUserBanned;
     }
 
@@ -186,7 +186,7 @@ public class BanService {
 
     public List<UserDto> getAllUsersForBan() {
         return userService.getAllUserWithoutRole(Authority.OWNER).stream()
-            .filter(u -> !u.getAuthorities().contains(Authority.BANNED))
+            .filter(u -> !u.hasAuthority(Authority.BANNED))
             .map(userService::convertUserToDto)
             .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))
             .toList();

@@ -64,7 +64,7 @@ public class ChatUtilsService {
 
         List<UserEntity> allAuthors = authorRepository.getNotDeletedAuthors().stream()
             .map(AuthorEntity::getUser)
-            .filter(t -> !t.getAuthorities().contains(Authority.BANNED))
+            .filter(t -> !t.hasAuthority(Authority.BANNED))
             .toList();
 
         List<UserEntity> admins = new ArrayList<>(

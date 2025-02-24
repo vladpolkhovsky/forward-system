@@ -556,7 +556,7 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         long chatId = 0;
         for (ChatEntity chat : orderEntity.getChats()) {
-            if (chat.getChatType().getType().equals(ChatType.ORDER_CHAT)) {
+            if (chat.isChatTypeIs(ChatType.ORDER_CHAT)) {
                 chatId = Math.max(chat.getId(), chatId);
             }
         }
@@ -590,7 +590,7 @@ public class OrderService {
         ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
             .orElseThrow(() -> new RuntimeException("Message type not found"));
         for (ChatEntity chat : orderEntity.getChats()) {
-            if (chat.getChatType().getType().equals(ChatType.ORDER_CHAT)) {
+            if (chat.isChatTypeIs(ChatType.ORDER_CHAT)) {
                 chatService.addUserToChats(Collections.singletonList(chat.getId()), authorId);
                 messageService.sendMessage(
                     null,
@@ -645,7 +645,7 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.ADMIN) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
 
@@ -669,7 +669,7 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.ADMIN) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
 
@@ -693,7 +693,7 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         UserEntity userEntity = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.ADMIN) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
 

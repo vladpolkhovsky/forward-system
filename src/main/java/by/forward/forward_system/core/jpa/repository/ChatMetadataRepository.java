@@ -13,5 +13,5 @@ public interface ChatMetadataRepository extends JpaRepository<ChatMetadataEntity
     boolean isChatExists(Long authorId, Long managerId);
 
     @Query(nativeQuery = true, value = "select distinct cm.id from forward_system.chat_metadata cm where cm.user_id = :id or cm.manager_id = :id")
-    public List<Long> findChatsByUserId(Long id);
+    List<Long> findChatsByUserId(Long id);
 }

@@ -5,10 +5,7 @@ import by.forward.forward_system.core.dto.websocket.WSAttachment;
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.util.IOUtils;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -39,6 +36,7 @@ public class AttachmentService {
         return attachmentRepository.findById(fileId).map(AttachmentEntity::getFilename);
     }
 
+    @Deprecated
     public List<Long> saveAttachment(List<AttachmentDto> attachmentDtos) {
         List<AttachmentEntity> attachmentEntities = new ArrayList<>();
         for (AttachmentDto attachmentDto : attachmentDtos) {
@@ -48,8 +46,8 @@ public class AttachmentService {
         return attachmentEntities.stream().map(AttachmentEntity::getId).toList();
     }
 
-    public Long saveAttachmentRaw(String filename, byte[] content) {
-        return saveAttachment(filename, content).getId();
+    public Long saveAttachmentRaw(String filenameRaw, byte[] content) {
+        return saveAttachment(filenameRaw, content).getId();
     }
 
     @SneakyThrows
@@ -60,7 +58,8 @@ public class AttachmentService {
         String filepath = fileUUID + "___" + filename;
         Path filePath = Path.of(filesDerictoryPath.toString(), filepath);
 
-        PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName,
+        PutObjectRequest putObjectRequest = new PutObjectRequest(
+            bucketName,
             fileUUID.toString(),
             new ByteArrayInputStream(content),
             new ObjectMetadata()
@@ -76,6 +75,7 @@ public class AttachmentService {
         return attachmentRepository.save(attachmentEntity);
     }
 
+    @Deprecated
     @SneakyThrows
     private AttachmentEntity saveWSAttachment(AttachmentDto attachment) {
         byte[] decode = Base64.getDecoder().decode(attachment.getBase64content());
@@ -85,10 +85,13 @@ public class AttachmentService {
 
     @SneakyThrows
     public AttachmentFile loadAttachment(Long attachmentId) {
-        AttachmentEntity attachmentEntity = attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
+        AttachmentEntity attachmentEntity = attachmentRepository.findById(attachmentId)
+            .orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
 
-        S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()));
-        byte[] byteArray = IOUtils.toByteArray(object.getObjectContent());
+        byte[] byteArray;
+        try (S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()))) {
+            byteArray = IOUtils.toByteArray(object.getObjectContent());
+        }
 
         return new AttachmentFile(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), byteArray);
     }

@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.services.core;
 
-import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.services.messager.ChatService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -19,6 +18,9 @@ public class UserDeletionService {
     private final ChatMetadataRepository chatMetadataRepository;
     private final ChatService chatService;
     private final UserRepository userRepository;
+    private final NotificationOutboxRepository notificationOutboxRepository;
+    private final BotNotificationCodeRepository botNotificationCodeRepository;
+    private final BotIntegrationDataRepository botIntegrationDataRepository;
 
     @Transactional
     @SneakyThrows
@@ -30,6 +32,10 @@ public class UserDeletionService {
         for (Long l : chatsByUserId) {
             wait.add(chatService.deleteChat(l));
         }
+
+        notificationOutboxRepository.deleteAllByUserId(userId);
+        botNotificationCodeRepository.deleteById(userId);
+        botIntegrationDataRepository.deleteByUserId(userId);
 
         for (CompletableFuture<Void> voidCompletableFuture : wait) {
             voidCompletableFuture.get();

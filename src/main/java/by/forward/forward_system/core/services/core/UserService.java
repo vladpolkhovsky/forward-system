@@ -10,10 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -50,7 +47,7 @@ public class UserService {
             userEntity.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
-        Set<Authority> authorities = userEntity.getAuthorities().stream().collect(Collectors.toSet());
+        Set<Authority> authorities = new HashSet<>(userEntity.getAuthorities());
         authorities.addAll(user.getAuthorities());
 
         userEntity.setFirstname(user.getFirstname());
@@ -88,9 +85,9 @@ public class UserService {
         userDto.setId(userEntity.getId());
         userDto.setFio(userEntity.getFio());
         userDto.setUsername(userEntity.getUsername());
-        userDto.setIsAdmin(userEntity.getAuthorities().contains(Authority.ADMIN));
-        userDto.setRoles(userEntity.getAuthorities().stream().map(Authority::getAuthority).collect(Collectors.joining(", ")));
-        userDto.setRolesRus(userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", ")));
+        userDto.setIsAdmin(userEntity.hasAuthority(Authority.ADMIN));
+        userDto.setRoles(userEntity.getAuthoritiesNames());
+        userDto.setRolesRus(userEntity.getAuthoritiesNamesRus());
         return userDto;
     }
 

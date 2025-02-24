@@ -90,13 +90,13 @@ public class AuthorUiService {
             null,
             null,
             null,
-            authorEntity.getUser().getAuthorities().contains(Authority.ADMIN),
-            authorEntity.getUser().getAuthorities().contains(Authority.MANAGER),
-            authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
-            authorEntity.getUser().getAuthorities().contains(Authority.HR),
-            authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
-            authorEntity.getUser().getAuthorities().contains(Authority.BANNED),
-            authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+            authorEntity.getUser().hasAuthority(Authority.ADMIN),
+            authorEntity.getUser().hasAuthority(Authority.MANAGER),
+            authorEntity.getUser().hasAuthority(Authority.AUTHOR),
+            authorEntity.getUser().hasAuthority(Authority.HR),
+            authorEntity.getUser().hasAuthority(Authority.OWNER),
+            authorEntity.getUser().hasAuthority(Authority.BANNED),
+            authorEntity.getUser().getAuthoritiesNamesRus()
         );
     }
 
@@ -126,13 +126,13 @@ public class AuthorUiService {
             excellentSubjects,
             goodSubjects,
             maybeSubjects,
-            authorEntity.getUser().getAuthorities().contains(Authority.ADMIN),
-            authorEntity.getUser().getAuthorities().contains(Authority.MANAGER),
-            authorEntity.getUser().getAuthorities().contains(Authority.AUTHOR),
-            authorEntity.getUser().getAuthorities().contains(Authority.HR),
-            authorEntity.getUser().getAuthorities().contains(Authority.OWNER),
-            authorEntity.getUser().getAuthorities().contains(Authority.BANNED),
-            authorEntity.getUser().getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+            authorEntity.getUser().hasAuthority(Authority.ADMIN),
+            authorEntity.getUser().hasAuthority(Authority.MANAGER),
+            authorEntity.getUser().hasAuthority(Authority.AUTHOR),
+            authorEntity.getUser().hasAuthority(Authority.HR),
+            authorEntity.getUser().hasAuthority(Authority.OWNER),
+            authorEntity.getUser().hasAuthority(Authority.BANNED),
+            authorEntity.getUser().getAuthoritiesNamesRus()
         );
     }
 

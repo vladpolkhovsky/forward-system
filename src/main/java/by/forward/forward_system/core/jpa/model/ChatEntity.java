@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.model;
 
+import by.forward.forward_system.core.enums.ChatType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,5 +45,9 @@ public class ChatEntity {
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
+
+    public boolean isChatTypeIs(ChatType type) {
+        return getChatType().getType().equals(type);
+    }
 
 }

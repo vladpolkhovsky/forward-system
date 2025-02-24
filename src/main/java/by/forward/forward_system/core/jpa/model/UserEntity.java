@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -60,10 +61,8 @@ public class UserEntity {
     private LocalDateTime createdAt;
 
     public void addRole(Authority grantedAuthority) {
-        List<Authority> authorities = getAuthorities();
-        if (!authorities.contains(grantedAuthority)) {
-            authorities.add(grantedAuthority);
-        }
+        Set<Authority> authorities = getAuthorities();
+        authorities.add(grantedAuthority);
         setRoles(toRoles(authorities));
     }
 
@@ -72,20 +71,29 @@ public class UserEntity {
     }
 
     public void removeRole(Authority grantedAuthority) {
-        List<Authority> authorities = getAuthorities();
+        Set<Authority> authorities = getAuthorities();
         authorities.remove(grantedAuthority);
         setRoles(toRoles(authorities));
     }
 
-    public List<Authority> getAuthorities() {
-        return new ArrayList<>(Arrays.stream(Optional.ofNullable(getRoles()).orElse("").split(","))
+    public Set<Authority> getAuthorities() {
+        String roles = Optional.ofNullable(getRoles()).orElse("");
+        return Arrays.stream(roles.split(","))
             .filter(StringUtils::isNotBlank)
             .map(Authority::byName)
-            .toList());
+            .collect(Collectors.toCollection(HashSet::new));
     }
 
-    private String toRoles(List<Authority> authorities) {
-        return String.join(",", authorities.stream().map(Authority::getAuthority).toList());
+    public String getAuthoritiesNames() {
+        return getAuthorities().stream().map(Authority::getAuthority).collect(Collectors.joining(", "));
+    }
+
+    public String getAuthoritiesNamesRus() {
+        return getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "));
+    }
+
+    public boolean hasAuthority(Authority grantedAuthority) {
+        return getAuthorities().contains(grantedAuthority);
     }
 
     public String getFio() {
@@ -109,5 +117,12 @@ public class UserEntity {
     @Override
     public int hashCode() {
         return Objects.hashCode(id);
+    }
+
+    private static String toRoles(Set<Authority> authorities) {
+        List<String> authoritiesNames = authorities.stream()
+            .map(Authority::getAuthority)
+            .toList();
+        return String.join(",", authoritiesNames);
     }
 }

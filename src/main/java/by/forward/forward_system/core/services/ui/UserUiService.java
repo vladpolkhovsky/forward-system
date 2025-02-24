@@ -44,7 +44,7 @@ public class UserUiService {
                 userEntity.getId(),
                 userEntity.getUsername(),
                 userEntity.getFioFull(),
-                userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+                userEntity.getAuthoritiesNamesRus()
             );
         } catch (Exception e) {
             return null;
@@ -62,13 +62,13 @@ public class UserUiService {
             userEntity.getId(),
             userEntity.getUsername(),
             userEntity.getFioFull(),
-            userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+            userEntity.getAuthoritiesNamesRus()
         );
     }
 
     public void checkAccessAdmin() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
-        if (userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.ADMIN) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
@@ -76,7 +76,7 @@ public class UserUiService {
 
     public void checkAccessAccountant() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
-        if (userEntity.getAuthorities().contains(Authority.ACCOUNTANT) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.ACCOUNTANT) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
@@ -84,7 +84,7 @@ public class UserUiService {
 
     public void checkAccessManager() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
-        if (userEntity.getAuthorities().contains(Authority.MANAGER) || userEntity.getAuthorities().contains(Authority.ADMIN) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.MANAGER) || userEntity.hasAuthority(Authority.ADMIN) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
@@ -92,7 +92,7 @@ public class UserUiService {
 
     public void checkAccessHR() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
-        if (userEntity.getAuthorities().contains(Authority.HR) || userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.HR) || userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
@@ -100,7 +100,7 @@ public class UserUiService {
 
     public void checkAccessOwner() {
         UserEntity userEntity = userService.getById(getCurrentUserId()).orElseThrow(() -> new UsernameNotFoundException("User not found with id " + getCurrentUserId()));
-        if (userEntity.getAuthorities().contains(Authority.OWNER)) {
+        if (userEntity.hasAuthority(Authority.OWNER)) {
             return;
         }
         throw new IllegalStateException("Нет доступа к просмотру страницы.");
@@ -113,19 +113,19 @@ public class UserUiService {
     public Boolean isCurrentUserAdmin() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
-        return byUsername.get().getAuthorities().contains(Authority.ADMIN);
+        return byUsername.get().hasAuthority(Authority.ADMIN);
     }
 
     public Boolean isCurrentUserOwner() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
-        return byUsername.get().getAuthorities().contains(Authority.OWNER);
+        return byUsername.get().hasAuthority(Authority.OWNER);
     }
 
     public Boolean isCurrentUserAccountant() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
-        return byUsername.get().getAuthorities().contains(Authority.ACCOUNTANT);
+        return byUsername.get().hasAuthority(Authority.ACCOUNTANT);
     }
 
     public List<UserUiDto> getAllUsers() {
@@ -204,15 +204,15 @@ public class UserUiService {
             userEntity.getEmail(),
             userEntity.getPayment(),
             userEntity.getOther(),
-            userEntity.getAuthorities().contains(Authority.ADMIN),
-            userEntity.getAuthorities().contains(Authority.MANAGER),
-            userEntity.getAuthorities().contains(Authority.AUTHOR),
-            userEntity.getAuthorities().contains(Authority.HR),
-            userEntity.getAuthorities().contains(Authority.ACCOUNTANT),
-            userEntity.getAuthorities().contains(Authority.OWNER),
-            userEntity.getAuthorities().contains(Authority.BANNED),
+            userEntity.hasAuthority(Authority.ADMIN),
+            userEntity.hasAuthority(Authority.MANAGER),
+            userEntity.hasAuthority(Authority.AUTHOR),
+            userEntity.hasAuthority(Authority.HR),
+            userEntity.hasAuthority(Authority.ACCOUNTANT),
+            userEntity.hasAuthority(Authority.OWNER),
+            userEntity.hasAuthority(Authority.BANNED),
             userEntity.getDeleted(),
-            userEntity.getAuthorities().stream().map(Authority::getAuthorityNameRus).collect(Collectors.joining(", "))
+            userEntity.getAuthoritiesNamesRus()
         );
     }
 
