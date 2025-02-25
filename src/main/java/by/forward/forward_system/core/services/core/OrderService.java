@@ -278,11 +278,17 @@ public class OrderService {
         UserEntity manager = userRepository.findById(managerId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + managerId));
 
-        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(userEntity.getId(), manager.getId());
+        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(
+            userEntity.getId(),
+            manager.getId()
+        );
+
+        if (newOrdersChatByUser.isEmpty()) {
+            return;
+        }
 
         ChatMessageTypeEntity chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
             .orElseThrow(() -> new RuntimeException("Chat message type not found " + managerId));
-        ;
 
         ChatMessageEntity chatMessageEntity = messageService.sendMessage(
             null,
