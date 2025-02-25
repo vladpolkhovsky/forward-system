@@ -37,15 +37,13 @@ public class FastReadOrderRequestStatRepository {
         Timestamp fromTimestamp = Timestamp.valueOf(from.atStartOfDay());
         Timestamp toTimestamp = Timestamp.valueOf(toLDT);
 
-        return jdbcTemplate.query(LOAD_ALL_REQUEST_DATA_SQL, new Object[]{fromTimestamp, toTimestamp}, new int[]{Types.TIMESTAMP, Types.TIMESTAMP}, (rs, rowNum) -> {
-            return new FastReadOrderRequestStatRepository.StatDto(
-                rs.getLong("id"),
-                rs.getLong("aId"),
-                rs.getLong("mId"),
-                rs.getLong("oId"),
-                rs.getTimestamp("createdAt").toLocalDateTime().toLocalDate()
-            );
-        });
+        return jdbcTemplate.query(LOAD_ALL_REQUEST_DATA_SQL, new Object[]{fromTimestamp, toTimestamp}, new int[]{Types.TIMESTAMP, Types.TIMESTAMP}, (rs, rowNum) -> new StatDto(
+            rs.getLong("id"),
+            rs.getLong("aId"),
+            rs.getLong("mId"),
+            rs.getLong("oId"),
+            rs.getTimestamp("createdAt").toLocalDateTime().toLocalDate()
+        ));
     }
 
     @Getter

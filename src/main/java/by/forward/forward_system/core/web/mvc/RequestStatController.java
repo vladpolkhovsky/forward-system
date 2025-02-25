@@ -16,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @AllArgsConstructor
@@ -111,7 +112,7 @@ public class RequestStatController {
 
     public static class DataMap {
 
-        private final Map<IdPair, List<FastReadOrderRequestStatRepository.StatDto>> dataMap = new HashMap<>();
+        private final Map<IdPair, Integer> dataMap = new HashMap<>();
 
         private final Set<Long> aIds;
         private final Set<Long> mIds;
@@ -126,8 +127,8 @@ public class RequestStatController {
             for (FastReadOrderRequestStatRepository.StatDto datum : data) {
                 if (aIds.contains(datum.getAuthorId()) && mIds.contains(datum.getManagerId())) {
                     IdPair key = new IdPair(datum.getAuthorId(), datum.getManagerId());
-                    dataMap.putIfAbsent(key, new ArrayList<>());
-                    dataMap.get(key).add(datum);
+                    Integer orDefault = dataMap.getOrDefault(key, 0);
+                    dataMap.put(key, orDefault + 1);
                     totalSum++;
                 }
             }
@@ -137,35 +138,37 @@ public class RequestStatController {
         }
 
         public int getCount(Long aId, Long mId) {
-            return dataMap.getOrDefault(new IdPair(aId, mId), List.of()).size();
+            return dataMap.getOrDefault(new IdPair(aId, mId), 0);
         }
 
         public int getCountByAuthor(Long aId) {
-            if (totalByAuthorCache.containsKey(aId)) {
-                return totalByAuthorCache.get(aId);
-            }
-
-            int sum = 0;
-            for (Long mId : mIds) {
-                sum += getCount(aId, mId);
-            }
-
-            totalByAuthorCache.put(aId, sum);
-
-            return sum;
+            return getAndCache(totalByAuthorCache, Set.of(aId), mIds);
         }
 
         public int getCountByManager(Long mId) {
-            if (totalByManagerCache.containsKey(mId)) {
-                return totalByManagerCache.get(mId);
+            return getAndCache(totalByManagerCache, aIds, Set.of(mId));
+        }
+
+        private int getAndCache(Map<Long, Integer> cache, Set<Long> aIds, Set<Long> mIds) {
+            Long cacheKey = Stream.of(aIds, mIds).filter(t -> t.size() == 1)
+                .map(t -> t.iterator().next())
+                .findAny()
+                .orElse(null);
+
+            if (cacheKey != null && cache.containsKey(cacheKey)) {
+                return cache.get(cacheKey);
             }
 
             int sum = 0;
             for (Long aId : aIds) {
-                sum += getCount(aId, mId);
+                for (Long mId : mIds) {
+                    sum += getCount(aId, mId);
+                }
             }
 
-            totalByManagerCache.put(mId, sum);
+            if (cacheKey != null) {
+                cache.put(cacheKey, sum);
+            }
 
             return sum;
         }
@@ -174,7 +177,8 @@ public class RequestStatController {
             return this.totalSum;
         }
 
-        private record IdPair(Long authorId, Long managerId) {
+        private record IdPair(Long authorId,
+                              Long managerId) {
         }
     }
 

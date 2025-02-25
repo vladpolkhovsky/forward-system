@@ -22,13 +22,11 @@ public class FastUserReadRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public List<UserDto> readAllActiveUsers() {
-        return jdbcTemplate.query(LOAD_ALL_ACTIVE_USERS_SQL, (rs, rowNum) -> {
-            return new UserDto(
-                rs.getLong("id"),
-                rs.getString("username"),
-                rs.getString("roles")
-            );
-        });
+        return jdbcTemplate.query(LOAD_ALL_ACTIVE_USERS_SQL, (rs, rowNum) -> new UserDto(
+            rs.getLong("id"),
+            rs.getString("username"),
+            rs.getString("roles")
+        ));
     }
 
     @Getter
