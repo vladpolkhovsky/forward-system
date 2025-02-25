@@ -10,6 +10,7 @@ import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,6 +67,7 @@ public class AdminMenuController {
     }
 
     @PostMapping(value = "/review-order/{requestId}")
+    @Transactional
     public RedirectView reviewOrder(@PathVariable Long requestId, @RequestBody MultiValueMap<String, String> body) {
         userUiService.checkAccessAdmin();
 
