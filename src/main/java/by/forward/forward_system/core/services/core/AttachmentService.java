@@ -5,13 +5,18 @@ import by.forward.forward_system.core.dto.websocket.WSAttachment;
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.jpa.repository.AttachmentRepository;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.*;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.util.IOUtils;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 
@@ -89,16 +94,31 @@ public class AttachmentService {
             .orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
 
         byte[] byteArray;
-        try (S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()))) {
+        try (S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()));) {
             byteArray = IOUtils.toByteArray(object.getObjectContent());
         }
 
         return new AttachmentFile(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), byteArray);
     }
 
+    @SneakyThrows
+    public AttachmentFileInputStream loadAttachmentAsResource(Long attachmentId) {
+        AttachmentEntity attachmentEntity = attachmentRepository.findById(attachmentId)
+            .orElseThrow(() -> new RuntimeException("Not found attachment with id " + attachmentId));
+        S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()));
+        InputStream inputStream = object.getObjectContent();
+        return new AttachmentFileInputStream(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), inputStream);
+    }
+
     public record AttachmentFile(String filename,
                                  String filepath,
                                  byte[] content) {
+
+    }
+
+    public record AttachmentFileInputStream(String filename,
+                                         String filepath,
+                                         InputStream inputStream) {
 
     }
 }

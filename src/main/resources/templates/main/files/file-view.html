@@ -6,7 +6,11 @@
     <meta content="width=device-width, initial-scale=1" name="viewport">
 
     <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/viewer/viewer.css" rel="stylesheet">
     <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+
+    <script src="/static/jquery-3.7.1.min.js"></script>
+    <script src="/static/viewer/viewer.js"></script>
 </head>
 <body>
 <div th:unless="${authorizedUser}" th:insert="~{main/header :: header-div}"></div>
@@ -14,24 +18,82 @@
     <div th:if="${fileNotFound}" class="alert alert-danger mb-3 mt-3" role="alert">
         Файл не найден!
     </div>
-    <a class="btn btn-primary mb-3 mt-3"
+    <a class="btn btn-primary mb-3 mt-3 mx-auto d-block text-center"
        target="_blank"
+       style="max-width: 800px"
        th:href="|/download-file/| + ${fileId}"
        th:unless="${fileNotFound}"
        th:text="|Скачать файл: | + ${filename}"></a>
 </div>
 <div th:if="${isMicrosoftFile}">
-    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или скачайте файл.</i>
-    <iframe id="docViewer" style="width:60vw; min-width: min(800px, 100vw); height:80vh;" src="" class="mx-auto d-block"></iframe>
+    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или
+        скачайте файл.</i>
+    <iframe id="docViewerMicrosoft" style="width:60vw; min-width: min(1200px, 100vw); height:80vh;" src=""
+            class="mx-auto d-block mt-2"></iframe>
     <script th:inline="javascript">
         const fileId = [[${fileId}]];
         const url = `https://writer-link.by/download-file/${fileId}`
-        let viewerUrl = `https://docs.google.com/gview?url=${url}&embedded=true`;
-        document.getElementById("docViewer").setAttribute("src", viewerUrl);
+        let viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${encodeURI(url)}`;
+        let iFrame = document.getElementById("docViewerMicrosoft");
+
+        iFrame.setAttribute("src", viewerUrl);
+        iFrame.addEventListener('load', (e) => {
+            let iframeResponseCode = iFrame.contentWindow.performance.getEntriesByType("navigation")[0].responseStatus;
+            if (iframeResponseCode !== 200) {
+                alert(`Ошибка ${iframeResponseCode}. Попробуйте перезагрузить страницу. Если не помогает, то придётся скачать файл.`);
+            }
+        })
+    </script>
+</div>
+<div th:if="${isGoogleFile}">
+    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или
+        скачайте файл.</i>
+    <iframe id="docViewerGoogle" style="width:60vw; min-width: min(1200px, 100vw); height:80vh;" src=""
+            class="mx-auto d-block mt-2"></iframe>
+    <script th:inline="javascript">
+        const fileId = [[${fileId}]];
+        const url = `https://writer-link.by/download-file/${fileId}`
+        let viewerUrl = `https://docs.google.com/gview?url=${encodeURI(url)}&embedded=true`;
+        let iFrame = document.getElementById("docViewerGoogle");
+
+        iFrame.setAttribute("src", viewerUrl);
+        iFrame.addEventListener('load', (e) => {
+            let iframeResponseCode = iFrame.contentWindow.performance.getEntriesByType("navigation")[0].responseStatus;
+            if (iframeResponseCode !== 200) {
+                alert(`Ошибка ${iframeResponseCode}. Попробуйте перезагрузить страницу. Если не помогает, то придётся скачать файл.`);
+            }
+        })
     </script>
 </div>
 <div th:if="${isImage}">
-    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или скачайте файл.</i>
-    <img th:src="|/download-file/| + ${fileId}" class="img-fluid mx-auto d-block" th:alt="${filename}">
+    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или
+        скачайте файл.</i>
+    <i class="mx-auto fw-bold d-block text-center">Нажмите на картинку, чтобы приблизить или повернуть её.</i>
+    <div id="image-div" class="mt-2">
+        <img th:src="|/download-file/| + ${fileId}" class="img-fluid mx-auto d-block shadow p-1 mb-5 bg-body-tertiary rounded" th:alt="${filename}" style="max-width: 1080px; max-height: 720px">
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const viewer = new Viewer(document.getElementById('image-div'), {
+                inline: false,
+                toolbar: {
+                    zoomIn: 1,
+                    zoomOut: 1,
+                    oneToOne: 1,
+                    reset: 1,
+                    rotateLeft: 1,
+                    rotateRight: 1,
+                },
+            });
+        });
+    </script>
+</div>
+<div th:if="${isVideo}">
+    <i class="mx-auto d-block text-center">Если документ не виден в течение 10 секунд, то перезагрузите страницу или
+        скачайте файл.</i>
+    <i class="mx-auto fw-bold d-block text-center">С просмотром видео могут возникать проблемы. Недоступны функции перемотки. Не все форматы поддерживаются. Вам будет удобнее его скачать.</i>
+    <video controls autoplay class="img-fluid mx-auto d-block mt-2" th:alt="${filename}" style="max-width: 1080px; max-height: 720px">
+        <source th:src="|/download-file/| + ${fileId}" th:type="${mediaType}">
+    </video>
 </div>
 </body>

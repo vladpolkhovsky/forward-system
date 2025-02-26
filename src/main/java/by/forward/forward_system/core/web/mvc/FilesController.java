@@ -6,13 +6,12 @@ import by.forward.forward_system.core.services.ui.UserUiService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FilenameUtils;
-import org.springframework.core.io.ByteArrayResource;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.MediaType;
-import org.springframework.http.MediaTypeFactory;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.web.header.Header;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,9 +31,7 @@ public class FilesController {
 
     @GetMapping(value = "/load-file/{fileId}")
     @SneakyThrows
-    public Object downloadFile(@PathVariable("fileId") Long fileId,
-                               @RequestParam(value = "download", defaultValue = "false") Boolean download,
-                               Model model) {
+    public Object downloadFile(@PathVariable("fileId") Long fileId, @RequestParam(value = "download", defaultValue = "false") Boolean download, Model model) {
 
         UserShortUiDto currentUserOrAnonymous = userUiService.getCurrentUserOrAnonymous();
         model.addAttribute("userShort", currentUserOrAnonymous);
@@ -44,34 +41,51 @@ public class FilesController {
         }
 
         Optional<String> filename = attachmentService.getFilename(fileId);
-        Optional<String> fileExtension = filename.map(name -> FilenameUtils.getExtension(name));
+        Optional<String> fileExtension = filename.map(FilenameUtils::getExtension).filter(StringUtils::isNoneBlank).map(String::toLowerCase);
 
         boolean isMicrosoftFile = fileExtension.map(this::isMicrosoftFile).orElse(false);
+        boolean isGoogleFile = fileExtension.map(this::isGoogleFile).orElse(false);
         boolean isImage = fileExtension.map(this::isImage).orElse(false);
+        boolean isVideo = fileExtension.map(this::isVideo).orElse(false);
+        String mediaType = filename.map(MediaTypeFactory::getMediaType)
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .map(MediaType::asMediaType)
+            .map(MediaType::toString)
+            .orElse("null");
+
         boolean fileNotFound = filename.isEmpty();
 
-        if (download || (!fileNotFound && !(isMicrosoftFile || isImage))) {
+        if (download || (!fileNotFound && !(isMicrosoftFile || isImage || isGoogleFile || isVideo))) {
             return downloadFile(fileId);
         }
 
         model.addAttribute("filename", filename.orElse("Файл не найден."));
         model.addAttribute("isMicrosoftFile", isMicrosoftFile);
+        model.addAttribute("isGoogleFile", isGoogleFile);
         model.addAttribute("isImage", isImage);
+        model.addAttribute("isVideo", isVideo);
+        model.addAttribute("mediaType", mediaType);
         model.addAttribute("fileNotFound", fileNotFound);
         model.addAttribute("fileId", fileId);
 
         return "main/files/file-view";
     }
 
+
     @GetMapping(value = "/download-file/{fileId}")
     @SneakyThrows
     public ResponseEntity<Resource> downloadFile(@PathVariable("fileId") Long fileId) {
-        AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(fileId);
+        AttachmentService.AttachmentFileInputStream attachmentFile = attachmentService.loadAttachmentAsResource(fileId);
 
         Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(attachmentFile.filepath());
         String filename = attachmentFile.filename().substring(attachmentFile.filename().indexOf(' ') + 1);
 
-        return asResponseEntity(new ByteArrayResource(attachmentFile.content()), filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
+        return asResponseEntity(
+            new InputStreamResource(attachmentFile.inputStream()),
+            filename,
+            mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM)
+        );
     }
 
     @GetMapping(value = "/load-server-file/expert-form")
@@ -92,7 +106,7 @@ public class FilesController {
 
         return ResponseEntity.ok()
             .contentType(MediaType.asMediaType(mimeType))
-            .header("Content-Disposition", contentDisposition.toString())
+            .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString())
             .body(resource);
     }
 
@@ -112,14 +126,48 @@ public class FilesController {
     );
 
     private final Set<String> MICROSOFT_EXTENSION = Set.of(
+        "odt",
+        "odp",
+        "ods",
         "docx",
-        "pptx",
-        "xlsx",
-        "xls",
         "doc",
+        "dotm",
+        "dotx",
+        "xlsx",
+        "xlsb",
+        "xls",
+        "xlsm",
         "ppt",
-        "pdf"
+        "pptx",
+        "ppsx",
+        "pps",
+        "pptm",
+        "ppam",
+        "potx",
+        "ppsm"
     );
+
+    private final Set<String> GOOGLE_EXTENSION = Set.of(
+        "pdf",
+        "txt",
+        "rtf",
+        "pages",
+        "key",
+        "numbers"
+    );
+
+    private final Set<String> VIDEO_EXTENSION = Set.of(
+        "mp4",
+        "webp",
+        "ogg",
+        "avi",
+        "mov",
+        "mkv"
+    );
+
+    private boolean isVideo(String extension) {
+        return VIDEO_EXTENSION.contains(extension);
+    }
 
     private boolean isImage(String extension) {
         return IMAGE_EXTENSION.contains(extension);
@@ -127,5 +175,9 @@ public class FilesController {
 
     private boolean isMicrosoftFile(String extension) {
         return MICROSOFT_EXTENSION.contains(extension);
+    }
+
+    private boolean isGoogleFile(String extension) {
+        return GOOGLE_EXTENSION.contains(extension);
     }
 }
