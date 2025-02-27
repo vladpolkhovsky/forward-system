@@ -15,4 +15,13 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
 
     @Query(value = "select m from ChatMessageEntity m where m.fromUser.id = :userId order by m.createdAt desc limit :limit")
     List<ChatMessageEntity> findAllByUser(Long userId, int limit);
+
+    @Query(nativeQuery = true, value = "select u.username from forward_system.chat_members member" +
+                                       "    left join forward_system.chat_messages message on message.chat_id = member.chat_id" +
+                                       "    inner join forward_system.users u on member.user_id = u.id" +
+                                       "    left join forward_system.chat_message_to_user cmtu on cmtu.user_id = u.id and cmtu.message_id = message.id" +
+                                       "    where message.id = :messageId and (cmtu.is_viewed or cmtu.is_viewed is null)" +
+                                       "    order by u.username ")
+    List<String> findWhoReadMessage(Long messageId);
+
 }

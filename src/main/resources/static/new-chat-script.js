@@ -7,6 +7,8 @@ context.loadNewChatsCount = 50;
 context.chatsCache = {};
 context.chatsQueue = [];
 
+const loadWhoReadMessage = "/api/new-chat/who-read-message/"
+
 const loadNotesUrl = "/api/new-chat/notes/" + context.userId;
 const createNoteUrl = "/api/new-chat/notes/" + context.userId + "/new";
 const updateNoteUrl = "/api/new-chat/notes/" + context.userId + "/";
@@ -61,6 +63,21 @@ function getTab() {
 
 function activateTab() {
     $(`#nav-${context.chatTab}-tab`).addClass('active')
+}
+
+function loadUsersReadMessage(messageId, tooltip) {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        redirect: "follow"
+    };
+
+    fetch(loadWhoReadMessage + messageId, requestOptions)
+        .then((response) => response.json())
+        .then((result) => formatTooltipMessageWhoRead(tooltip, result))
 }
 
 function loadNoteByUser() {
@@ -629,7 +646,7 @@ function getUsername(userId, isSystemMessage) {
     }
 }
 
-function createMessageElement(fromUserId, isSystemMessage, attachments, options, text, date, viewed) {
+function createMessageElement(messageId, fromUserId, isSystemMessage, attachments, options, text, date, viewed) {
     let additionalStyles = "";
     let textAlign = "text-start"
     let newBadge = "";
@@ -664,14 +681,14 @@ function createMessageElement(fromUserId, isSystemMessage, attachments, options,
     }
 
     return `
-        <div class="border p-2 mt-1 main-font fs-6 ${additionalStyles}">
+        <div id="message-${messageId}" class="border p-2 mt-1 main-font fs-6 ${additionalStyles}">
             <p class="m-0 fw-bold ${textAlign}">${getUsername(fromUserId, isSystemMessage)} ${getUserToIdRole(fromUserId, isSystemMessage)}</p>
             <hr class="mt-1 mb-1"/>
             <pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${text}</pre>
             ${attachmentHtml}
             ${optionHtml}
             <hr class="mt-1 mb-1">
-            <p class="m-0 text-end">${newBadge} ${date}</p>
+            <p class="m-0 text-end">${newBadge} ${date} <btn id="read-tooltip-${messageId}" class="btn p-1" onclick="loadTooltipMessageRead(${messageId})">&#128301;</btn></p>
         </div>`
 }
 
@@ -683,7 +700,7 @@ function prependChatMessages(messages) {
             continue;
         }
 
-        $("#messages-window").prepend(createMessageElement(message.fromUserId, message.systemMessage, message.attachments, message.options, message.text, message.createdAt, message.viewed));
+        $("#messages-window").prepend(createMessageElement(message.id, message.fromUserId, message.systemMessage, message.attachments, message.options, message.text, message.createdAt, message.viewed));
     }
 
     hideChatNewMessagesSpinner();
@@ -737,7 +754,7 @@ function appendWSMessage(message) {
         });
     }
 
-    $("#messages-window").append(createMessageElement(message.fromUserId, message.isSystemMessage, attachments, options, message.content, "Недавно", false));
+    $("#messages-window").append(createMessageElement(message.id, message.fromUserId, message.isSystemMessage, attachments, options, message.content, "Недавно", false));
 
     chatWindow.scroll(0, chatWindow.scrollHeight)
 }
@@ -1083,4 +1100,32 @@ function processSavedChat(saveChatResult) {
     setTimeout(() => {
         $(`#chat-save-${saveChatResult.chatId}`).prop("disabled", false);
     }, 3000);
+}
+
+function loadTooltipMessageRead(messageId) {
+    let tooltipElement = document.getElementById('read-tooltip-' + messageId);
+
+    let loader = `<div class="d-flex justify-content-center mt-2" id="notes-loader-spin">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>`;
+
+    let tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipElement, {
+        title: loader,
+        placement: 'top',
+        trigger: 'hover',
+        container: `#message-${messageId}`,
+        customClass: "onTop",
+        html: true
+    });
+
+    loadUsersReadMessage(messageId, tooltip);
+
+    tooltip.toggle();
+}
+
+function formatTooltipMessageWhoRead(tooltip, whoReadUsersArray) {
+    let text = whoReadUsersArray.join("<br />")
+    tooltip.setContent({ '.tooltip-inner': text })
 }

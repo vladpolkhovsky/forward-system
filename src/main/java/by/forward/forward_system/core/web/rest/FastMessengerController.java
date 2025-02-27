@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @CrossOrigin
 @RestController
 @RequestMapping(value = "/api/new-chat")
@@ -59,5 +61,10 @@ public class FastMessengerController {
     @PostMapping(value = "/update-saved-chat", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
     public ResponseEntity<FastChatSaveChatResponseDto> updateSavedChat(@RequestBody FastChatSaveChatRequestDto requestDto) {
         return ResponseEntity.ok(fastChatService.changeSavedStatus(requestDto));
+    }
+
+    @PostMapping(value = "/who-read-message/{messageId}", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<List<String>> loadWhoReadMessage(@PathVariable Long messageId) {
+        return ResponseEntity.ok(fastChatService.loadWhoReadMessage(messageId));
     }
 }

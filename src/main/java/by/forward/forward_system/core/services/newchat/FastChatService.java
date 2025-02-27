@@ -10,6 +10,7 @@ import by.forward.forward_system.core.jpa.model.ChatNoteEntity;
 import by.forward.forward_system.core.jpa.model.SavedChatEntity;
 import by.forward.forward_system.core.jpa.repository.ChatNoteRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.MessageRepository;
 import by.forward.forward_system.core.jpa.repository.SavedChatRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.newchat.handlers.*;
@@ -66,6 +67,7 @@ public class FastChatService {
 
     private final ChatRepository chatRepository;
     private final SavedChatRepository savedChatRepository;
+    private final MessageRepository messageRepository;
 
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
@@ -370,6 +372,11 @@ public class FastChatService {
         });
 
         return new FastChatSaveChatResponseDto(requestDto.getChatId(), byUserIdAndChatId.isEmpty());
+    }
+
+
+    public List<String> loadWhoReadMessage(Long messageId) {
+        return messageRepository.findWhoReadMessage(messageId);
     }
 
     private <T> List<T> emptyIfNull(List<T> list) {
