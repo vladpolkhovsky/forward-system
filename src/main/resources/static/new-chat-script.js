@@ -75,6 +75,12 @@ function loadUsersReadMessage(messageId, tooltip) {
         redirect: "follow"
     };
 
+    if (context.loadUsersReadMessageCache[messageId] && ((+(new Date)) - context.loadUsersReadMessageCache[messageId]) < 15000) {
+        return
+    }
+
+    context.loadUsersReadMessageCache[messageId] = +(new Date())
+
     fetch(loadWhoReadMessage + messageId, requestOptions)
         .then((response) => response.json())
         .then((result) => formatTooltipMessageWhoRead(tooltip, result))
@@ -681,14 +687,14 @@ function createMessageElement(messageId, fromUserId, isSystemMessage, attachment
     }
 
     return `
-        <div id="message-${messageId}" class="border p-2 mt-1 main-font fs-6 ${additionalStyles}">
+        <div id="message-${messageId}" class="border p-2 mt-1 main-font fs-6 ${additionalStyles}" onmouseenter="loadTooltipMessageRead(${messageId})">
             <p class="m-0 fw-bold ${textAlign}">${getUsername(fromUserId, isSystemMessage)} ${getUserToIdRole(fromUserId, isSystemMessage)}</p>
             <hr class="mt-1 mb-1"/>
             <pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${text}</pre>
             ${attachmentHtml}
             ${optionHtml}
             <hr class="mt-1 mb-1">
-            <p class="m-0 text-end">${newBadge} ${date} <btn id="read-tooltip-${messageId}" class="btn p-1" onclick="loadTooltipMessageRead(${messageId})">&#128301;</btn></p>
+            <p class="m-0 text-end">${newBadge} ${date} <btn id="read-tooltip-${messageId}" class="btn p-1">&#128301;</btn></p>
         </div>`
 }
 
@@ -1116,16 +1122,13 @@ function loadTooltipMessageRead(messageId) {
         placement: 'top',
         trigger: 'hover',
         container: `#message-${messageId}`,
-        customClass: "onTop",
         html: true
     });
 
     loadUsersReadMessage(messageId, tooltip);
-
-    tooltip.toggle();
 }
 
 function formatTooltipMessageWhoRead(tooltip, whoReadUsersArray) {
-    let text = whoReadUsersArray.join("<br />")
-    tooltip.setContent({ '.tooltip-inner': text })
+    let content = whoReadUsersArray.join("<br />")
+    tooltip.setContent({ '.tooltip-inner': content })
 }
