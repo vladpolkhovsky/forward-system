@@ -75,7 +75,7 @@ function loadUsersReadMessage(messageId, tooltip) {
         redirect: "follow"
     };
 
-    if (context.loadUsersReadMessageCache[messageId] && ((+(new Date)) - context.loadUsersReadMessageCache[messageId]) < 15000) {
+    if (context.loadUsersReadMessageCache[messageId] && ((+(new Date)) - context.loadUsersReadMessageCache[messageId]) < 18000) {
         return
     }
 
