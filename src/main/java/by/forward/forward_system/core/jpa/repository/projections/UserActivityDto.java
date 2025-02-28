@@ -31,7 +31,7 @@ public class UserActivityDto {
             this.lastOnlineAt = lastSeenDate.format(lessThen12hours);
         }
 
-        if (now.minusHours(12).isBefore(lastSeenDate)) {
+        if (now.minusHours(12).isAfter(lastSeenDate)) {
             this.lastOnlineAt = lastSeenDate.format(moreThen12hours);
         }
     }
