@@ -3,10 +3,12 @@ context.loadedMessages = new Set();
 context.chatId = null;
 context.loadNewMessagesCount = 30;
 context.loadNewChatsCount = 50;
+context.userOnlineStatusCache = {};
 
 context.chatsCache = {};
 context.chatsQueue = [];
 
+const loadActivityUrl = "/activity/all/activity"
 const loadWhoReadMessage = "/api/new-chat/who-read-message/"
 
 const loadNotesUrl = "/api/new-chat/notes/" + context.userId;
@@ -63,6 +65,21 @@ function getTab() {
 
 function activateTab() {
     $(`#nav-${context.chatTab}-tab`).addClass('active')
+}
+
+function loadUserActivity() {
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+    const requestOptions = {
+        method: "GET",
+        headers: myHeaders,
+        redirect: "follow"
+    };
+
+    fetch(loadActivityUrl, requestOptions)
+        .then((resp) => resp.json())
+        .then((resp) => updateUserOnlineStatus(resp));
 }
 
 function loadUsersReadMessage(messageId, tooltip) {
@@ -686,16 +703,15 @@ function createMessageElement(messageId, fromUserId, isSystemMessage, attachment
         }
     }
 
-    return `
-        <div id="message-${messageId}" class="border p-2 mt-1 main-font fs-6 ${additionalStyles}" onmouseenter="loadTooltipMessageRead(${messageId})">
-            <p class="m-0 fw-bold ${textAlign}">${getUsername(fromUserId, isSystemMessage)} ${getUserToIdRole(fromUserId, isSystemMessage)}</p>
-            <hr class="mt-1 mb-1"/>
-            <pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${text}</pre>
-            ${attachmentHtml}
-            ${optionHtml}
-            <hr class="mt-1 mb-1">
-            <p class="m-0 text-end">${newBadge} ${date} <btn id="read-tooltip-${messageId}" class="btn p-1">&#128301;</btn></p>
-        </div>`
+    return `<div id="message-${messageId}" class="border p-2 mt-1 main-font fs-6 ${additionalStyles}">
+                <h6 class="m-0 fw-bold ${textAlign}">${getUsername(fromUserId, isSystemMessage)} ${getUserToIdRole(fromUserId, isSystemMessage)} <span ${isSystemMessage ? 'class="d-none"' : ''} online-status-id="${fromUserId}">${onlineStatusValue(fromUserId)}</span></h6>
+                <hr class="mt-1 mb-1"/>
+                <pre class="m-0 main-font text-break fs-6" style="white-space: pre-wrap">${text}</pre>
+                ${attachmentHtml}
+                ${optionHtml}
+                <hr class="mt-1 mb-1">
+                <p class="m-0 text-end">${newBadge} ${date} <btn id="read-tooltip-${messageId}" class="btn p-1" onmouseenter="loadTooltipMessageRead(${messageId})">&#128301;</btn></p>
+            </div>`
 }
 
 function prependChatMessages(messages) {
@@ -707,6 +723,7 @@ function prependChatMessages(messages) {
         }
 
         $("#messages-window").prepend(createMessageElement(message.id, message.fromUserId, message.systemMessage, message.attachments, message.options, message.text, message.createdAt, message.viewed));
+        createTooltip(message.id);
     }
 
     hideChatNewMessagesSpinner();
@@ -761,6 +778,7 @@ function appendWSMessage(message) {
     }
 
     $("#messages-window").append(createMessageElement(message.id, message.fromUserId, message.isSystemMessage, attachments, options, message.content, "Недавно", false));
+    createTooltip(message.id);
 
     chatWindow.scroll(0, chatWindow.scrollHeight)
 }
@@ -1108,7 +1126,7 @@ function processSavedChat(saveChatResult) {
     }, 3000);
 }
 
-function loadTooltipMessageRead(messageId) {
+function createTooltip(messageId) {
     let tooltipElement = document.getElementById('read-tooltip-' + messageId);
 
     let loader = `<div class="d-flex justify-content-center mt-2" id="notes-loader-spin">
@@ -1124,11 +1142,37 @@ function loadTooltipMessageRead(messageId) {
         container: `#message-${messageId}`,
         html: true
     });
+}
 
+function loadTooltipMessageRead(messageId) {
+    let tooltipElement = document.getElementById('read-tooltip-' + messageId);
+    let tooltip = bootstrap.Tooltip.getOrCreateInstance(tooltipElement, {});
     loadUsersReadMessage(messageId, tooltip);
 }
 
 function formatTooltipMessageWhoRead(tooltip, whoReadUsersArray) {
     let content = whoReadUsersArray.join("<br />")
     tooltip.setContent({ '.tooltip-inner': content })
+}
+
+function updateUserOnlineStatus(userOnlineStatusList) {
+    for (let status of userOnlineStatusList) {
+        console.log(status)
+        context.userOnlineStatusCache[status.id] = status;
+        $(`[online-status-id="${status.id}"]`).html(onlineStatusValue(status.id))
+    }
+}
+
+function onlineStatusValue(userId) {
+    if (context.userOnlineStatusCache && context.userOnlineStatusCache[userId]) {
+        let status = context.userOnlineStatusCache[userId];
+        if (status.online) {
+            return `<span class="badge text-bg-success">Онлайн</span>`
+        }
+        return `<span class="badge text-bg-secondary">Был в сети: ${status.lastOnlineAt}</span>`
+    }
+    if (userId === null || userId === undefined) {
+        return '';
+    }
+    return `<span class="badge text-bg-info">Загрузка данных о последнем посещении.</span>`
 }

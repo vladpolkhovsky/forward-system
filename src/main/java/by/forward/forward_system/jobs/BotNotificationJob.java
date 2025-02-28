@@ -26,19 +26,30 @@ import java.util.function.Predicate;
 @AllArgsConstructor
 public class BotNotificationJob {
 
+    private static final int WAIT_MINS = 10;
+
     private final BotNotificationService botNotificationService;
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatMetadataRepository chatMetadataRepository;
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
-    @Scheduled(fixedDelay = 2, timeUnit = TimeUnit.MINUTES)
+    @Transactional
+    public void notifyByChatId(Long chatId) {
+        List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(chatId);
+        process(allMessagesOlderThen);
+    }
+
+    @Scheduled(fixedDelay = WAIT_MINS, timeUnit = TimeUnit.MINUTES)
     @Transactional
     public void notifyBot() {
-        LocalDateTime startTime = LocalDateTime.now();
-
-        LocalDateTime time = LocalDateTime.now().minusMinutes(2);
+        LocalDateTime time = LocalDateTime.now().minusMinutes(WAIT_MINS);
         List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
+        process(allMessagesOlderThen);
+    }
+
+    private void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
+        LocalDateTime startTime = LocalDateTime.now();
 
         Map<UserEntity, List<NotificationOutboxEntity>> userToOutbox = new HashMap<>();
         for (NotificationOutboxEntity notificationOutboxEntity : allMessagesOlderThen) {

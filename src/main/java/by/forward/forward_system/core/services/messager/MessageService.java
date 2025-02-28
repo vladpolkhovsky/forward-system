@@ -8,14 +8,22 @@ import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.utils.ChatNames;
+import by.forward.forward_system.jobs.BotNotificationJob;
+import by.forward.forward_system.jobs.NotificationJob;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class MessageService {
 
@@ -28,6 +36,8 @@ public class MessageService {
     private final UserRepository userRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final NotificationOutboxRepository notificationOutboxRepository;
+    private final ThreadPoolTaskScheduler scheduler;
+    private final BotNotificationJob botNotificationJob;
 
     @Transactional
     public void sendMessageToErrorChat(String text) {
@@ -65,6 +75,7 @@ public class MessageService {
                                          List<ChatMessageAttachmentEntity> attachments,
                                          List<ChatMessageOptionEntity> options,
                                          boolean markMessagesAsNew) {
+        Long chatId = chatEntity.getId();
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -135,6 +146,15 @@ public class MessageService {
         chatMessageEntity = messageRepository.save(chatMessageEntity);
 
         notificationOutboxRepository.saveAll(notificationOutboxEntities);
+
+        try {
+            scheduler.schedule(
+                () -> botNotificationJob.notifyByChatId(chatId),
+                LocalDateTime.now().plusSeconds(10).atZone(ZoneId.of("Europe/Moscow")).toInstant()
+            );
+        } catch (Exception e) {
+            log.error("Ошибка создания задания на отправку уведомления: ", e);
+        }
 
         return chatMessageEntity;
     }

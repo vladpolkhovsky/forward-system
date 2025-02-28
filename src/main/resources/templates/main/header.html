@@ -44,7 +44,9 @@
         </header>
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const headerUserId = [[${userShort.getId()}]]
+
         function getRandomInt(max) {
             return Math.floor(Math.random() * max);
         }
@@ -95,5 +97,25 @@
             document.documentElement.style.setProperty("--p-b", (center) + '%');
             document.documentElement.style.setProperty("--p-c", (center + right + 20 + paddingR) + '%');
         }, 50)
+
+        function ping() {
+            const myHeaders = new Headers();
+            myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+            const requestOptions = {
+                method: "GET",
+                headers: myHeaders,
+                redirect: "follow"
+            };
+
+            fetch("/activity/ping/" + headerUserId, requestOptions)
+                .then((resp) => {
+                    console.log("Вы в сети. Обновление выполнено.")
+                })
+        }
+
+        ping();
+        setInterval(() => { ping(); }, 5000);
+
     </script>
 </div>
