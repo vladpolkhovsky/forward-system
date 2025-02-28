@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.repository.projections;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -14,7 +15,7 @@ public class UserActivityDto {
 
     public UserActivityDto(Long id, String username, LocalDateTime lastSeenDate) {
         this.id = id;
-        this.username = username;
+        this.username = "hashcode: " + username.hashCode();
         LocalDateTime now = LocalDateTime.now();
 
         if (lastSeenDate == null) {
