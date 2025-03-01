@@ -627,6 +627,17 @@ create table if not exists forward_system.chat_saved_to_user
 
 create table if not exists forward_system.user_activity
 (
-    user_id bigint primary key not null references forward_system.users (id),
-    last_online_at timestamp not null
-)
+    user_id        bigint primary key not null references forward_system.users (id),
+    last_online_at timestamp          not null
+);
+
+create table if not exists forward_system.user_plan
+(
+    id                 bigint primary key,
+    user_id            bigint    not null references forward_system.users (id),
+    created_by_user_id bigint    not null references forward_system.users (id),
+    target_sum         bigint    not null,
+    plan_start         timestamp not null,
+    plan_end           timestamp not null,
+    created_at         timestamp not null
+);

@@ -133,9 +133,10 @@
                 </div>
 
                 <div class="mb-3 mt-3 row">
-                    <label class="col-sm-2 col-form-label" for="takingCost">Стоимость взятия</label>
+                    <label class="col-sm-2 col-form-label" for="takingCost">Стоимость взятия<strong
+                            class="text-danger">*</strong></label>
                     <div class="col-sm-10">
-                        <input class="form-control" id="takingCost" th:field="*{takingCost}" type="number">
+                        <input class="form-control" id="takingCost" th:field="*{takingCost}" required type="number">
                     </div>
                 </div>
 

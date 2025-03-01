@@ -2,7 +2,6 @@ package by.forward.forward_system.core.jpa.repository.projections;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 public class UserActivityDto {
     private static final DateTimeFormatter lessThen12hours = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter moreThen12hours = DateTimeFormatter.ofPattern("dd-MM HH:mm");
+    private static final DateTimeFormatter moreThen12hours = DateTimeFormatter.ofPattern("dd.MM' в 'HH:mm");
 
     public UserActivityDto(Long id, String username, LocalDateTime lastSeenDate) {
         this.id = id;

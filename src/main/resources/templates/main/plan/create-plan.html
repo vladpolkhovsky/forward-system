@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div class="row">
+        <h3>Создание плана</h3>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <label for="select-manager" class="form-label">Выберите менеджера для создания плана:</label>
+        <select id="select-manager" class="form-select">
+            <option id="default" disabled selected>Менеджер не выбран.</option>
+        </select>
+        <hr class="m-2"/>
+    </div>
+    <div class="row mt-2">
+        <div id="calendar" class="col-12 col-md-8 mb-3"></div>
+        <div class="col-12 col-md-4">
+            <form action="/create-plan" method="post" enctype="multipart/form-data">
+                <label for="username" class="form-label">Пользователь</label>
+                <input id="username" name="username" class="form-control mb-3" readonly required type="text" placeholder="Менеджер не выбран.">
+                <input id="userId" name="userId" class="form-control mb-3 d-none" readonly required type="number">
+                <label for="plan-start" class="form-label">Дата начала плана:</label>
+                <input id="plan-start" name="plan-start" class="form-control mb-3" readonly required type="date">
+                <label for="plan-end" class="form-label">Дата конца плана (не включая):</label>
+                <input id="plan-end" name="plan-end" class="form-control mb-3" readonly required type="date">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Руб.</span>
+                    <input id="plan-amount" name="plan-amount" type="number" class="form-control" aria-label="Кол-во"></div>
+                <input id="submit-btn" type="submit" class="btn btn-primary col-12" disabled value="Сохранить">
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/full-calendar/index.global.min.js"></script>
+<script src="/static/full-calendar/ru.global.min.js"></script>
+<script src="/static/jquery-3.7.1.min.js"></script>
+<script>
+    var calendarEl = document.getElementById('calendar');
+
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+        themeSystem: 'bootstrap5',
+        timeZone: 'Europe/Moscow',
+        locale: 'ru',
+        headerToolbar: {
+            start: 'title',
+            center: '',
+            end: 'today prev,next'
+        },
+        selectable: true,
+        allDay: true,
+        unselectAuto: false,
+        selectOverlap: false,
+        select: function (info) {
+            updateSelection(info.start, info.end)
+        }
+    });
+
+    calendar.render();
+
+    function unlockSubmitIfNeeded() {
+        if (!document.getElementById("userId").value) {
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        if (!document.getElementById("username").value){
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        if (!document.getElementById("plan-start").value){
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        if (!document.getElementById("plan-end").value){
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        if (!document.getElementById("plan-amount").value){
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        document.getElementById("submit-btn").removeAttribute("disabled")
+    }
+
+    function updateSelection(start, end) {
+        console.log(start, end);
+        document.getElementById("plan-start").value = start.toLocaleDateString('en-CA');
+        document.getElementById("plan-end").value = end.toLocaleDateString('en-CA');
+        unlockSubmitIfNeeded();
+    }
+
+    function loadUserPlans(userId) {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+        const requestOptions = {
+            method: "GET",
+            headers: myHeaders,
+            redirect: "follow"
+        };
+
+        fetch("/api/plan/user-plans/" + userId, requestOptions)
+            .then(r => r.json())
+            .then(r => r.forEach((e) => calendar.addEvent(e)))
+            .catch((err) => alert('Ошибка /api/plan/user-plans/: ' + err));
+    }
+
+    function loadAllManagers(callbackFn) {
+        const myHeaders = new Headers();
+        myHeaders.append("Content-Type", "application/json; charset=UTF-8");
+
+        const requestOptions = {
+            method: "GET",
+            headers: myHeaders,
+            redirect: "follow"
+        };
+
+        fetch("/api/plan/managers", requestOptions)
+            .then(r => r.json())
+            .then(r => callbackFn(r))
+            .catch((err) => alert('Ошибка /api/plan/managers: ' + err));
+    }
+
+    document.getElementById("select-manager")
+        .addEventListener('change', (event) => {
+            let option = document.getElementById(`select-${event.target.value}`);
+
+            calendar.getEvents()
+                .forEach(e => e.remove());
+            loadUserPlans(option.getAttribute("value"));
+
+            document.getElementById("userId").value = option.getAttribute("value");
+            document.getElementById("username").value = option.getAttribute("username");
+
+            unlockSubmitIfNeeded();
+        });
+
+    document.getElementById("plan-amount")
+        .addEventListener("change", () => unlockSubmitIfNeeded());
+
+    loadAllManagers((managers) => {
+        for (let manager of managers) {
+            $("#select-manager").append(`<option id="select-${manager.id}" value="${manager.id}" username="${manager.username}">${manager.username}</option>`)
+        }
+    });
+</script>
+</body>

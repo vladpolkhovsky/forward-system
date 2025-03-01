@@ -5,6 +5,7 @@ import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.services.core.ChatUtilsService;
+import by.forward.forward_system.core.services.core.PlanService;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -24,28 +24,11 @@ public class UserUiService {
 
     private final ChatUtilsService chatUtilsService;
 
+    private final PlanService planService;
+
     public UserShortUiDto getCurrentUserOrAnonymous() {
         try {
-            UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
-            Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
-
-            if (byUsername.isEmpty()) {
-                return new UserShortUiDto(
-                    null,
-                    "Аноним",
-                    "ФИО не найдено",
-                    "Анонимный пользователь"
-                );
-            }
-
-            UserEntity userEntity = byUsername.get();
-
-            return new UserShortUiDto(
-                userEntity.getId(),
-                userEntity.getUsername(),
-                userEntity.getFioFull(),
-                userEntity.getAuthoritiesNamesRus()
-            );
+            return getCurrentUser();
         } catch (Exception e) {
             return null;
         }
@@ -58,11 +41,14 @@ public class UserUiService {
         UserEntity userEntity = byUsername
             .orElseThrow(() -> new UsernameNotFoundException("User not found with username " + currentUserDetails.getUsername()));
 
+        List<PlanService.UserPlanDetailsDto> currentUserPlans = planService.getUserCurrentPlan(userEntity.getId());
+
         return new UserShortUiDto(
             userEntity.getId(),
             userEntity.getUsername(),
             userEntity.getFioFull(),
-            userEntity.getAuthoritiesNamesRus()
+            userEntity.getAuthoritiesNamesRus(),
+            currentUserPlans
         );
     }
 

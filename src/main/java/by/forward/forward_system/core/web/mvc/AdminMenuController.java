@@ -3,7 +3,10 @@ package by.forward.forward_system.core.web.mvc;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
 import by.forward.forward_system.core.enums.OrderStatus;
+import by.forward.forward_system.core.jpa.repository.projections.UserPlanProjectionDto;
+import by.forward.forward_system.core.jpa.repository.projections.UserSimpleProjectionDto;
 import by.forward.forward_system.core.services.core.OrderService;
+import by.forward.forward_system.core.services.core.PlanService;
 import by.forward.forward_system.core.services.core.UpdateRequestOrderService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
@@ -13,13 +16,17 @@ import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @AllArgsConstructor
@@ -30,7 +37,9 @@ public class AdminMenuController {
     private final UserUiService userUiService;
 
     private final OrderUiService orderUiService;
+
     private final OrderService orderService;
+    private final PlanService planService;
 
     @GetMapping(value = "/order-review")
     public String orderReview(Model model) {
@@ -64,6 +73,84 @@ public class AdminMenuController {
         model.addAttribute("orderId", byId.getOrderId());
 
         return "main/review-order";
+    }
+
+
+    @GetMapping(value = "/create-plan")
+    public String createPlan(Model model) {
+        userUiService.checkAccessAdmin();
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+
+        return "main/plan/create-plan";
+    }
+
+    @PostMapping(value = "/create-plan")
+    @Transactional
+    public RedirectView createPlan(
+        @RequestParam(value = "userId") Long targetUserId,
+        @RequestParam(value = "username") String username,
+        @RequestParam(value = "plan-start") String planStart,
+        @RequestParam(value = "plan-end") String planEnd,
+        @RequestParam(value = "plan-amount") Long planTarget
+    ) {
+        userUiService.checkAccessAdmin();
+
+        Long createdBy = userUiService.getCurrentUserId();
+
+        LocalDateTime start = LocalDate.parse(planStart, DateTimeFormatter.ISO_DATE).atStartOfDay();
+        LocalDateTime end = LocalDate.parse(planEnd, DateTimeFormatter.ISO_DATE).atStartOfDay().minusSeconds(1);
+
+        planService.savePlan(targetUserId, username, start, end, planTarget, createdBy);
+
+        return new RedirectView("/main");
+    }
+
+    @GetMapping(value = "/view-plan")
+    public String planRemove(Model model) {
+        userUiService.checkAccessAdmin();
+
+        List<UserSimpleProjectionDto> managers = planService.getAllManagers();
+
+        Map<Long, List<UserPlanProjectionDto>> plansByManager = planService.getAllUsersPlans(managers.stream()
+                .map(UserSimpleProjectionDto::getId)
+                .toList()
+            ).stream()
+            .collect(Collectors.groupingBy(UserPlanProjectionDto::getUserId))
+            .entrySet().stream()
+            .map(e -> {
+                List<UserPlanProjectionDto> sorted = e.getValue().stream().sorted(Comparator.comparing(UserPlanProjectionDto::getStartDateTime)).toList();
+                sorted = sorted.subList(Math.max(0, sorted.size() - 4), sorted.size());
+                return Map.entry(
+                    e.getKey(),
+                    sorted
+                );
+            })
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        Map<Long, PlanService.UserPlanDetailsDto> planDetailsByPlanId = plansByManager.values().stream()
+            .flatMap(Collection::stream)
+            .parallel()
+            .map(planService::userPlanToDetails)
+            .collect(Collectors.toMap(PlanService.UserPlanDetailsDto::planId, userPlanDetailsDto -> userPlanDetailsDto));
+
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("managers", managers);
+        model.addAttribute("plansByManager", plansByManager);
+        model.addAttribute("planDetailsByPlanId", planDetailsByPlanId);
+        model.addAttribute("now", LocalDateTime.now());
+
+        return "main/plan/view-plan";
+    }
+
+    @PostMapping(value = "/delete-plan/{planId}")
+    @Transactional
+    public RedirectView planRemove(@PathVariable Long planId) {
+        userUiService.checkAccessAdmin();
+
+        planService.deletePlan(planId);
+
+        return new RedirectView("/view-plan");
     }
 
     @PostMapping(value = "/review-order/{requestId}")

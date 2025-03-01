@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Главное меню</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div class="container">
+    <div class="row">
+        <h3>Просмотр планов</h3>
+    </div>
+</div>
+<div class="container">
+    <div class="card mb-3" th:each="manager : ${managers}">
+        <div class="card-header">
+            <h5 class="m-0" th:text="${manager.getUsername()}"></h5>
+        </div>
+        <div class="card-body">
+            <h6 class="card-title" th:if="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}" th:text="${plansByManager.get(manager.getId()).size()} + ' последних планов.'"></h6>
+            <i class="h6" th:unless="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}">Нет планов...</i>
+            <div class="row" th:if="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}">
+                <div class="col-12 col-md-6 p-2" th:each="plan : ${plansByManager.get(manager.getId())}">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="badge text-bg-success" th:if="${plan.getStartDateTime().isBefore(now) && now.isBefore(plan.getEndDateTime())}">Активный</span>
+                            <span th:text="${plan.getPlanName()}"></span>
+                            <form class="d-inline" th:attr="delete-plan-id=${plan.getId()}" th:action="'/delete-plan/' + ${plan.getId()}" method="post">
+                                <button type="submit" class="btn btn-danger ms-3">Удалить</button>
+                            </form>
+                        </div>
+                        <div class="card-body">
+                            <h6 th:text="'Запланировано: ' + ${planDetailsByPlanId.get(plan.getId()).targetSum()} + ' руб.'"></h6>
+                            <h6 th:text="'По факту: ' + ${planDetailsByPlanId.get(plan.getId()).sum()} + ' руб.'"></h6>
+                            <h6 th:text="'По процент выполнения: ' + ${100 * planDetailsByPlanId.get(plan.getId()).sum() / planDetailsByPlanId.get(plan.getId()).targetSum()} + '%.'"></h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    for (const formDelete of document.querySelectorAll('form[delete-plan-id]')) {
+        formDelete.onsubmit = function () {
+            return confirm(`Вы действительно хотите удалить план ?`);
+        };
+    }
+</script>
+</body>
+</html>

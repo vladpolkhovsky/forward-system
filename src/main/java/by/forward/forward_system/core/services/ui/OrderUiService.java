@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class OrderUiService {
 
-    private final static ObjectMapper MAPPER = new ObjectMapper();
     private final OrderService orderService;
     private final UserService userService;
     private final AuthorService authorService;

@@ -35,10 +35,22 @@
                     <a class="nav-link px-2 link-primary fw-medium text-dark" href="/push-subscription">Уведомления</a>
                 </li>
             </ul>
-            <div class="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end">
+            <div class="col-12 col-lg-5 d-flex justify-content-center justify-content-lg-end" style="min-width: 350px">
                 <!--/*@thymesVar id="userShort" type="by.forward.forward_system.core.dto.ui.UserShortUiDto"*/-->
-                <a class="btn fw-medium text-dark" th:href="@{/info}"
-                   th:text="${userShort.getUsername()} + | (| + ${(userShort.getRolesRus())} + |)|"></a>
+                <div class="pe-3 w-100">
+                    <a class="btn fw-medium text-dark text-center d-block" th:href="@{/info}"
+                       th:text="${userShort.getUsername()} + | (| + ${(userShort.getRolesRus())} + |)|"></a>
+                    <div class="w-100" th:if="${userShort.hasPlans()}" th:each="plan : ${userShort.getPlans()}">
+                        <div class="d-flex justify-content-center justify-content-lg-end align-items-center">
+                            <div class="progress text-end h6 fw-bold m-0 ms-2 me-2 w-100 border border-success" role="progressbar" style="height: 20px">
+                                <div class="progress-bar text-dark overflow-visible text-end pe-2 ps-2"
+                                     th:style="'width: ' + ${plan.percent()} + '%; background-color: #5ae0d7;'" th:text="${plan.sum()} + ' руб. | ' + ${100 * plan.sum() / plan.targetSum()} + '%'">
+                                </div>
+                            </div>
+                            <span class="h6 m-0" th:text="${plan.targetSum()}"></span></div>
+                        <i style="font-size: 0.7rem" class="fw-medium text-center w-100 mx-auto d-block mt-1" th:text="${plan.name()}"></i>
+                    </div>
+                </div>
                 <a class="btn btn-danger align-self-center" th:href="@{/logout}">Выйти</a>
             </div>
         </header>
