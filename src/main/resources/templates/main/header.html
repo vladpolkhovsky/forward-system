@@ -1,6 +1,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
 
-<div style="background: linear-gradient(var(--p-angle), rgba(7,231,169,0.65) var(--p-a), rgba(240,var(--p-c-g),171,0.60) var(--p-b), rgba(110,177,220,0.80) var(--p-c));"
+<div style="background: linear-gradient(var(--p-angle), rgba(117,155,255,0.85) var(--p-a), rgba(255,145,241,0.78) var(--p-c));"
      th:fragment="header-div">
     <div class="container">
 
@@ -44,7 +44,7 @@
                         <div class="d-flex justify-content-center justify-content-lg-end align-items-center">
                             <div class="progress text-end h6 fw-bold m-0 ms-2 me-2 w-100 border border-success" role="progressbar" style="height: 20px">
                                 <div class="progress-bar text-dark overflow-visible text-end pe-2 ps-2"
-                                     th:style="'width: ' + ${plan.percent()} + '%; background-color: #5ae0d7;'" th:text="${plan.sum()} + ' руб. | ' + ${100 * plan.sum() / plan.targetSum()} + '%'">
+                                     th:style="'width: ' + ${plan.percent()} + '%; background-color: #FFAA33;'" th:text="${plan.sum()} + ' руб. | ' + ${100 * plan.sum() / plan.targetSum()} + '%'">
                                 </div>
                             </div>
                             <span class="h6 m-0" th:text="${plan.targetSum()}"></span></div>
