@@ -2,7 +2,6 @@ package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.PlanEntity;
 import by.forward.forward_system.core.jpa.repository.projections.UserPlanProjectionDto;
-import by.forward.forward_system.core.services.core.PlanService;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;

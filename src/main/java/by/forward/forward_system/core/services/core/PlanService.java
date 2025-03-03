@@ -12,8 +12,11 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @AllArgsConstructor
@@ -55,7 +58,7 @@ public class PlanService {
         return new UserPlanDetailsDto(
             dto.getId(),
             dto.getPlanName(),
-            Math.min(Math.round(1.0 * sum / dto.getTargetSum() * 100), 100),
+            Math.min(Math.round((1.0 * sum) / dto.getTargetSum() * 100), 100),
             dto.getTargetSum(),
             sum
         );
@@ -83,5 +86,18 @@ public class PlanService {
 
     public record UserPlanDetailsDto(Long planId, String name, Long percent, Long targetSum, Long sum) {
 
+        private static final DecimalFormat FORMATTER = new DecimalFormat("#,###", DecimalFormatSymbols.getInstance(Locale.ITALIAN));
+
+        private String formatString(Long value) {
+            return FORMATTER.format(value.longValue());
+        }
+
+        public String getTargetSumFormatted() {
+            return formatString(targetSum);
+        }
+
+        public String getSumFormatted() {
+            return formatString(sum);
+        }
     }
 }

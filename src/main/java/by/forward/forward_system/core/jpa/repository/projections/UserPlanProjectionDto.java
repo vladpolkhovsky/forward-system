@@ -5,6 +5,7 @@ import by.forward.forward_system.core.jpa.model.UserEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -20,6 +21,7 @@ public class UserPlanProjectionDto {
     private final String start;
     private final String end;
     private final String planName;
+    private final String planNameShort;
     private final LocalDateTime startDateTime;
     private final LocalDateTime endDateTime;
     private final Long targetSum;
@@ -57,6 +59,11 @@ public class UserPlanProjectionDto {
             start.format(DEFAULT_FORMAT),
             end.format(DEFAULT_FORMAT)
         );
+
+        this.planNameShort = "C %s по %s".formatted(
+            start.format(DEFAULT_FORMAT),
+            end.format(DEFAULT_FORMAT)
+        );
     }
 
     @JsonProperty("allDay")
@@ -72,5 +79,9 @@ public class UserPlanProjectionDto {
     @JsonProperty("editable")
     public boolean editable() {
         return false;
+    }
+
+    public long untilStartDays(LocalDateTime now) {
+        return (long) Math.ceil(Duration.between(now, startDateTime).toHours() / 24.0);
     }
 }

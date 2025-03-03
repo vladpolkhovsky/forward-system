@@ -44,10 +44,10 @@
                         <div class="d-flex justify-content-center justify-content-lg-end align-items-center">
                             <div class="progress text-end h6 fw-bold m-0 ms-2 me-2 w-100 border border-success" role="progressbar" style="height: 20px">
                                 <div class="progress-bar text-dark overflow-visible text-end pe-2 ps-2"
-                                     th:style="'width: ' + ${plan.percent()} + '%; background-color: #FFAA33;'" th:text="${plan.sum()} + ' руб. | ' + ${100 * plan.sum() / plan.targetSum()} + '%'">
+                                     th:style="'width: ' + ${plan.percent()} + '%; background-color: ' + ${ plan.percent() < 90 ? '#FFAA33' : '#32cd32'} + ';'" th:text="${plan.getSumFormatted()} + ' руб. | ' + ${plan.percent()} + '%'">
                                 </div>
                             </div>
-                            <span class="h6 m-0" th:text="${plan.targetSum()}"></span></div>
+                            <span class="h6 m-0" th:text="${plan.getTargetSumFormatted()}"></span></div>
                         <i style="font-size: 0.7rem" class="fw-medium text-center w-100 mx-auto d-block mt-1" th:text="${plan.name()}"></i>
                     </div>
                 </div>

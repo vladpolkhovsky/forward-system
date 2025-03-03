@@ -16,28 +16,30 @@
     </div>
 </div>
 <div class="container">
-    <div class="card mb-3" th:each="manager : ${managers}">
-        <div class="card-header">
-            <h5 class="m-0" th:text="${manager.getUsername()}"></h5>
-        </div>
-        <div class="card-body">
-            <h6 class="card-title" th:if="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}" th:text="${plansByManager.get(manager.getId()).size()} + ' последних планов.'"></h6>
-            <i class="h6" th:unless="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}">Нет планов...</i>
-            <div class="row" th:if="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}">
-                <div class="col-12 col-md-6 p-2" th:each="plan : ${plansByManager.get(manager.getId())}">
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="badge text-bg-success" th:if="${plan.getStartDateTime().isBefore(now) && now.isBefore(plan.getEndDateTime())}">Активный</span>
-                            <span th:text="${plan.getPlanName()}"></span>
-                            <form class="d-inline" th:attr="delete-plan-id=${plan.getId()}" th:action="'/delete-plan/' + ${plan.getId()}" method="post">
-                                <button type="submit" class="btn btn-danger ms-3">Удалить</button>
-                            </form>
+    <div class="row">
+        <div class="col-12 col-lg-6 col-xl-4 col-xxl-3 mb-3" th:each="manager : ${managers}">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="m-0" th:text="${manager.getUsername()}"></h5>
+                </div>
+                <div class="card-body">
+                    <i class="h6" th:unless="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}">Нет планов...</i>
+                    <div class="w-100" th:if="${plansByManager.get(manager.getId()) != null && plansByManager.get(manager.getId()).size() > 0}" th:each="plan, index : ${plansByManager.get(manager.getId())}" th:with="planDetails = ${planDetailsByPlanId.get(plan.getId())}">
+                        <span class="badge text-bg-success d-inline-block me-2 ms-2 mb-2" th:if="${plan.getStartDateTime().isBefore(now) && now.isBefore(plan.getEndDateTime())}">Активный</span>
+                        <p style="font-size: 0.7rem" class="fw-normal text-start w-100 mx-auto d-block mt-1 p-0 ps-2 mb-0" th:if="${now.isBefore(plan.getStartDateTime())}" th:text="'До начала плана: ' + ${plan.untilStartDays(now)} + ' дней.'"></p>
+                        <p style="font-size: 1rem" class="fw-normal text-start w-100 mx-auto d-block mt-0 p-0 ps-2 mb-2" th:text="${plan.getPlanNameShort()}"></p>
+                        <div class="d-flex justify-content-center justify-content-lg-end align-items-center">
+                            <div class="progress text-end h6 fw-bold m-0 ms-2 me-2 w-100 border border-success" role="progressbar" style="height: 30px">
+                                <div class="progress-bar text-dark overflow-visible text-end pe-2 ps-2"
+                                     th:style="'width: ' + ${planDetails.percent()} + '%; background-color: ' + ${ planDetails.percent() < 90 ? '#FFAA33' : '#32CD32'} + ';'" th:text="${planDetails.getSumFormatted()} + ' руб. | ' + ${planDetails.percent()} + '%'">
+                                </div>
+                            </div>
+                            <span class="h6 m-0" th:text="${planDetails.getTargetSumFormatted()}"></span>
                         </div>
-                        <div class="card-body">
-                            <h6 th:text="'Запланировано: ' + ${planDetailsByPlanId.get(plan.getId()).targetSum()} + ' руб.'"></h6>
-                            <h6 th:text="'По факту: ' + ${planDetailsByPlanId.get(plan.getId()).sum()} + ' руб.'"></h6>
-                            <h6 th:text="'По процент выполнения: ' + ${100 * planDetailsByPlanId.get(plan.getId()).sum() / planDetailsByPlanId.get(plan.getId()).targetSum()} + '%.'"></h6>
-                        </div>
+                        <form class="d-block mt-2 ms-2" th:attr="delete-plan-id=${plan.getId()}" th:action="'/delete-plan/' + ${plan.getId()}" method="post">
+                            <button type="submit" class="btn btn-danger pt-0 pb-0">Удалить</button>
+                        </form>
+                        <hr th:if="${!index.last}">
                     </div>
                 </div>
             </div>

@@ -119,7 +119,7 @@ public class AdminMenuController {
             .collect(Collectors.groupingBy(UserPlanProjectionDto::getUserId))
             .entrySet().stream()
             .map(e -> {
-                List<UserPlanProjectionDto> sorted = e.getValue().stream().sorted(Comparator.comparing(UserPlanProjectionDto::getStartDateTime)).toList();
+                List<UserPlanProjectionDto> sorted = e.getValue().stream().sorted(Comparator.comparing(UserPlanProjectionDto::getStartDateTime).reversed()).toList();
                 sorted = sorted.subList(Math.max(0, sorted.size() - 4), sorted.size());
                 return Map.entry(
                     e.getKey(),
