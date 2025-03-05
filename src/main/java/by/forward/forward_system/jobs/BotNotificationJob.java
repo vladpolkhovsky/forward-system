@@ -8,13 +8,15 @@ import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -39,8 +41,11 @@ public class BotNotificationJob {
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
-    @Transactional
+    @Autowired
+    private BotNotificationJob botNotificationJob;
+
     @SneakyThrows
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyByChatId(Long chatId) {
 
         getSemaphoreSemaphore.acquire();
@@ -54,7 +59,7 @@ public class BotNotificationJob {
             semaphore.acquire();
             log.info("Начало отправки уведомлений для чата {}", chatId);
             List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(chatId);
-            process(allMessagesOlderThen);
+            botNotificationJob.process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", chatId, ex);
         } finally {
@@ -64,14 +69,15 @@ public class BotNotificationJob {
     }
 
     @Scheduled(fixedDelay = WAIT_MINS, timeUnit = TimeUnit.MINUTES)
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyBot() {
         LocalDateTime time = LocalDateTime.now().minusMinutes(WAIT_MINS);
         List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
-        process(allMessagesOlderThen);
+        botNotificationJob.process(allMessagesOlderThen);
     }
 
-    private void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
         LocalDateTime startTime = LocalDateTime.now();
 
         Map<UserEntity, List<NotificationOutboxEntity>> userToOutbox = new HashMap<>();

@@ -21,12 +21,16 @@ public class ForwardSystemApplication {
 
     public static void main(String[] args) {
         System.setProperty("RANDOM_UUID", UUID.randomUUID().toString());
+
+        System.setProperty("user.timezone", "Europe/Moscow");
+        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
+
         SpringApplication.run(ForwardSystemApplication.class, args);
     }
 
     @PostConstruct
     public void init() {
-        TimeZone.setDefault(TimeZone.getTimeZone("Europe/Moscow"));
+
     }
 
     @EventListener(ContextClosedEvent.class)
@@ -36,7 +40,7 @@ public class ForwardSystemApplication {
             try {
                 Thread.sleep(10_000);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+
             }
             System.exit(-1);
         }).start();
@@ -48,5 +52,4 @@ public class ForwardSystemApplication {
             System.out.println(passwordEncoder.encode("admin"));
         };
     }
-
 }
