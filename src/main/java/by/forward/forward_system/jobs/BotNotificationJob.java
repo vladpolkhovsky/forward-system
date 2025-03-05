@@ -9,10 +9,12 @@ import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepositor
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -27,7 +29,7 @@ import java.util.function.Predicate;
 
 @Slf4j
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class BotNotificationJob {
 
     private static final int WAIT_MINS = 10;
@@ -41,8 +43,12 @@ public class BotNotificationJob {
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
-    @Autowired
     private BotNotificationJob botNotificationJob;
+
+    @Autowired
+    public void setBotNotificationJob(BotNotificationJob notificationJob) {
+        this.botNotificationJob = notificationJob;
+    }
 
     @SneakyThrows
     @Transactional(propagation = Propagation.REQUIRES_NEW)

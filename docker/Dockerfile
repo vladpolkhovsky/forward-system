@@ -2,6 +2,8 @@ FROM openjdk:17
 
 USER root
 
+ENV TZ="Europe/Moscow"
+
 COPY . /usr/src/forward-system
 
 RUN microdnf install --nodocs wget findutils

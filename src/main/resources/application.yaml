@@ -44,6 +44,9 @@ spring:
         order_inserts: true
         generate_statistics: false
 
+  main:
+    allow-circular-references: true
+
 management:
   emergency-menu-url: /emergency/${server.secret-uuid}
   endpoints:
