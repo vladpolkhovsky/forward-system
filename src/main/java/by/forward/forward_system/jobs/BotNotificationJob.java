@@ -10,6 +10,7 @@ import by.forward.forward_system.core.jpa.repository.SkipChatNotificationReposit
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -28,6 +30,9 @@ public class BotNotificationJob {
 
     private static final int WAIT_MINS = 10;
 
+    private final Semaphore getSemaphoreSemaphore = new Semaphore(1);
+    private final Map<Long, Semaphore> semaphorePerUser = Collections.synchronizedMap(new HashMap<>());
+
     private final BotNotificationService botNotificationService;
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatMetadataRepository chatMetadataRepository;
@@ -35,9 +40,27 @@ public class BotNotificationJob {
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
     @Transactional
+    @SneakyThrows
     public void notifyByChatId(Long chatId) {
-        List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(chatId);
-        process(allMessagesOlderThen);
+
+        getSemaphoreSemaphore.acquire();
+
+        Semaphore semaphore = semaphorePerUser.getOrDefault(chatId, new Semaphore(1));
+        semaphorePerUser.put(chatId, semaphore);
+
+        getSemaphoreSemaphore.release();
+
+        try {
+            semaphore.acquire();
+            log.info("Начало отправки уведомлений для чата {}", chatId);
+            List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(chatId);
+            process(allMessagesOlderThen);
+        } catch (Exception ex) {
+            log.error("Error in notifyByChatId chatId={}", chatId, ex);
+        } finally {
+            log.info("Завершение отправки уведомлений для чата {}", chatId);
+            semaphore.release();
+        }
     }
 
     @Scheduled(fixedDelay = WAIT_MINS, timeUnit = TimeUnit.MINUTES)
