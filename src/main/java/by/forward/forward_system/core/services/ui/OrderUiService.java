@@ -13,6 +13,7 @@ import by.forward.forward_system.core.jpa.repository.projections.AuthorWithDisci
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.core.*;
+import by.forward.forward_system.core.utils.Constants;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -63,24 +64,15 @@ public class OrderUiService {
             .toList();
     }
 
-    public List<OrderUiDto> getAllMyOrders(Long currentUserId) {
-        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
+    public List<OrderUiDto> getAllMyOrders(Long currentUserId, int page) {
+        List<String> participantTypes = Arrays.asList(
+            ParticipantType.CATCHER.getName(),
+            ParticipantType.HOST.getName(),
+            ParticipantType.MAIN_AUTHOR.getName()
+        );
 
-        Predicate<OrderEntity> isParticipant = (order) -> {
-            List<OrderParticipantEntity> orderParticipants = order.getOrderParticipants();
-            for (OrderParticipantEntity orderParticipant : orderParticipants) {
-                if (participantTypes.contains(orderParticipant.getParticipantsType().getType())
-                    && orderParticipant.getUser().getId().equals(currentUserId)) {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        return orderService.findAllOrdersByUserInParticipant(currentUserId).stream()
-            .filter(isParticipant)
+        return orderService.findAllOrdersByUserInParticipant(currentUserId, page, participantTypes).stream()
             .map(this::toDto)
-            .sorted(Comparator.comparing(OrderUiDto::getTechNumber).reversed())
             .toList();
     }
 
@@ -408,6 +400,12 @@ public class OrderUiService {
         Long currentUserId = userUiService.getCurrentUserId();
         List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
         return orderService.getOrdersCount(currentUserId, participantTypes);
+    }
+
+    public int getAllMyOrdersPageCount(Long currentUserId) {
+        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
+        int count = orderService.getOrdersCount(currentUserId, participantTypes);
+        return count / Constants.ORDER_PAGE_SIZE + (count % Constants.ORDER_PAGE_SIZE == 0 ? 0 : 1);
     }
 
     public int countOrderAuthors(Long orderId) {

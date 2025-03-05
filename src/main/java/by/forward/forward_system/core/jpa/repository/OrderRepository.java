@@ -15,10 +15,28 @@ import java.util.Optional;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
-    @Query(nativeQuery = true, value = "SELECT distinct o.* from forward_system.orders o " +
-                                       "left join forward_system.order_participants op on o.id = op.order_id " +
-                                       "where op.user_id = :userId")
-    List<OrderEntity> findOrdersWithUserInParticipant(Long userId);
+    @Query(nativeQuery = true, value = """
+        select
+        	ords.*
+        from
+        	forward_system.orders ords
+        where
+        	ords.tech_number::int in (
+        	select
+        		distinct (o.tech_number::int)
+        	from
+        		forward_system.orders o
+        	left join forward_system.order_participants op on
+        		o.id = op.order_id
+        	where
+        		op.user_id = :userId and op.type in :participantTypes
+        	order by
+        		o.tech_number::int desc
+        	limit :limit offset :offset)
+        order by
+        	ords.tech_number::int desc
+        """)
+    List<OrderEntity> findOrdersWithUserInParticipant(Long userId, int limit, int offset, List<String> participantTypes);
 
     @Query(nativeQuery = true, value = "SELECT o.* from forward_system.orders o " +
                                        "where o.order_status in :orderStatuses")
@@ -29,14 +47,33 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
                                        "order by o.tech_number::int8 desc")
     List<SimpleOrderProjection> findByStatusProjection(List<String> orderStatuses);
 
-    @Query(nativeQuery = true, value = "select u.firstname as firstname, u.lastname as lastname, u.username as username, a.filename as attachmentFilename, a.id as attachmentFileId, cm.created_at as attachmentTime from forward_system.orders o " +
-                                       "inner join forward_system.chats c on c.order_id = o.id " +
-                                       "inner join forward_system.chat_messages cm on c.id = cm.chat_id " +
-                                       "inner join forward_system.users u on cm.from_user_id = u.id " +
-                                       "inner join forward_system.chat_message_attachments cma on cma.message_id = cm.id " +
-                                       "inner join forward_system.attachments a on cma.attachment_id = a.id " +
-                                       "where c.type = 'ORDER_CHAT' and c.order_id = :orderId " +
-                                       "order by cm.created_at limit 256")
+    @Query(nativeQuery = true, value = """
+        select
+        	u.firstname as firstname,
+        	u.lastname as lastname,
+        	u.username as username,
+        	a.filename as attachmentFilename,
+        	a.id as attachmentFileId,
+        	cm.created_at as attachmentTime
+        from
+        	forward_system.orders o
+        inner join forward_system.chats c on
+        	c.order_id = o.id
+        inner join forward_system.chat_messages cm on
+        	c.id = cm.chat_id
+        inner join forward_system.users u on
+        	cm.from_user_id = u.id
+        inner join forward_system.chat_message_attachments cma on
+        	cma.message_id = cm.id
+        inner join forward_system.attachments a on
+        	cma.attachment_id = a.id
+        where
+        	c.type = 'ORDER_CHAT'
+        	and c.order_id = :orderId
+        order by
+        	cm.created_at
+        limit 256
+        """)
     List<ChatAttachmentProjection> findChatAttachmentsByOrderId(Long orderId);
 
     @Query(nativeQuery = true, value = "select count(*) from forward_system.orders o where o.order_status != :orderStatus")

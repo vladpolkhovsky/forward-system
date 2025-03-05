@@ -173,7 +173,9 @@ public class CreateOrderController {
     }
 
     @GetMapping(value = "/view-order")
-    public String viewOrder(Model model, @RequestParam(value = "page", required = false, defaultValue = "1") int page, @RequestParam(value = "techNumber", required = false) String techNumber) {
+    public String viewOrder(Model model,
+                            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                            @RequestParam(value = "techNumber", required = false) String techNumber) {
         List<OrderUiDto> orders = Collections.emptyList();
 
         int pageCount;
@@ -204,8 +206,59 @@ public class CreateOrderController {
         model.addAttribute("chatHandler", chatData);
         model.addAttribute("showPages", true);
         model.addAttribute("showSearch", true);
+        model.addAttribute("searchOrderUrl", "/view-order");
 
         return "main/view-order-selector";
+    }
+
+    @GetMapping(value = "/view-my-order")
+    public String viewMyOrder(Model model,
+                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                              @RequestParam(value = "techNumber", required = false) String techNumber) {
+        userUiService.checkAccessManager();
+        loadPage(model, page, techNumber, "/view-my-order");
+        return "main/view-order-selector";
+    }
+
+    @GetMapping(value = "/view-my-order-author")
+    public String viewMyOrderAuthor(Model model,
+                                    @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                    @RequestParam(value = "techNumber", required = false) String techNumber) {
+        loadPage(model, page, techNumber, "/view-my-order-author");
+        return "main/view-order-author-selector";
+    }
+
+    private void loadPage(Model model, int page, String techNumber, String searchOrderUrl) {
+        List<OrderUiDto> orders = Collections.emptyList();
+
+        int pageCount;
+
+        if (!StringUtils.isBlank(techNumber)) {
+            pageCount = 1;
+            page = 1;
+
+            orders = orderUiService.getOrderByTechNumber(techNumber);
+        } else {
+            pageCount = orderUiService.getAllMyOrdersPageCount(userUiService.getCurrentUserId());
+            page = Math.max(Math.min(pageCount, page), 1);
+
+            orders = orderUiService.getAllMyOrders(userUiService.getCurrentUserId(), page);
+        }
+
+        List<Long> orderIds = orders.stream().map(OrderUiDto::getId).toList();
+        Map<Long, OrderChatDataProjection> chatData = orderChatHandlerService.calcChatData(orderIds, userUiService.getCurrentUserId());
+
+        List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
+
+        model.addAttribute("menuName", "Выберите заказ для просмотра");
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        model.addAttribute("ordersList", orders);
+        model.addAttribute("page", page);
+        model.addAttribute("pages", pages);
+        model.addAttribute("chatHandler", chatData);
+        model.addAttribute("showPages", true);
+        model.addAttribute("showSearch", true);
+        model.addAttribute("searchOrderUrl", searchOrderUrl);
     }
 
     @GetMapping(value = "/view-order/{orderId}")
@@ -234,34 +287,6 @@ public class CreateOrderController {
         model.addAttribute("participants", participants);
 
         return "main/view-order";
-    }
-
-    @GetMapping(value = "/view-my-order")
-    public String viewMyOrder(Model model) {
-        List<OrderUiDto> orders = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
-
-        List<Long> orderIds = orders.stream().map(t -> t.getId()).toList();
-        Map<Long, OrderChatDataProjection> chatData = orderChatHandlerService.calcChatData(orderIds, userUiService.getCurrentUserId());
-
-        model.addAttribute("menuName", "Выберите заказ для просмотра");
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", orders);
-        model.addAttribute("showPages", false);
-        model.addAttribute("chatHandler", chatData);
-        model.addAttribute("showSearch", false);
-
-        return "main/view-order-selector";
-    }
-
-    @GetMapping(value = "/view-my-order-author")
-    public String viewMyOrderAuthor(Model model) {
-        List<OrderUiDto> allOrdersInStatus = orderUiService.getAllMyOrders(userUiService.getCurrentUserId());
-
-        model.addAttribute("menuName", "Выберите заказ для просмотра");
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", allOrdersInStatus);
-
-        return "main/view-order-author-selector";
     }
 
     @GetMapping(value = "/order-to-in-progress")

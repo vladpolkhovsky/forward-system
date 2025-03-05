@@ -406,12 +406,6 @@ public class OrderService {
         orderRepository.save(orderEntity);
     }
 
-    public List<OrderDto> getUserOrders(Long userId) {
-        List<OrderEntity> orderEntities = orderRepository.findOrdersWithUserInParticipant(userId);
-        return orderEntities.stream().map(this::toDto)
-            .toList();
-    }
-
     public OrderDto getSingleOrder(Long orderId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
         return toDto(orderEntity);
@@ -833,8 +827,8 @@ public class OrderService {
         return orderRepository.findOrderPage(Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1));
     }
 
-    public List<OrderEntity> findAllOrdersByUserInParticipant(Long currentUserId) {
-        return orderRepository.findOrdersWithUserInParticipant(currentUserId);
+    public List<OrderEntity> findAllOrdersByUserInParticipant(Long currentUserId, int page, List<String> participantTypes) {
+        return orderRepository.findOrdersWithUserInParticipant(currentUserId, Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1), participantTypes);
     }
 
     public Long getOrderHost(Long orderId) {

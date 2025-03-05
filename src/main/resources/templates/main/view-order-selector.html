@@ -24,15 +24,15 @@
             <nav aria-label="Page navigation example">
                 <ul class="pagination">
                     <li class="page-item">
-                        <a aria-label="Previous" class="page-link" th:href="|/view-order?page=| + ${page - 1}">
+                        <a aria-label="Previous" class="page-link" th:href="${searchOrderUrl} + |?page=| + ${page - 1}">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
                     <li th:class="|page-item | + ${cPage == page ? 'active' : ''}" th:each="cPage : ${pages}">
-                        <a class="page-link" th:href="|/view-order?page=| + ${cPage}" th:text="${cPage}"></a>
+                        <a class="page-link" th:href="${searchOrderUrl} + |?page=| + ${cPage}" th:text="${cPage}"></a>
                     </li>
                     <li class="page-item">
-                        <a aria-label="Next" class="page-link" th:href="|/view-order?page=| + ${page + 1}">
+                        <a aria-label="Next" class="page-link" th:href="${searchOrderUrl} + |?page=| + ${page + 1}">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
@@ -42,7 +42,7 @@
     </div>
     <div class="row" th:if="${showSearch}">
         <div class="col-12 col-sm-6">
-            <form action="/view-order" class="d-flex" method="get">
+            <form th:action="${searchOrderUrl}" action="" class="d-flex" method="get">
                 <input class="form-control" name="techNumber" placeholder="Поиск по номеру ТЗ" step="0.1" type="number">
                 <button class="btn btn-warning ms-2" type="submit">&#128270;</button>
             </form>

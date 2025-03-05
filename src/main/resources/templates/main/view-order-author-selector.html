@@ -19,6 +19,35 @@
     </div>
 </div>
 <div class="container">
+    <div class="row" th:if="${showPages}">
+        <div class="col-12">
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    <li class="page-item">
+                        <a aria-label="Previous" class="page-link" th:href="${searchOrderUrl} + |?page=| + ${page - 1}">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li th:class="|page-item | + ${cPage == page ? 'active' : ''}" th:each="cPage : ${pages}">
+                        <a class="page-link" th:href="${searchOrderUrl} + |?page=| + ${cPage}" th:text="${cPage}"></a>
+                    </li>
+                    <li class="page-item">
+                        <a aria-label="Next" class="page-link" th:href="${searchOrderUrl} + |?page=| + ${page + 1}">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="row" th:if="${showSearch}">
+        <div class="col-12 col-sm-6">
+            <form th:action="${searchOrderUrl}" class="d-flex" method="get">
+                <input class="form-control" name="techNumber" placeholder="Поиск по номеру ТЗ" step="0.1" type="number">
+                <button class="btn btn-warning ms-2" type="submit">&#128270;</button>
+            </form>
+        </div>
+    </div>
     <div class="row">
         <div class="col-12">
             <ul class="list-group">
@@ -36,8 +65,6 @@
                                th:text="|Срок сдачи: | + ${#temporals.format(order.getDeadline(), 'yyyy-MM-dd HH:mm')}"></p>
                             <p class="mt-1 mb-0"
                                th:text="|Ответственный менеджер: | + ${order.getResponsibleManager()}"></p>
-                            <p class="mt-1 mb-0" th:if="${order.getDistributionDaysCount() != null}"
-                               th:text="|Дней на распределении: | + ${order.getDistributionDaysCount()}"></p>
                         </div>
                         <span class="badge text-bg-primary rounded-pill" th:text="${order.getOrderStatusRus()}"></span>
                     </div>
