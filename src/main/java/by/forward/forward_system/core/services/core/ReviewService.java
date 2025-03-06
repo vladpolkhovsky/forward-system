@@ -120,17 +120,12 @@ public class ReviewService {
         return reviewDto;
     }
 
-    public List<ReviewProjectionDto> getNotReviewed(int page) {
-        List<ReviewEntity> all = reviewRepository.findAllNotReviewd((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
-        List<ReviewEntity> list = all.stream()
-            .filter(t -> !t.getIsReviewed())
-            .toList();
-        return getReviewProjectionDtos(list);
+    public List<ReviewProjectionDto> getNotReviewed(int page) {;
+        return reviewRepository.findAllNotReviewed((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
     }
 
     public List<ReviewProjectionDto> getAllReviews(int page) {
-        List<ReviewEntity> all = reviewRepository.findPage((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
-        return getReviewProjectionDtos(all);
+        return reviewRepository.findPage((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
     }
 
     public List<ReviewProjectionDto> getAllReviews(String techNumber) {
@@ -142,15 +137,18 @@ public class ReviewService {
         if (!t.getIsReviewed())
             return "Не проверено";
         if (t.getIsAccepted()) {
-            return "Проврено. Принято";
+            return "Проверено. Принято";
         } else {
             return "Проверено, но не принято";
         }
     }
 
     public List<ReviewProjectionDto> getNotReviewedByUser(Long currentUserId) {
-        List<ReviewEntity> all = reviewRepository.findAllByUserId(currentUserId);
-        return getReviewProjectionDtos(all);
+        return reviewRepository.findAllByExpertAndReviewStatusIs(currentUserId, false);
+    }
+
+    public List<ReviewProjectionDto> getReviewedByUser(Long currentUserId) {
+        return reviewRepository.findAllByExpertAndReviewStatusIs(currentUserId, true);
     }
 
     private List<ReviewProjectionDto> getReviewProjectionDtos(List<ReviewEntity> all) {

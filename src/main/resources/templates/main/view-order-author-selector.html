@@ -22,7 +22,7 @@
     <div class="row" th:if="${showPages}">
         <div class="col-12">
             <nav aria-label="Page navigation example">
-                <ul class="pagination">
+                <ul class="pagination flex-wrap">
                     <li class="page-item">
                         <a aria-label="Previous" class="page-link" th:href="${searchOrderUrl} + |?page=| + ${page - 1}">
                             <span aria-hidden="true">&laquo;</span>

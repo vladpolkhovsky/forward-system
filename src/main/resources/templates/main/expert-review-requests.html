@@ -17,9 +17,9 @@
 </div>
 <div class="container">
     <div class="row">
-        <p>Можно выбрать заказы в статусах "В работе" и "Доработка"</p>
         <div class="col-12">
-            <ul class="list-group">
+            <p class="m-0 mt-3 fs-5" th:if="${reviews.isEmpty()}">Нет запросов на проверку.</p>
+            <ul class="list-group" th:unless="${reviews.isEmpty()}">
                 <li class="list-group-item d-flex justify-content-between align-items-start"
                     th:each="order, orderStat : ${reviews}">
                     <div class="ms-2 me-auto">
@@ -28,7 +28,35 @@
                                th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}">
                             </a>
                         </div>
-                        <p th:text="|Название заказа: | + ${order.getOrderName()}"></p>
+                        <p class="m-0" th:unless="${#strings.isEmpty(order.getOrderName())}" th:text="|Название заказа: | + ${order.getOrderName()}"></p>
+                        <p class="m-0"
+                           th:text="|Дата создания запроса: | + ${#temporals.format(order.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+                        <p class="m-0" th:if="${order.getReviewedAt() != null}"
+                           th:text="|Дата проверки: | + ${#temporals.format(order.getReviewedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+                    </div>
+                    <span class="badge text-bg-primary rounded-pill" th:text="${order.getReviewStatusName()}"></span>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="row mt-3">
+        <h5>Ранее проверенные работы</h5>
+        <p class="m-0 mt-3 fs-5" th:if="${oldReviews.isEmpty()}">Нет ранее проверенных.</p>
+        <div class="col-12" th:unless="${oldReviews.isEmpty()}">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-start"
+                    th:each="order, orderStat : ${oldReviews}">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold">
+                            <a th:href="|/expert-review-order-answer/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}"
+                               th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}">
+                            </a>
+                        </div>
+                        <p class="m-0" th:unless="${#strings.isEmpty(order.getOrderName())}" th:text="|Название заказа: | + ${order.getOrderName()}"></p>
+                        <p class="m-0"
+                           th:text="|Дата создания запроса: | + ${#temporals.format(order.getCreatedAt(), 'dd.MM.yyyy HH:mm')}"></p>
+                        <p class="m-0" th:if="${order.getReviewedAt() != null}"
+                           th:text="|Дата проверки: | + ${#temporals.format(order.getReviewedAt(), 'dd.MM.yyyy HH:mm')}"></p>
                     </div>
                     <span class="badge text-bg-primary rounded-pill" th:text="${order.getReviewStatusName()}"></span>
                 </li>

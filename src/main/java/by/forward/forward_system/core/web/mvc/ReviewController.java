@@ -126,10 +126,12 @@ public class ReviewController {
     @GetMapping(value = "/expert-review-requests")
     public String expertReviewRequests(Model model) {
         List<ReviewProjectionDto> notReviewedByUser = reviewService.getNotReviewedByUser(userUiService.getCurrentUserId());
+        List<ReviewProjectionDto> reviewedByUser = reviewService.getReviewedByUser(userUiService.getCurrentUserId());
 
         model.addAttribute("menuName", "Выберите заказ, который хотите проверить");
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("reviews", notReviewedByUser);
+        model.addAttribute("oldReviews", reviewedByUser);
 
         return "main/expert-review-requests";
     }
