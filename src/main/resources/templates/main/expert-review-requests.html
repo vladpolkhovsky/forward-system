@@ -48,7 +48,7 @@
                     th:each="order, orderStat : ${oldReviews}">
                     <div class="ms-2 me-auto">
                         <div class="fw-bold">
-                            <a th:href="|/expert-review-order-answer/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}"
+                            <a th:href="|/expert-review-order-view/| + ${order.getOrderId()} + |/| + ${order.getReviewId()}"
                                th:text="|Заказ (ТЗ) №| + ${order.getOrderTechNumber()}">
                             </a>
                         </div>
