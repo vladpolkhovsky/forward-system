@@ -27,7 +27,7 @@ public class AiMessageCheckListener {
 
     @Qualifier("springAsyncTaskExecutor")
     private final ThreadPoolTaskExecutor springAsyncTaskExecutor;
-    private final AttachmentService attachmentService;
+
     private final AIDetector aiDetector;
     private final ChatRepository chatRepository;
     private final BanService banService;

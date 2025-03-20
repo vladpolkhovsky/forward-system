@@ -57,6 +57,7 @@
                 <!--/*@thymesVar id="msg" type="by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto"*/-->
                 <li class="list-group-item align-items-start"
                     th:each="msg : ${ban.getLastMessages()}">
+                    <p class="h6" th:text="${msg.getChatName()}"></p>
                     <div>
                         <p style="color: indianred" th:hidden="${!msg.getIsHidden()}" th:id="|msg-| + ${msg.getId()}">
                             <strong>Удалено</strong></p>

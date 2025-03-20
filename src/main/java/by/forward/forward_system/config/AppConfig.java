@@ -103,16 +103,16 @@ public class AppConfig {
     public ThreadPoolTaskExecutor taskExecutor() {
         ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
         threadPoolTaskExecutor.setThreadNamePrefix("async-thread-");
-        threadPoolTaskExecutor.setCorePoolSize(2);
-        threadPoolTaskExecutor.setMaxPoolSize(2);
-        threadPoolTaskExecutor.setQueueCapacity(120);
+        threadPoolTaskExecutor.setCorePoolSize(8);
+        threadPoolTaskExecutor.setMaxPoolSize(15);
+        threadPoolTaskExecutor.setQueueCapacity(1000);
         return threadPoolTaskExecutor;
     }
 
     @Bean
     public ThreadPoolTaskScheduler getScheduler(){
         ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
-        scheduler.setPoolSize(10);
+        scheduler.setPoolSize(15);
         return scheduler;
     }
 }
