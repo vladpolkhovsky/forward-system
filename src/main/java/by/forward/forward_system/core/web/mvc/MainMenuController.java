@@ -10,8 +10,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 @Controller
 @AllArgsConstructor
-public class
-MainMenuController {
+public class MainMenuController {
 
     private final UserUiService userUiService;
 

@@ -65,6 +65,7 @@ public class AdminMenuController {
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("isViewed", byId.getIsViewed());
+        model.addAttribute("isForwardOrder", byId.getIsForwardOrder());
         model.addAttribute("requestId", requestId);
         model.addAttribute("menuName", "Укажите данные для перевода в статус \"В работе\"");
         model.addAttribute("authors", authors);
@@ -119,7 +120,9 @@ public class AdminMenuController {
             .collect(Collectors.groupingBy(UserPlanProjectionDto::getUserId))
             .entrySet().stream()
             .map(e -> {
-                List<UserPlanProjectionDto> sorted = e.getValue().stream().sorted(Comparator.comparing(UserPlanProjectionDto::getStartDateTime).reversed()).toList();
+                List<UserPlanProjectionDto> sorted = e.getValue().stream()
+                    .sorted(Comparator.comparing(UserPlanProjectionDto::getStartDateTime).reversed())
+                    .toList();
                 sorted = sorted.subList(Math.max(0, sorted.size() - 4), sorted.size());
                 return Map.entry(
                     e.getKey(),

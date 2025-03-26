@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -22,4 +23,10 @@ public class ChatMessageAttachmentEntity {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "attachment_id", nullable = false)
     private AttachmentEntity attachment;
+
+    public static ChatMessageAttachmentEntity of(AttachmentEntity attachment) {
+        ChatMessageAttachmentEntity result = new ChatMessageAttachmentEntity();
+        result.setAttachment(attachment);
+        return result;
+    }
 }

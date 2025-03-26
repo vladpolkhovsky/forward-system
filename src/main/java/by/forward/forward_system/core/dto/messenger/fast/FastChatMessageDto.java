@@ -13,10 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 public class FastChatMessageDto {
     private long id;
+    private long chatId;
+    private long createdAtTimestamp;
     private Long fromUserId;
+    private String fromUserUsername;
     private boolean isSystemMessage;
     private String createdAt;
     private String text;
+    private String messageType;
     private boolean isViewed;
     private boolean isHidden;
     private List<FastChatMessageAttachmentDto> attachments;

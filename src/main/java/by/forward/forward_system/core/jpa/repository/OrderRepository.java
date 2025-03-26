@@ -61,14 +61,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         	c.order_id = o.id
         inner join forward_system.chat_messages cm on
         	c.id = cm.chat_id
-        inner join forward_system.users u on
+        left join forward_system.users u on
         	cm.from_user_id = u.id
         inner join forward_system.chat_message_attachments cma on
         	cma.message_id = cm.id
         inner join forward_system.attachments a on
         	cma.attachment_id = a.id
         where
-        	c.type = 'ORDER_CHAT'
+        	c.type in ('ORDER_CHAT', 'FORWARD_ORDER_CHAT')
         	and c.order_id = :orderId
         order by
         	cm.created_at

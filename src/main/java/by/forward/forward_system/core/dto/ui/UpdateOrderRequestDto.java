@@ -21,5 +21,6 @@ public class UpdateOrderRequestDto {
     private List<Long> authors;
     private Boolean isViewed;
     private Boolean isAccepted;
+    private Boolean isForwardOrder;
     private LocalDateTime createdAt;
 }

@@ -18,7 +18,7 @@ public class SubscribedUserListCommandResolver implements CommandResolver {
 
     @Override
     public boolean accept(String command) {
-        return command.startsWith("/user-list");
+        return command.startsWith("/user_list");
     }
 
     @Override

@@ -5,6 +5,7 @@ import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageOptionDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.events.events.NotifyForwardOrderCustomersDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.utils.ChatNames;
@@ -12,6 +13,7 @@ import by.forward.forward_system.jobs.BotNotificationJob;
 import by.forward.forward_system.jobs.NotificationJob;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,9 @@ public class MessageService {
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ThreadPoolTaskScheduler scheduler;
     private final BotNotificationJob botNotificationJob;
+    private final LastMessageRepository lastMessageRepository;
+    private final ForwardOrderRepository forwardOrderRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public void sendMessageToErrorChat(String text) {
@@ -88,6 +93,8 @@ public class MessageService {
         chatMessageEntity.setCreatedAt(now);
 
         chatMessageEntity = messageRepository.save(chatMessageEntity);
+
+        Long chatMessageId = chatMessageEntity.getId();
 
         chatEntity.setLastMessageDate(now);
         chatEntity.getChatMassages().add(chatMessageEntity);
@@ -145,7 +152,13 @@ public class MessageService {
         chatMessageEntity.getChatMessageToUsers().addAll(chatMessageToUserEntities);
         chatMessageEntity = messageRepository.save(chatMessageEntity);
 
+        LastMessageEntity lastMessageEntity = new LastMessageEntity();
+        lastMessageEntity.setChat(chatEntity);
+        lastMessageEntity.setMessage(chatMessageEntity);
+        lastMessageEntity.setCreatedAt(LocalDateTime.now());
+
         notificationOutboxRepository.saveAll(notificationOutboxEntities);
+        lastMessageRepository.save(lastMessageEntity);
 
         try {
             scheduler.schedule(
@@ -155,6 +168,13 @@ public class MessageService {
         } catch (Exception e) {
             log.error("Ошибка создания задания на отправку уведомления: ", e);
         }
+
+        forwardOrderRepository.findForwardOrderIdByChatId(chatId)
+            .ifPresent(forwardOrderId -> {
+                applicationEventPublisher.publishEvent(
+                    new NotifyForwardOrderCustomersDto(forwardOrderId, chatMessageId)
+                );
+            });
 
         return chatMessageEntity;
     }

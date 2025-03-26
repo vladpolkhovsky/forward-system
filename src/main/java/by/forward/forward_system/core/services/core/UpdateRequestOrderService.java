@@ -11,6 +11,7 @@ import by.forward.forward_system.core.jpa.repository.OrderStatusRepository;
 import by.forward.forward_system.core.jpa.repository.UpdateOrderRequestRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMap;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class UpdateRequestOrderService {
@@ -48,7 +50,9 @@ public class UpdateRequestOrderService {
         List<Long> catchers = mapIds(multiValueMap.get("catcher"));
         List<Long> authors = mapIds(multiValueMap.get("author"));
 
-        if (CollectionUtils.isEmpty(hosts)) {
+        boolean isForwardOrder = Optional.ofNullable(multiValueMap.get("isForwardOrder")).isPresent();
+
+        if (CollectionUtils.isEmpty(hosts) && !isForwardOrder) {
             throw new RuntimeException("Не назначен хост.");
         }
 
@@ -60,8 +64,8 @@ public class UpdateRequestOrderService {
             throw new RuntimeException("Не назначен автор.");
         }
 
-        if (hosts.size() != 1 || authors.size() != 1 || catchers.size() != 1) {
-            throw new RuntimeException("Неправильный формат данных: " + Map.of("Кетчеры", catchers, "Хосты", hosts, "Авторы", authors));
+        if ((hosts.size() != 1 && !isForwardOrder) || authors.size() != 1 || catchers.size() != 1) {
+            throw new RuntimeException("Неправильный формат данных: " + Map.of("Кетчеры", catchers, "Хосты", hosts, "Прямой заказ", isForwardOrder, "Авторы", authors));
         }
 
         UpdateOrderRequestDto updateOrderRequestDto = new UpdateOrderRequestDto();
@@ -82,6 +86,7 @@ public class UpdateRequestOrderService {
 
         updateOrderRequestDto.setIsViewed(false);
         updateOrderRequestDto.setIsAccepted(null);
+        updateOrderRequestDto.setIsForwardOrder(isForwardOrder);
 
         return updateOrderRequestDto;
     }
@@ -105,9 +110,9 @@ public class UpdateRequestOrderService {
         updateOrderRequestEntity.setCatcherIds(toStrList(updateOrderRequestDto.getCatchers()));
         updateOrderRequestEntity.setAuthorsIds(toStrList(updateOrderRequestDto.getAuthors()));
         updateOrderRequestEntity.setHostsIds(toStrList(updateOrderRequestDto.getHosts()));
-        updateOrderRequestEntity.setIsViewed(updateOrderRequestDto.getIsViewed());
-        updateOrderRequestEntity.setIsAccepted(updateOrderRequestDto.getIsAccepted());
+        updateOrderRequestEntity.setIsForwardOrder(updateOrderRequestDto.getIsForwardOrder());
         updateOrderRequestEntity.setCreatedAt(updateOrderRequestDto.getCreatedAt());
+
         updateOrderRequestEntity.setUser(userEntity);
         updateOrderRequestEntity.setIsViewed(isViewed);
         updateOrderRequestEntity.setIsAccepted(isAccepted);
@@ -118,10 +123,16 @@ public class UpdateRequestOrderService {
     }
 
     private List<Long> mapIds(List<String> strIds) {
+        if (CollectionUtils.isEmpty(strIds)) {
+            return List.of();
+        }
         return strIds.stream().map(Long::parseLong).toList();
     }
 
     private List<Long> mapIds(String strIds) {
+        if (StringUtils.isBlank(strIds)) {
+            return List.of();
+        }
         String[] split = strIds.split(",");
         return mapIds(Arrays.stream(split).toList());
     }
@@ -145,6 +156,7 @@ public class UpdateRequestOrderService {
         updateOrderRequestEntity.setNewStatus(orderStatus);
         updateOrderRequestEntity.setIsViewed(updateOrderRequestDto.getIsViewed());
         updateOrderRequestEntity.setIsAccepted(updateOrderRequestDto.getIsAccepted());
+        updateOrderRequestEntity.setIsForwardOrder(updateOrderRequestDto.getIsForwardOrder());
         updateOrderRequestEntity.setCreatedAt(updateOrderRequestDto.getCreatedAt());
 
         return updateOrderRequestEntity;
@@ -164,6 +176,7 @@ public class UpdateRequestOrderService {
         updateOrderRequestDto.setNewStatusRus(updateOrderRequestEntity.getNewStatus().getStatus().getRusName());
         updateOrderRequestDto.setIsViewed(updateOrderRequestEntity.getIsViewed());
         updateOrderRequestDto.setIsAccepted(updateOrderRequestEntity.getIsAccepted());
+        updateOrderRequestDto.setIsForwardOrder(updateOrderRequestEntity.getIsForwardOrder());
         updateOrderRequestDto.setCreatedAt(updateOrderRequestEntity.getCreatedAt());
 
         return updateOrderRequestDto;

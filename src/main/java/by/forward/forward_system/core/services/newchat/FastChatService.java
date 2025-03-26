@@ -8,14 +8,12 @@ import by.forward.forward_system.core.dto.messenger.fast.partitional.SimpleChatM
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.jpa.model.ChatNoteEntity;
 import by.forward.forward_system.core.jpa.model.SavedChatEntity;
-import by.forward.forward_system.core.jpa.repository.ChatNoteRepository;
-import by.forward.forward_system.core.jpa.repository.ChatRepository;
-import by.forward.forward_system.core.jpa.repository.MessageRepository;
-import by.forward.forward_system.core.jpa.repository.SavedChatRepository;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.newchat.handlers.*;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
@@ -66,8 +64,12 @@ public class FastChatService {
     private final ChatNoteRepository chatNoteRepository;
 
     private final ChatRepository chatRepository;
+
     private final SavedChatRepository savedChatRepository;
+
     private final MessageRepository messageRepository;
+
+    private final LastMessageRepository lastMessageRepository;
 
     public LoadChatResponseDto loadChats(LoadChatRequestDto loadChatRequestDto) {
         String query = loadChatQueryHandler.getQuery(loadChatRequestDto);
@@ -200,6 +202,22 @@ public class FastChatService {
             return new LoadChatMessagesResponseDto(Collections.emptyList(), 0);
         }
 
+        Map<Long, List<SimpleChatMessageOptionDto>> messageIdToOptions = new HashMap<>();
+        Map<Long, List<SimpleChatMessageAttachmentDto>> messageIdToAttachments = new HashMap<>();
+
+        loadChatMessageAttAndOptions(messagesIds, messageIdToOptions, messageIdToAttachments);
+
+        List<FastChatMessageDto> messageList = messages.stream()
+            .map(message -> getFastChatMessageDto(message, messageIdToAttachments, messageIdToOptions))
+            .toList();
+
+        return new LoadChatMessagesResponseDto(
+            messageList,
+            messageList.size()
+        );
+    }
+
+    private void loadChatMessageAttAndOptions(List<Long> messagesIds, Map<Long, List<SimpleChatMessageOptionDto>> messageIdToOptions, Map<Long, List<SimpleChatMessageAttachmentDto>> messageIdToAttachments) {
         String loadChatMessageAttachmentsQuery = loadChatMessageAttachmentsQueryHandler.getQuery(messagesIds);
         PreparedStatementSetter loadChatMessageAttachmentsPreparedStatementSetter = loadChatMessageAttachmentsQueryHandler.getPreparedStatementSetter(messagesIds);
         RowMapper<SimpleChatMessageAttachmentDto> loadChatMessageAttachmentsRowMapper = loadChatMessageAttachmentsQueryHandler.getRowMapper();
@@ -211,9 +229,6 @@ public class FastChatService {
         List<SimpleChatMessageOptionDto> options = jdbcTemplate.query(loadChatMessageOptionsQuery, loadChatMessageOptionsPreparedStatementSetter, loadChatMessageOptionsRowMapper);
         List<SimpleChatMessageAttachmentDto> attachments = jdbcTemplate.query(loadChatMessageAttachmentsQuery, loadChatMessageAttachmentsPreparedStatementSetter, loadChatMessageAttachmentsRowMapper);
 
-        Map<Long, List<SimpleChatMessageOptionDto>> messageIdToOptions = new HashMap<>();
-        Map<Long, List<SimpleChatMessageAttachmentDto>> messageIdToAttachments = new HashMap<>();
-
         for (SimpleChatMessageOptionDto option : options) {
             messageIdToOptions.putIfAbsent(option.getMessageId(), new ArrayList<>());
             messageIdToOptions.get(option.getMessageId()).add(option);
@@ -223,33 +238,48 @@ public class FastChatService {
             messageIdToAttachments.putIfAbsent(attachment.getMessageId(), new ArrayList<>());
             messageIdToAttachments.get(attachment.getMessageId()).add(attachment);
         }
+    }
 
-        List<FastChatMessageDto> messageList = messages.stream().map(message -> {
-            FastChatMessageDto fastChatMessageDto = new FastChatMessageDto();
+    @NotNull
+    private FastChatMessageDto getFastChatMessageDto(SimpleChatMessageDto message, Map<Long, List<SimpleChatMessageAttachmentDto>> messageIdToAttachments, Map<Long, List<SimpleChatMessageOptionDto>> messageIdToOptions) {
+        FastChatMessageDto fastChatMessageDto = new FastChatMessageDto();
 
-            fastChatMessageDto.setId(message.getId());
-            fastChatMessageDto.setText(message.getText());
-            fastChatMessageDto.setFromUserId(message.getFromUserId());
-            fastChatMessageDto.setViewed(message.isViewed());
-            fastChatMessageDto.setCreatedAt(message.getDate());
-            fastChatMessageDto.setSystemMessage(message.isSystem());
-            fastChatMessageDto.setHidden(message.isHidden());
+        fastChatMessageDto.setId(message.getId());
+        fastChatMessageDto.setChatId(message.getChatId());
+        fastChatMessageDto.setText(message.getText());
+        fastChatMessageDto.setFromUserId(message.getFromUserId());
+        fastChatMessageDto.setFromUserUsername(message.getFromUserUsername());
+        fastChatMessageDto.setViewed(message.isViewed());
+        fastChatMessageDto.setCreatedAt(message.getDate());
+        fastChatMessageDto.setCreatedAtTimestamp(message.getCreatedAtTimestamp());
+        fastChatMessageDto.setSystemMessage(message.isSystem());
+        fastChatMessageDto.setHidden(message.isHidden());
+        fastChatMessageDto.setMessageType(message.getMessageType());
 
-            fastChatMessageDto.setAttachments(emptyIfNull(messageIdToAttachments.get(message.getId())).stream().map(t ->
-                new FastChatMessageAttachmentDto(t.getFilename(), t.getAttachmentId())
-            ).toList());
+        fastChatMessageDto.setAttachments(emptyIfNull(messageIdToAttachments.get(message.getId())).stream().map(t ->
+            new FastChatMessageAttachmentDto(t.getFilename(), t.getAttachmentId())
+        ).toList());
 
-            fastChatMessageDto.setOptions(emptyIfNull(messageIdToOptions.get(message.getId())).stream().map(t ->
-                new FastChatMessageOptionDto(t.getName(), t.getUrl())
-            ).toList());
+        fastChatMessageDto.setOptions(emptyIfNull(messageIdToOptions.get(message.getId())).stream().map(t ->
+            new FastChatMessageOptionDto(t.getName(), t.getUrl())
+        ).toList());
 
-            return fastChatMessageDto;
-        }).toList();
+        return fastChatMessageDto;
+    }
 
-        return new LoadChatMessagesResponseDto(
-            messageList,
-            messageList.size()
-        );
+    public List<FastChatMessageDto> loadChatMessagesByIds(List<Long> ids, Long userId) {
+        List<SimpleChatMessageDto> simpleChatMessageDtos = loadChatMessagesQueryHandler.getQueryByIds(ids, userId);
+
+        Map<Long, List<SimpleChatMessageOptionDto>> messageIdToOptions = new HashMap<>();
+        Map<Long, List<SimpleChatMessageAttachmentDto>> messageIdToAttachments = new HashMap<>();
+
+        loadChatMessageAttAndOptions(ids, messageIdToOptions, messageIdToAttachments);
+
+        List<FastChatMessageDto> messageList = simpleChatMessageDtos.stream()
+            .map(message -> getFastChatMessageDto(message, messageIdToAttachments, messageIdToOptions))
+            .toList();
+
+        return messageList;
     }
 
     public NewMessageCountResponseDto loadNewMessageCount(NewMessageCountRequestDto requestDto) {
@@ -383,4 +413,7 @@ public class FastChatService {
         return list == null ? Collections.emptyList() : list;
     }
 
+    public List<Long> newMessageIdsByHttp(Long chatId, Long userId) {
+        return lastMessageRepository.newMessageToUserAndForChat(userId, chatId);
+    }
 }

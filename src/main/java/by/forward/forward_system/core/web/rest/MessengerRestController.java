@@ -12,11 +12,13 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/messenger")
@@ -79,5 +81,26 @@ public class MessengerRestController {
     @PostMapping(value = "/file-save-form", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Long> saveFileForm(@RequestParam(value = "file", required = false) MultipartFile file) {
         return ResponseEntity.ok(attachmentService.saveAttachmentRaw(file.getOriginalFilename(), file.getBytes()));
+    }
+
+    @SneakyThrows
+    @Transactional
+    @PostMapping(value = "/send-message-via-http", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> sendMessageViaHttp(@RequestParam(value = "file", required = false) MultipartFile file,
+                                                   @RequestParam(value = "messageText", required = false) String messageText,
+                                                   @RequestParam(value = "chatId") Long chatId,
+                                                   @RequestParam(value = "userId") Long userId) {
+        Long fileId = Optional.ofNullable(file)
+            .map(this::saveMultipartFile)
+            .orElse(null);
+
+        return ResponseEntity.ok(
+            chatService.sendMessageViaHttp(fileId, messageText, chatId, userId)
+        );
+    }
+
+    @SneakyThrows
+    private Long saveMultipartFile(MultipartFile t) {
+        return attachmentService.saveAttachmentRaw(t.getOriginalFilename(), t.getBytes());
     }
 }

@@ -19,6 +19,9 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     List<UserEntity> findByRolesContainsAndDeletedIsFalse(String roleName);
 
+    @Query(value = "select u.id from UserEntity u where u.roles like concat('%', :roleName, '%') and not u.deleted")
+    List<Long> findUserIdsWithRole(String roleName);
+
     List<UserEntity> findByRolesNotContainsAndDeletedIsFalse(String roleName);
 
     @Query(nativeQuery = true, value = "select * from forward_system.users u where u.roles not like '%AUTHOR%' and not u.is_deleted")

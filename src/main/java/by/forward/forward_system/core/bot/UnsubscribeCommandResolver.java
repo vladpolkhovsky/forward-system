@@ -25,12 +25,12 @@ public class UnsubscribeCommandResolver implements CommandResolver {
 
         telegramClient.execute(SendMessage.builder()
             .chatId(update.getMessage().getChatId())
-            .text("Вы отписаны от всех уведолений.")
+            .text("Вы отписаны от всех уведомлений.")
             .build());
 
         telegramClient.execute(SendMessage.builder()
             .chatId(update.getMessage().getChatId())
-            .text("Пожалуйста, зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+            .text(TextHelper.REGISTER_HELP_TEXT)
             .build());
     }
 }

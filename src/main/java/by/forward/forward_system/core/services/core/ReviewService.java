@@ -42,7 +42,7 @@ public class ReviewService {
     private final BotNotificationService botNotificationService;
     private final WebsocketMassageService websocketMassageService;
 
-    public void saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
+    public ReviewEntity saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = new ReviewEntity();
 
         reviewEntity.setOrder(orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found")));
@@ -56,12 +56,14 @@ public class ReviewService {
 
         reviewEntity.setReviewMessage(messageText);
 
-        reviewRepository.save(reviewEntity);
+        ReviewEntity save = reviewRepository.save(reviewEntity);
 
         botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
+
+        return save;
     }
 
-    public void updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
+    public ReviewEntity updateReviewRequest(Long orderId, Long expertId, Long reviewId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("Review not found"));
 
         if (additionalFile != null) {
@@ -72,9 +74,12 @@ public class ReviewService {
         reviewEntity.setAttachment(attachmentRepository.findById(attachmentId).orElseThrow(() -> new RuntimeException("Attachment not found")));
         reviewEntity.setReviewedBy(userRepository.findById(expertId).orElseThrow(() -> new RuntimeException("Expert not found")));
         reviewEntity.setReviewMessage(messageText);
-        reviewRepository.save(reviewEntity);
+
+        ReviewEntity save = reviewRepository.save(reviewEntity);
 
         botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
+
+        return save;
     }
 
     public ReviewEntity toEntity(ReviewDto reviewDto) {
@@ -215,6 +220,22 @@ public class ReviewService {
                 botNotificationService.sendBotNotification(userId, text);
             }
         }
+    }
+
+    public void notifyThatRequestApproved(Long chatId, Long reviewId) {
+        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("chat not found: " + chatId));
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("review not found: " + reviewId));
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("CMT not found"));
+
+        String message = """
+            Эксперт проверил работу и поставил оценку: %s. Внимательно оцените результат, он доступен в карточке проверки, в меню. Так же прикреплёна таблица с результатами проверки.
+            """.formatted(reviewEntity.getReviewMark());
+
+        ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
+        attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
+
+        messageService.sendMessage(null, chatEntity, message, true, chatMessageTypeEntity, List.of(attachmentEntity), List.of());
     }
 
     public void acceptReview(Long orderId, Long reviewId, Boolean verdict, Boolean sendToChat) {

@@ -12,13 +12,16 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class HelpCommandResolver implements CommandResolver {
 
     private static final String HELP_TEXT = """
-        Доступны следующие комманды для бота.
+        Доступны следующие команды для бота.
         
         /reg <код> - регистрация в боте для показа уведомлений и возможности использовать следующие комманды.
-        /stop-notification <chat-id> - отписка от уведомлений из чата
-        /continue-notification <chat-id> - отмена отписки от уведомлений из чата
-        /user-list - список всех зарегистрированных в боте пользователей
-        /unsubscribe - отписатья от рассылки сообщений
+        /stop_notification <chat-id> - отписка от уведомлений из чата
+        /continue_notification <chat-id> - отмена отписки от уведомлений из чата
+        /user_list - список всех зарегистрированных в боте пользователей
+        /unsubscribe - отписаться от рассылки сообщений
+        /help - помощь
+        /join <код> - присоединиться к чату
+        /chats - получить список доступных чатов
         """;
 
     @Override

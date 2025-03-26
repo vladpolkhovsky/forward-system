@@ -13,6 +13,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "discipline_quality", schema = "forward_system")
 public class DisciplineQualityEntity {
+
     @Id
     @Column(name = "name", nullable = false)
     private String name;

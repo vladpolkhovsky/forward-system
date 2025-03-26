@@ -21,6 +21,7 @@ import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,6 +59,9 @@ public class OrderService {
     private final UpdateOrderRequestRepository updateOrderRequestRepository;
     private final ReviewRepository reviewRepository;
     private final OrderRequestStatisticRepository orderRequestStatisticRepository;
+    private final ForwardOrderRepository forwardOrderRepository;
+    private final ChatMemberRepository chatMemberRepository;
+    private final ChatMetadataRepository chatMetadataRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -506,26 +510,28 @@ public class OrderService {
         orderEntity.getOrderParticipants().clear();
         orderEntity = orderRepository.save(orderEntity);
 
-        List<UserEntity> authors = userRepository.findAllById(update.getAuthors());
-        List<UserEntity> catchers = userRepository.findAllById(update.getCatchers());
-        List<UserEntity> hosts = userRepository.findAllById(update.getHosts());
+        List<UserEntity> authors = userRepository.findAllById(ListUtils.defaultIfNull(update.getAuthors(), List.of()));
+        List<UserEntity> catchers = userRepository.findAllById(ListUtils.defaultIfNull(update.getCatchers(), List.of()));
+        List<UserEntity> hosts = userRepository.findAllById(ListUtils.defaultIfNull(update.getHosts(), List.of()));
 
         OrderParticipantsTypeEntity mainAuthorParticipant = orderParticipantsTypeRepository.findById(ParticipantType.MAIN_AUTHOR.getName()).orElseThrow(() -> new RuntimeException("Main Author not found"));
+        OrderParticipantsTypeEntity catcherParticipant = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).orElseThrow(() -> new RuntimeException("CATCHER not found"));
+        OrderParticipantsTypeEntity hostParticipant = orderParticipantsTypeRepository.findById(ParticipantType.HOST.getName()).orElseThrow(() -> new RuntimeException("HOST not found"));
+
         for (UserEntity author : authors) {
             addParticipant(orderEntity, mainAuthorParticipant, author.getId(), orderMainAuthorFee);
         }
 
-        OrderParticipantsTypeEntity catcherParticipant = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).orElseThrow(() -> new RuntimeException("CATCHER not found"));
         for (UserEntity catcher : catchers) {
             addParticipant(orderEntity, catcherParticipant, catcher.getId(), null);
         }
 
-        OrderParticipantsTypeEntity hostParticipant = orderParticipantsTypeRepository.findById(ParticipantType.HOST.getName()).orElseThrow(() -> new RuntimeException("HOST not found"));
         for (UserEntity host : hosts) {
             addParticipant(orderEntity, hostParticipant, host.getId(), null);
         }
 
         List<ParticipantType> userTypeInChat = Arrays.asList(ParticipantType.MAIN_AUTHOR, ParticipantType.HOST);
+
         List<UserEntity> orderParticipants = orderEntity.getOrderParticipants().stream()
             .filter(t -> userTypeInChat.contains(t.getParticipantsType().getType()))
             .map(OrderParticipantEntity::getUser)
@@ -536,6 +542,16 @@ public class OrderService {
         ArrayList<UserEntity> withAdmins = new ArrayList<>(orderParticipants);
         withAdmins.addAll(usersWithRoleAdmin);
 
+        if (update.getIsForwardOrder()) {
+            makeForwardChats(usersWithRoleAdmin, withAdmins, orderEntity);
+        } else {
+            makeDefaultChat(withAdmins, orderEntity);
+        }
+
+        changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
+    }
+
+    private void makeDefaultChat(ArrayList<UserEntity> withAdmins, OrderEntity orderEntity) {
         ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
         chatService.createChat(
             withAdmins,
@@ -544,8 +560,98 @@ public class OrderService {
             "Заказ одобрен администратором. Можете начинать работу.",
             chatTypeEntity
         );
+    }
 
-        changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
+    private void makeForwardChats(List<UserEntity> admins, ArrayList<UserEntity> userAndAdmins, OrderEntity orderEntity) {
+        UserEntity mainAuthorUser = orderEntity.getOrderParticipants().stream()
+            .filter(t -> t.getParticipantsType().getType().equals(ParticipantType.MAIN_AUTHOR))
+            .findAny()
+            .orElseThrow(() -> new RuntimeException("Main Author not found"))
+            .getUser();
+
+        Optional<ForwardOrderEntity> oldForwardOrder = forwardOrderRepository.findByOrder_Id(orderEntity.getId());
+
+        if (oldForwardOrder.isPresent()) {
+            ForwardOrderEntity forwardOrder = oldForwardOrder.get();
+
+            replaceChatMembers(admins, forwardOrder.getAdminChat());
+            replaceChatMembers(userAndAdmins, forwardOrder.getChat());
+
+            ChatMetadataEntity chatMetadata = chatMetadataRepository.findById(forwardOrder.getChat().getId()).get();
+            chatMetadata.setUser(mainAuthorUser);
+
+            chatMetadataRepository.save(chatMetadata);
+
+            chatRepository.save(forwardOrder.getChat());
+            chatRepository.save(forwardOrder.getAdminChat());
+
+            ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).get();
+            messageService.sendMessage(null, forwardOrder.getChat(), "Автор заменён на " + mainAuthorUser.getUsername(), true, chatMessageTypeEntity, List.of(), List.of(), false);
+
+            return;
+        }
+
+        String code = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+
+        ChatTypeEntity forwardOrderChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_CHAT.getName()).get();
+        ChatTypeEntity forwardOrderAdminChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_ADMIN_CHAT.getName()).get();
+
+        String message = "Созданы чаты по заказу. Заказчику необходимо ввести команду: <br /> %s"
+            .formatted(ChatNames.JOIN_FORWARD_ORDER_HTML.formatted(code));
+
+        ChatEntity forwardOrderAdminChat = chatService.createChat(
+            admins,
+            ChatNames.ADMIN_FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()),
+            orderEntity,
+            message,
+            forwardOrderAdminChatType
+        );
+
+        ChatEntity forwardOrderChat = chatService.createChat(
+            userAndAdmins,
+            ChatNames.FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()),
+            orderEntity,
+            "Заказ одобрен.",
+            forwardOrderChatType
+        );
+
+        forwardOrderAdminChat = chatRepository.save(forwardOrderAdminChat);
+        forwardOrderChat = chatRepository.save(forwardOrderChat);
+
+        ChatMetadataEntity chatMetadataEntity = new ChatMetadataEntity();
+        chatMetadataEntity.setChat(forwardOrderChat);
+        chatMetadataEntity.setAuthorCanSubmitFiles(false);
+        chatMetadataEntity.setUser(mainAuthorUser);
+
+        chatMetadataRepository.save(chatMetadataEntity);
+
+        ForwardOrderEntity forwardOrderEntity = new ForwardOrderEntity();
+        forwardOrderEntity.setOrder(orderEntity);
+        forwardOrderEntity.setAuthor(mainAuthorUser);
+        forwardOrderEntity.setChat(forwardOrderChat);
+        forwardOrderEntity.setAdminChat(forwardOrderAdminChat);
+        forwardOrderEntity.setCode(code);
+        forwardOrderEntity.setCreatedAt(LocalDateTime.now());
+
+        forwardOrderRepository.save(forwardOrderEntity);
+    }
+
+    private List<ChatMemberEntity> replaceChatMembers(List<UserEntity> participants, ChatEntity chat) {
+        chatMemberRepository.deleteAll(chat.getChatMembers());
+        chat.getChatMembers().clear();
+
+        List<ChatMemberEntity> chatMembers = new ArrayList<>();
+        for (UserEntity user : participants) {
+            ChatMemberEntity chatMemberEntity = new ChatMemberEntity();
+            chatMemberEntity.setChat(chat);
+            chatMemberEntity.setUser(user);
+            chatMembers.add(chatMemberEntity);
+        }
+
+        chatMembers = chatMemberRepository.saveAll(chatMembers);
+        chat.getChatMembers().addAll(chatMembers);
+
+        return chatMembers;
     }
 
     public List<ChatAttachmentProjection> getOrderMainChatAttachments(Long orderId) {
@@ -556,11 +662,16 @@ public class OrderService {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         long chatId = 0;
         for (ChatEntity chat : orderEntity.getChats()) {
-            if (chat.isChatTypeIs(ChatType.ORDER_CHAT)) {
+            if (chat.isChatTypeIs(ChatType.ORDER_CHAT) || chat.isChatTypeIs(ChatType.FORWARD_ORDER_CHAT)) {
                 chatId = Math.max(chat.getId(), chatId);
             }
         }
         return chatId == 0 ? null : chatId;
+    }
+
+    public Optional<String> getOrderForwardOrderCode(Long orderId) {
+        return forwardOrderRepository.findByOrder_Id(orderId)
+            .map(ForwardOrderEntity::getCode);
     }
 
     public void addMainAuthorToOrder(Long orderId, Long authorId) {

@@ -106,14 +106,14 @@
     <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="other">Дополнительные требования и пожелания</label>
         <div class="col-sm-10">
-            <textarea class="form-control-plaintext" id="other" readonly rows="15"
+            <textarea class="form-control-plaintext" id="other" readonly rows="7"
                       th:text="${order.getOther()}"></textarea>
         </div>
     </div>
     <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="violationsInformation">Штрафы</label>
         <div class="col-sm-10">
-            <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="8"
+            <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="7"
                       th:text="${order.getViolationsInformation()}"></textarea>
         </div>
     </div>

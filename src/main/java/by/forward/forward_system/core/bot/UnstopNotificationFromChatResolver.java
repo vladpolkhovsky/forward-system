@@ -32,7 +32,7 @@ public class UnstopNotificationFromChatResolver implements CommandResolver {
 
     @Override
     public boolean accept(String command) {
-        return command.startsWith("/continue-notification");
+        return command.startsWith("/continue_notification");
     }
 
     @Override
@@ -53,7 +53,7 @@ public class UnstopNotificationFromChatResolver implements CommandResolver {
         if (s.length != 2) {
             telegramClient.execute(SendMessage.builder()
                 .chatId(update.getMessage().getChatId())
-                .text("Неправильный набор аргументов: Используйте: /continue-notification <chat-id>")
+                .text("Неправильный набор аргументов: Используйте: /continue_notification <chat-id>")
                 .build());
             return;
         }

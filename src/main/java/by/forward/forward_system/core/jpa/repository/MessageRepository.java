@@ -9,9 +9,21 @@ import java.util.List;
 
 @Repository
 public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long> {
-    @Query(nativeQuery = true, value = "select count(distinct c.chat_id) from forward_system.chat_message_to_user c" +
-                                       " where c.user_id = :currentUserId and c.is_viewed = false;")
+    @Query(nativeQuery = true, value = """
+        select count(distinct c.chat_id) from forward_system.chat_message_to_user c
+                inner join forward_system.chats chat on c.chat_id = chat.id
+                where c.user_id = :currentUserId and c.is_viewed = false 
+                and chat.type not in ('FORWARD_ORDER_CHAT', 'FORWARD_ORDER_ADMIN_CHAT')
+        """)
     Integer getNewMessageByUserId(Long currentUserId);
+
+    @Query(nativeQuery = true, value = """
+        select count(distinct c.chat_id) from forward_system.chat_message_to_user c
+                inner join forward_system.chats chat on c.chat_id = chat.id
+                where c.user_id = :currentUserId and c.is_viewed = false 
+                and chat.type in ('FORWARD_ORDER_CHAT', 'FORWARD_ORDER_ADMIN_CHAT')
+        """)
+    Integer getNewForwardMessageByUserId(Long currentUserId);
 
     @Query(value = "select m from ChatMessageEntity m where m.fromUser.id = :userId order by m.createdAt desc limit :limit")
     List<ChatMessageEntity> findAllByUser(Long userId, int limit);

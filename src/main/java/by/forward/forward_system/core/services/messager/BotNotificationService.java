@@ -1,21 +1,18 @@
 package by.forward.forward_system.core.services.messager;
 
 import by.forward.forward_system.core.enums.BotType;
-import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
-import by.forward.forward_system.core.jpa.model.BotNotificationCodeEntity;
-import by.forward.forward_system.core.jpa.model.BotTypeEntity;
-import by.forward.forward_system.core.jpa.model.UserEntity;
-import by.forward.forward_system.core.jpa.repository.BotIntegrationDataRepository;
-import by.forward.forward_system.core.jpa.repository.BotNotificationCodeRepository;
-import by.forward.forward_system.core.jpa.repository.BotTypeRepository;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.*;
 import lombok.AllArgsConstructor;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -35,6 +32,8 @@ public class BotNotificationService {
     private final WebPushNotification webPushNotification;
 
     private final TelegramClient telegramClient;
+    private final ForwardOrderRepository forwardOrderRepository;
+    private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
     @Transactional
     public String getCode(Long currentUserId) {
@@ -91,6 +90,42 @@ public class BotNotificationService {
     }
 
     @Transactional
+    @SneakyThrows
+    public Optional<ForwardOrderEntity> registerBotUserByForwardOrder(Long telegramChatId, Long telegramUserId, String code) {
+        Optional<ForwardOrderEntity> byCode = forwardOrderRepository.findByCode(code);
+
+        if (botIntegrationDataRepository.findUserIdByChatId(telegramChatId).isPresent()) {
+            telegramClient.execute(SendMessage.builder()
+                .chatId(telegramChatId)
+                .text("Вы не можете присоединиться к чату. Вы уже зарегистрированы!")
+                .build()
+            );
+            return Optional.empty();
+        }
+
+        if (byCode.isPresent()) {
+            BotTypeEntity botTypeEntity = botTypeRepository.findById(BotType.TELEGRAM_BOT.getName()).get();
+
+            BotIntegrationDataEntity botIntegrationDataEntity = new BotIntegrationDataEntity();
+            botIntegrationDataEntity.setBotType(botTypeEntity);
+            botIntegrationDataEntity.setTelegramChatId(telegramChatId);
+            botIntegrationDataEntity.setTelegramUserId(telegramUserId);
+
+            BotIntegrationDataEntity save = botIntegrationDataRepository.save(botIntegrationDataEntity);
+
+            CustomerTelegramToForwardOrderEntity customerTelegramToForwardOrder = new CustomerTelegramToForwardOrderEntity();
+            customerTelegramToForwardOrder.setForwardOrder(byCode.get());
+            customerTelegramToForwardOrder.setBotIntegrationData(save);
+            customerTelegramToForwardOrder.setLastUpdateAt(LocalDateTime.now().minusYears(1));
+            customerTelegramToForwardOrder.setCreatedAt(LocalDateTime.now());
+
+            customerTelegramToForwardOrderRepository.save(customerTelegramToForwardOrder);
+        }
+
+        return byCode;
+    }
+
+    @Transactional
     public void unsubscribe(Long chatId) {
         List<BotIntegrationDataEntity> botIntegrationDataByChatId = botIntegrationDataRepository.getBotIntegrationDataByChatId(chatId);
         botIntegrationDataRepository.deleteAll(botIntegrationDataByChatId);
@@ -111,6 +146,22 @@ public class BotNotificationService {
             }
         }
         return true;
+    }
+
+    @Transactional
+    public void sendBotNotificationToAdmins(String messageText) {
+        List<Long> adminIds = userRepository.findUserIdsWithRole(Authority.ADMIN.getAuthority());
+        List<BotIntegrationDataEntity> botIntegrationDataEntities = botIntegrationDataRepository.getBotIntegrationDataByUserIdIn(adminIds);
+        for (BotIntegrationDataEntity botIntegrationDataEntity : botIntegrationDataEntities) {
+            try {
+                telegramClient.execute(SendMessage.builder()
+                    .chatId(botIntegrationDataEntity.getTelegramChatId())
+                    .text(messageText)
+                    .build());
+            } catch (TelegramApiException ignored) {
+
+            }
+        }
     }
 
     public Optional<Long> getUserIdByChatId(Long chatId) {

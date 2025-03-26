@@ -641,3 +641,78 @@ create table if not exists forward_system.user_plan
     plan_end           timestamp not null,
     created_at         timestamp not null
 );
+
+alter table forward_system.update_order_request
+    add is_forward_order bool not null default false;
+
+insert into forward_system.chat_message_types
+values ('MESSAGE_FROM_CUSTOMER');
+
+insert into forward_system.chat_type
+values ('FORWARD_ORDER_CHAT'),
+       ('FORWARD_ORDER_ADMIN_CHAT');
+
+alter table forward_system.bot_integration_data
+    alter column user_id drop not null,
+    add username varchar(255);
+
+alter table forward_system.chat_metadata
+    add column author_can_submit_files bool default false;
+
+create table forward_system.forward_order
+(
+    id            bigint primary key,
+    order_id      bigint     not null references forward_system.orders (id),
+    author_id     bigint     not null references forward_system.users (id),
+    chat_id       bigint     not null references forward_system.chats (id),
+    admin_chat_id bigint     not null references forward_system.chats (id),
+    code          varchar(8) not null unique,
+    created_at    timestamp  not null default now()
+);
+
+create unique index forward_order_order_id_idx on forward_system.forward_order (order_id);
+create index forward_order_author_id_idx on forward_system.forward_order (author_id);
+create index chat_type_idx on forward_system.chats (type);
+
+create table forward_system.last_messages
+(
+    id         bigint primary key,
+    chat_id    bigint    not null references forward_system.chats (id),
+    message_id bigint    not null references forward_system.chat_messages (id),
+    created_at timestamp not null default now()
+);
+
+create table forward_system.forward_order_review_request
+(
+    id                 bigint primary key,
+    forward_order_id   bigint    not null references forward_system.forward_order (id),
+    request_by_user_id bigint    not null references forward_system.users (id),
+    review_id          bigint references forward_system.reviews (id),
+    file_id            bigint    not null references forward_system.attachments (id),
+    note               varchar(4096),
+    done               bool      not null,
+    created_at         timestamp not null default now()
+);
+
+INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
+                                  other, payment, password, created_at, is_deleted)
+VALUES (-10, 'Экспертный отдел', 'Эксперт', 'Эксперт', 'Эксперт', '', '---', '---',
+        '---', '---', '---', '###',
+        '2024-07-31 13:50:46.688700', true);
+
+INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
+                                  other, payment, password, created_at, is_deleted)
+VALUES (-20, 'Администрация', 'Администрация', 'Администрация', 'Администрация', '', '---', '---',
+        '---', '---', '---', '###',
+        '2024-07-31 13:50:46.688700', true);
+
+create table forward_system.customer_telegram_to_forward_order
+(
+    id                      bigint primary key,
+    forward_order_id        bigint    not null references forward_system.forward_order (id),
+    bot_integration_data_id bigint    not null references forward_system.bot_integration_data (id),
+    last_update_at          timestamp not null default now(),
+    created_at              timestamp not null default now()
+);
+
+create unique index customer_telegram_to_forward_order_idx on forward_system.customer_telegram_to_forward_order (forward_order_id, bot_integration_data_id);

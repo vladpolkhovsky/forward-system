@@ -11,6 +11,7 @@ import by.forward.forward_system.core.services.messager.ws.WebsocketMassageServi
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +57,14 @@ public class ChatService {
     private final ChatNoteRepository chatNoteRepository;
 
     private final ChatMetadataRepository chatMetadataRepository;
+
     private final SavedChatRepository savedChatRepository;
+
+    private final AttachmentRepository attachmentRepository;
+
+    private final ForwardOrderRepository forwardOrderRepository;
+
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -260,8 +268,8 @@ public class ChatService {
         return chatMessageToUserRepository.getAllNotViewed();
     }
 
-    @Transactional
     @Async
+    @Transactional
     public CompletableFuture<Void> deleteChat(Long chatId) {
         List<SavedChatEntity> savedChats = savedChatRepository.findAllByChatId(chatId);
         savedChatRepository.deleteAllInBatch(savedChats);
@@ -299,4 +307,26 @@ public class ChatService {
         return CompletableFuture.completedFuture(null);
     }
 
+    public Long sendMessageViaHttp(Long attachmentId, String messageText, Long chatId, Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Chat message type not found"));
+
+        List<ChatMessageAttachmentEntity> attachments = new ArrayList<>();
+
+        Optional.ofNullable(attachmentId).stream()
+            .map(attachmentRepository::findById)
+            .map(Optional::get)
+            .map(ChatMessageAttachmentEntity::of)
+            .forEach(attachments::add);
+
+        return messageService.sendMessage(userEntity,
+            chatEntity,
+            messageText,
+            false,
+            chatMessageTypeEntity,
+            attachments,
+            List.of()
+        ).getId();
+    }
 }

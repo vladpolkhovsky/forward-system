@@ -6,7 +6,9 @@ import by.forward.forward_system.core.dto.ui.ReviewDto;
 import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.AttachmentEntity;
+import by.forward.forward_system.core.jpa.model.ForwardOrderReviewRequestEntity;
 import by.forward.forward_system.core.jpa.model.ReviewEntity;
+import by.forward.forward_system.core.jpa.repository.ForwardOrderReviewRequestRepository;
 import by.forward.forward_system.core.jpa.repository.ReviewRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
@@ -21,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,10 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.IntStream;
 
 @Controller
@@ -46,6 +46,7 @@ public class ReviewController {
     private final ReviewService reviewService;
     private final OrderService orderService;
     private final AttachmentService attachmentService;
+    private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
 
     @GetMapping(value = "/review-order")
     public String reviewSelector(Model model) {
@@ -81,22 +82,29 @@ public class ReviewController {
     }
 
     @GetMapping(value = "/expert-review-order/{orderId}")
-    public String expertReviewOrder(Model model, @PathVariable Long orderId) {
+    public String expertReviewOrder(Model model,
+                                    @PathVariable Long orderId,
+                                    @RequestParam(value = "forwardOrderReviewRequestId", required = false) Long forwardOrderReviewRequestId,
+                                    @RequestParam(value = "fileId", required = false) Long fileId) {
         userUiService.checkAccessManager();
 
         OrderUiDto order = orderUiService.getOrder(orderId);
 
         List<ChatAttachmentProjectionDto> chatAttachments = orderUiService.getOrderMainChatAttachments(orderId).stream()
             .map(t -> new ChatAttachmentProjectionDto(
-                t.getFirstname() + " " + t.getLastname().substring(0, 1),
-                t.getUsername(),
+                "Если где-то увидели это сообщение, то сообщите админу!!!",
+                Optional.ofNullable(t.getUsername()).orElse("Анонимный пользователь"),
                 t.getAttachmentFileId(),
                 t.getAttachmentFilename(),
                 t.getAttachmentTime(),
-                false))
+                Objects.equals(fileId, t.getAttachmentFileId())
+            ))
             .toList();
 
-        List<AuthorUiDto> authors = authorUiService.getAllAuthorsFast().stream().filter(AuthorUiDto::getIsAuthor).toList();
+        List<AuthorUiDto> authors = authorUiService.getAllAuthorsFast().stream()
+            .filter(AuthorUiDto::getIsAuthor)
+            .toList();
+
         List<UserSelectionUiDto> selection = authors.stream()
             .map(t -> new UserSelectionUiDto(t.getId(), t.getFio(), t.getUsername(), false))
             .sorted(Comparator.comparing(UserSelectionUiDto::getUsername))
@@ -109,6 +117,20 @@ public class ReviewController {
 
         boolean isOkStatus = Arrays.asList(OrderStatus.IN_PROGRESS, OrderStatus.FINALIZATION)
             .contains(OrderStatus.byName(order.getOrderStatus()));
+
+        String messageText = null;
+        if (forwardOrderReviewRequestId != null) {
+            ForwardOrderReviewRequestEntity requestEntity = forwardOrderReviewRequestRepository.findById(forwardOrderReviewRequestId)
+                .orElseThrow(() -> new RuntimeException("Not found forwardOrderReviewRequest by Id : " + forwardOrderReviewRequestId));
+            messageText = """
+                Прошу проверить работу автора %s по ТЗ %s.
+                При создании запроса на проверку автор указал следующее сообщение:
+                ---
+                %s
+                ---
+                """.formatted(requestEntity.getRequestByUser().getUsername(), requestEntity.getForwardOrder().getOrder().getTechNumber(), requestEntity.getNote());
+        }
+
         String techNumber = order.getTechNumber().toString();
 
         model.addAttribute("experts", selection);
@@ -119,6 +141,8 @@ public class ReviewController {
         model.addAttribute("files", chatAttachments);
         model.addAttribute("isOkStatus", isOkStatus);
         model.addAttribute("techNumber", techNumber);
+        model.addAttribute("forwardOrderReviewRequestId", forwardOrderReviewRequestId);
+        model.addAttribute("messageText", messageText);
 
         return "main/expert-review-order";
     }
@@ -165,8 +189,14 @@ public class ReviewController {
 
         orderService.notifyVerdictSaved(orderId);
 
-        orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
+        Optional<ForwardOrderReviewRequestEntity> forwardOrderReviewRequest = forwardOrderReviewRequestRepository.findFirstByReview_Id(reviewId);
 
+        if (forwardOrderReviewRequest.isPresent()) {
+            reviewService.notifyThatRequestApproved(forwardOrderReviewRequest.get().getForwardOrder().getChat().getId(), reviewId);
+            return new RedirectView("/main");
+        }
+
+        orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
         return new RedirectView("/main");
     }
 
@@ -199,6 +229,7 @@ public class ReviewController {
 
         boolean isOkStatus = Arrays.asList(OrderStatus.IN_PROGRESS, OrderStatus.FINALIZATION)
             .contains(OrderStatus.byName(order.getOrderStatus()));
+
         String techNumber = order.getTechNumber().toString();
 
         model.addAttribute("menuName", "Выберите сообщение, которое хотите отправить на рассмотрение эксперта");
@@ -251,6 +282,7 @@ public class ReviewController {
             .filter(t -> !t.getId().equals(reviewId))
             .toList();
 
+        model.addAttribute("isManager", userUiService.isCurrentUserAdmin() || userUiService.isCurrentUserAdmin());
         model.addAttribute("expertUsername", reviewById.getExpertUsername());
         model.addAttribute("menuName", "Вердикт проверки.");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -265,8 +297,10 @@ public class ReviewController {
 
     @SneakyThrows
     @PostMapping(value = "/expert-review-order/{orderId}")
+    @Transactional
     public RedirectView expertReviewOrder(@PathVariable Long orderId,
                                           @RequestParam(value = "reviewId", required = false) String reviewId,
+                                          @RequestParam(value = "forward-order-review-request-id", required = false) Long forwardOrderReviewRequestId,
                                           @RequestParam("expertId") Long expertId,
                                           @RequestParam("attachmentId") Long attachmentId,
                                           @RequestParam("reviewText") String messageText,
@@ -280,12 +314,28 @@ public class ReviewController {
         }
 
         if (reviewId == null) {
-            reviewService.saveNewReviewRequest(orderId, expertId, attachmentId, messageText, additionalAttachment);
+            ReviewEntity reviewEntity = reviewService.saveNewReviewRequest(orderId, expertId, attachmentId, messageText, additionalAttachment);
+
+            if (forwardOrderReviewRequestId != null) {
+                ForwardOrderReviewRequestEntity reviewRequestEntity = forwardOrderReviewRequestRepository.findById(forwardOrderReviewRequestId)
+                    .orElseThrow(() -> new RuntimeException("reviewRequestEntity not found " + forwardOrderReviewRequestId));
+
+                if (reviewRequestEntity.getReview() != null) {
+                    throw new RuntimeException("Запрос на проверку данного файла уже существует!");
+                }
+
+                reviewRequestEntity.setDone(true);
+                reviewRequestEntity.setReview(reviewEntity);
+                forwardOrderReviewRequestRepository.save(reviewRequestEntity);
+
+                return new RedirectView("/forward/main?forwardOrderId=%d&chatId=%d#main-view"
+                    .formatted(reviewRequestEntity.getForwardOrder().getId(), reviewRequestEntity.getForwardOrder().getChat().getId()));
+            }
+
+            orderService.changeStatus(orderId, OrderStatus.REVIEW);
         } else {
             reviewService.updateReviewRequest(orderId, expertId, Long.parseLong(reviewId), attachmentId, messageText, additionalAttachment);
         }
-
-        orderService.changeStatus(orderId, OrderStatus.REVIEW);
 
         return new RedirectView("/main");
     }

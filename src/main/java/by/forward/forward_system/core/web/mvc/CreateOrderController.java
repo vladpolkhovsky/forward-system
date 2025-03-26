@@ -12,6 +12,7 @@ import by.forward.forward_system.core.services.core.*;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
@@ -267,6 +268,7 @@ public class CreateOrderController {
 
         OrderDto order = orderService.getOrder(orderId);
         Long orderMainChatId = orderService.getOrderMainChat(orderId);
+        Optional<String> code = orderService.getOrderForwardOrderCode(orderId);
         List<OrderParticipantUiDto> participants = orderUiService.getAllParticipants(orderId);
 
         Integer authorsCost = order.getAuthorCost();
@@ -281,6 +283,8 @@ public class CreateOrderController {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("menuName", "Заказ №" + order.getTechNumber());
         model.addAttribute("hasMainChat", orderMainChatId != null);
+        model.addAttribute("hasForwardOrderChat", code.isPresent());
+        model.addAttribute("forwardOrderChat", code.map(ChatNames.JOIN_FORWARD_ORDER_HTML::formatted).orElse("Нет кода."));
         model.addAttribute("mainChatId", orderMainChatId);
         model.addAttribute("authorsCost", authorsCost);
         model.addAttribute("order", order);

@@ -12,6 +12,8 @@ public enum ChatType {
     ADMIN_TALK_CHAT("ADMIN_TALK_CHAT", "Чат с администратором"),
     OTHER_CHAT("OTHER_CHAT", "Простой чат"),
     SPECIAL_CHAT("SPECIAL_CHAT", "Специальный чат"),
+    FORWARD_ORDER_CHAT("FORWARD_ORDER_CHAT", "Чат с заказчиком"),
+    FORWARD_ORDER_ADMIN_CHAT("FORWARD_ORDER_ADMIN_CHAT", "Чат с заказчиком. Администрация"),
     ;
 
     public static final List<ChatType> noModerationChatTypes = Arrays.asList(OTHER_CHAT, SPECIAL_CHAT);

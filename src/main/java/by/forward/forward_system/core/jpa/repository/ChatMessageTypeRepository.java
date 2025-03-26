@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ChatMessageTypeRepository extends JpaRepository<ChatMessageTypeEntity, String> {
+
 }

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Прямые заказы</title>
+
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/fonts.css" rel="stylesheet">
+
+    <script src="/static/bootstrap/bootstrap.min.js"></script>
+    <script src="/static/popper.min.js"></script>
+    <script src="/static/jquery-3.7.1.min.js"></script>
+    <script src="/static/forward-order-script.js"></script>
+
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+    <style>
+        .montserrat {
+            font-family: "Montserrat", serif;
+            font-optical-sizing: auto;
+            font-style: normal;
+        }
+
+        .line-break {
+            line-break: normal;
+            white-space: pre-wrap;
+        }
+
+        .fs-7 {
+            font-size: 0.85rem !important;
+        }
+
+        .start-90 {
+            left: 90% !important;
+        }
+
+        .start-100-minus-35px {
+            left: calc(100% - 35px) !important;
+        }
+    </style>
+</head>
+<body>
+
+<div th:insert="~{main/header :: header-div}"></div>
+
+<div id="main-view" class="container-fluid mt-3 p-3" style="height: 100vh">
+    <div class="row" style="height: 100%">
+        <div class="col-12 col-lg-2" th:if="${hasForwardOrders}">
+            <div class="row">
+                <div class="col-12 d-flex g-1">
+                    <input class="form-control me-2" id="search-input" placeholder="№ заказа" type="number">
+                    <button class="btn btn-outline-secondary ps-2 pe-2 me-2"
+                            id="search-input-clear"
+                            onclick="onSearchBarClearBtnClick()"
+                            type="button">&#10060;
+                    </button>
+                    <button class="btn btn-outline-secondary ps-2 pe-2"
+                            id="search-input-search"
+                            onclick="onSearchBarBtnClick()"
+                            type="button">&#128269;
+                    </button>
+                </div>
+            </div>
+            <div id="forward-orders-box" style="min-height: 90vh; max-height: 90vh" class="overflow-scroll mt-1" th:if="${hasForwardOrders}">
+                <div th:class="'card mt-1 ' + ${forwardOrderId eq forwardOrder.getId() ? 'bg-success-subtle' : ''}"
+                     th:attrappend="selected=${forwardOrderId eq forwardOrder.getId()}, search-text=${forwardOrder.getTechNumber()}, searchable=true"
+                     th:each="forwardOrder : ${forwardOrders}">
+                    <div class="card-body p-2">
+                        <h5 class="card-title" th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}"></h5>
+                        <h6 class="card-subtitle mb-2 text-body-secondary"
+                            th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
+                        <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
+                           th:class="'d-inline-block mb-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                        >Чат
+                            <span class="ms-1 badge bg-danger"
+                                  th:if="${idToMessageCount.containsKey(forwardOrder.getChatId())}"
+                                  th:text="${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}">12</span>
+                        </a>
+                        <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getAdminChatId()} +'#main-view'"
+                           th:class="'d-inline-block ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                           th:if="${isAdmin}">Администрация
+                            <span class="ms-1 badge bg-danger"
+                                  th:if="${idToMessageCount.containsKey(forwardOrder.getAdminChatId())}"
+                                  th:text="${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}">22</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chat-window" class="col-12 col-lg-6 montserrat d-none" th:if="${hasChatWindow}">
+            <p id="chat-name" class="h4">Название чата</p>
+            <div class="p-3 d-flex flex-column border rounded-3" style="max-height: 90vh">
+                <div id="chat-message-box" class="d-flex flex-column me-auto overflow-scroll w-100"
+                     style="min-height: 75vh; max-height: 75vh">
+                    <div class="border w-75 rounded-3 p-1 mb-2 me-auto">
+                        <p class="h5 m-2">Заказчик</p>
+                        <p class="m-2">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
+                            Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown
+                            printer took a galley of type and scrambled it to make a type specimen book. It has survived
+                            not only five centuries, but also the leap into electronic typesetting, remaining
+                            essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets
+                            containing Lorem Ipsum passages, and more recently with desktop publishing software like
+                            Aldus PageMaker including versions of Lorem Ipsum.</p>
+                        <div class="d-flex justify-content-between m-2">
+                            <div class="d-block">
+                                <a href="#" class="me-2 d-inline-block line-break">Файл 1</a>
+                                <a href="#" class="me-2 d-inline-block line-break">Файл 2</a>
+                            </div>
+                            <div>
+                                <span>
+                                    23.03.2025
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="border w-75 rounded-3 p-1 mb-2 ms-auto">
+                        <p class="h5 m-2 text-end">Вы</p>
+                        <p class="m-2">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem
+                            Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown
+                            printer took a galley of type and scrambled it to make a type specimen book. It has survived
+                            not only five centuries, but also the leap into electronic typesetting, remaining
+                            essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets
+                            containing Lorem Ipsum passages, and more recently with desktop publishing software like
+                            Aldus PageMaker including versions of Lorem Ipsum.</p>
+
+                    </div>
+                </div>
+                <div class="row border-top pt-3" style="min-height: 15vh; max-height: 15vh">
+                    <div class="col-8">
+                        <textarea id="message-box" class="form-control h-75"></textarea>
+                    </div>
+                    <div class="col-4">
+                        <input id="file-input" class="form-control mb-2"
+                               th:classappend="${isAdmin || isEnabledFileSubmission} ? '' : 'd-none'" type="file">
+                        <button id="send-btn" class="btn btn-primary w-100">Отправить</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="chat-window-loader" class="col-12 col-lg-6" th:if="${hasChatWindow}">
+            <div class="d-flex justify-content-center h-100">
+                <div class="spinner-border my-auto" style="width: 5rem; height: 5rem;" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-4" th:if="${hasOptionWindow}">
+            <div style="min-height: 90vh; max-height: 90vh" class="overflow-scroll">
+                <a th:href="'/order-info/' + ${forwardOrder.getOrderId()}" target="_blank" class="h5 me-3"
+                   th:text="'ТЗ № ' + ${forwardOrder.getTechNumber()}">ТЗ №100500</a>
+
+                <p class="p-2 mt-3 mb-3 text-start mx-auto badge bg-danger" th:if="${!isEnabledFileSubmission}">Заказ не
+                    оплачен. Прикреплять файлы в чат
+                    нельзя!</p>
+
+                <hr class="mt-2 mb-2"/>
+
+                <label for="order-deadline" class="form-label mt-2">Название:</label>
+                <textarea type="text" readonly disabled name="order-name" id="order-name"
+                          th:if="${orderInfo.getName()}"
+                          th:text="${orderInfo.getName()}"
+                          style="field-sizing: content;"
+                          class="form-control form-control-plaintext ps-2"></textarea>
+
+                <label for="order-deadline" class="form-label mt-2">Тип работы:</label>
+                <input type="text" readonly disabled name="order-work-type" id="order-"
+                       th:if="${orderInfo.getWorkType()}"
+                       th:value="${orderInfo.getWorkType()}"
+                       class="form-control form-control-plaintext ps-2"/>
+
+                <label for="order-deadline" class="form-label mt-2">Окончательный срок сдачи:</label>
+                <input type="datetime-local" readonly disabled name="order-deadline" id="order-deadline"
+                       th:if="${orderInfo.getDeadline()}"
+                       th:value="${#temporals.format(orderInfo.getDeadline(), 'yyyy-MM-dd HH:mm')}"
+                       class="form-control form-control-plaintext ps-2"/>
+
+                <div class="accordion mt-3" id="create-order-request-accordion">
+                    <div class="accordion-item" th:if="${canAddReviewRequest}">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed h6 p-2" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#create-order-request-accordion-body" aria-expanded="false"
+                                    aria-controls="create-order-request-accordion-body">
+                                Создать запрос на проверку
+                            </button>
+                        </h2>
+                        <div id="create-order-request-accordion-body" class="accordion-collapse collapse"
+                             data-bs-parent="#create-order-request-accordion">
+                            <div class="accordion-body p-1">
+                                <form th:action="'/forward/save-forward-order-review-request/' + ${forwardOrderId}"
+                                      enctype="multipart/form-data" method="post">
+                                    <div class="form-floating mb-2">
+                                        <textarea class="form-control" id="request-note" name="request-note" rows="5"
+                                                  required
+                                                  style="min-height: 100px" minlength="20"></textarea>
+                                        <label for="request-note">Описание для эксперта</label>
+                                        <div class="form-text" id="request-note-help-text">Минимум 20 символов</div>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label for="request-file" class="form-label">Файл на проверку</label>
+                                        <input type="file" required class="form-control" id="request-file"
+                                               name="request-file">
+                                        <div class="form-text" id="request-file-help-text">Прикрепите файлы, далее он
+                                            появится в чате. Заказчик его не увидит.
+                                        </div>
+                                    </div>
+
+                                    <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+
+                                    <button type="submit" class="btn btn-primary btn-sm d-block">Отправить запрос на
+                                        проверку
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion mt-3" id="show-older-order-request-accordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed h6 p-2" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#show-older-order-request-accordion-body" aria-expanded="false"
+                                    aria-controls="show-older-order-request-accordion-body"
+                                    th:text="${'Запросы на проверку (' + reviewRequestsReviewed + ' / ' + reviewRequestsApproved + ' / ' + reviewRequests.size() + ')'}">
+                            </button>
+                        </h2>
+                        <div id="show-older-order-request-accordion-body" class="accordion-collapse collapse"
+                             data-bs-parent="#show-older-order-request-accordion">
+                            <div class="accordion-body p-1">
+                                <ul class="list-group list-group-flush" th:if="${reviewRequests.size() > 0}">
+                                    <li class="list-group-item" th:each="reviewRequest : ${reviewRequests}">
+                                        <div>
+                                            <p class="h6 m-2 mb-0 d-inline"
+                                               th:text="'Запрос от ' + ${reviewRequest.getCreatedAtString()}">22.03.2025
+                                                14:22</p>
+                                            <p class="badge bg-warning m-2 d-inline text-black"
+                                               th:unless="${reviewRequest.getDone()}">Администратор ещё не
+                                                создал запрос!</p>
+                                            <p class="badge bg-success-subtle m-2 d-inline text-black"
+                                               th:if="${reviewRequest.getReviewIsReviewed()}">Проверено</p>
+                                        </div>
+                                        <figure class="m-2 mb-0">
+                                            <blockquote class="blockquote">
+                                                <p style="font-size: small" th:text="${reviewRequest.getNote()}">Lorem
+                                                    Ipsum is simply dummy text of the
+                                                    printing and typesetting industry. Lorem Ipsum has been the
+                                                    industry's standard dummy text ever since the 1500s, when an unknown
+                                                    printer took a galley of type and scrambled it to make a type
+                                                    specimen book. It has survived not only five centuries, but also the
+                                                    leap into electronic typesetting, remaining essentially unchanged.
+                                                    It was popularised in the 1960s with the release of Letraset sheets
+                                                    containing Lorem Ipsum passages, and more recently with desktop
+                                                    publishing software like Aldus PageMaker including versions of Lorem
+                                                    Ipsum.</p>
+                                            </blockquote>
+                                            <figcaption class="blockquote-footer"
+                                                        th:text="'Сообщение от автора ' + ${reviewRequest.getAuthorUsername()}">
+                                                Сообщение от автора
+                                            </figcaption>
+                                        </figure>
+                                        <a class="m-2 mb-0 d-block" target="_blank"
+                                           th:href="'/expert-review-order-view/' + ${forwardOrder.getOrderId()} + '/' + ${reviewRequest.getReviewId()}"
+                                           th:if="${reviewRequest.getReviewId()}"
+                                           th:text="${reviewRequest.getReviewStatusString()}">Открыть запрос (Проверен.
+                                            Оценка: 5)</a>
+                                        <div class="d-flex" th:if="${!reviewRequest.getDone()}">
+                                            <div class="m-2" th:if="${isAdmin}">
+                                                <a class="btn btn-success btn-sm"
+                                                   target="_blank"
+                                                   th:href="'/expert-review-order/' + ${forwardOrder.getOrderId()} + '?forwardOrderReviewRequestId=' + ${reviewRequest.getId()} + '&fileId=' + ${reviewRequest.getFileId()}"
+                                                >Создать запрос</a>
+                                            </div>
+                                            <form class="m-2"
+                                                  th:action="'/forward/delete-request/' + ${forwardOrderId} + '/' + ${reviewRequest.getId()}"
+                                                  method="post">
+                                                <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                                                <input type="submit" value="Удалить запрос"
+                                                       class="btn btn-danger btn-sm"
+                                                       onclick="return confirm('Вы уверены что хотите удалить запрос?')">
+                                            </form>
+                                        </div>
+                                        <div class="d-flex" th:if="${reviewRequest.getDone() && isAdmin}">
+                                            <form class="m-2"
+                                                  th:if="${reviewRequest.getReviewIsReviewed()}"
+                                                  th:action="'/forward/send-request-to-chat/' + ${reviewRequest.getId()}"
+                                                  method="post">
+                                                <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                                                <input type="submit" value="Отправить результат проверки заказчику"
+                                                       class="btn btn-primary btn-sm line-break">
+                                            </form>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <div class="alert alert-warning" role="alert" th:if="${reviewRequests.isEmpty()}">
+                                    Запросов на проверку нет.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex mt-2">
+                    <form class="m-2 ms-0"
+                          method="post"
+                          th:if="${isAdmin && !isEnabledFileSubmission}"
+                          th:action="'/forward/change-payment-status/' + ${forwardOrderId} + '?allowSendFiles=true'">
+                        <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                        <input name="allow-send-file" value="true" class="d-none">
+                        <input type="submit" value="Разрешить прикреплять файлы в чат" class="btn btn-success btn-sm">
+                    </form>
+
+                    <form class="m-2 ms-0"
+                          method="post"
+                          th:if="${isAdmin && isEnabledFileSubmission}"
+                          th:action="'/forward/change-payment-status/' + ${forwardOrderId}">
+                        <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                        <input name="allow-send-file" value="false" class="d-none">
+                        <input type="submit" value="Запретить прикреплять файлы в чат" class="btn btn-danger btn-sm">
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-lg-2 mt-3 p-2" role="alert" th:unless="${hasForwardOrders}">
+            <div class="alert alert-warning" role="alert">
+                Для вас нет прямых заказов.
+            </div>
+        </div>
+        <div class="col-12 col-lg-10 mt-3 p-2" th:unless="${hasChatWindow && hasOptionWindow}">
+            <div class="alert alert-warning" role="alert">
+                Необходимо выбрать чат прямого заказа.
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript" th:if="${initJavascript}">
+    //setTimeout(() => showChatWindow(), 1000);
+
+    const chatId = [[${chatId}]];
+    const userId = [[${userId}]];
+
+    clearChatWindow();
+
+    loadChatMessages(chatId);
+
+    loadUserActivity();
+
+    document.getElementById("send-btn").addEventListener("click", (e) => handleSendMessage());
+
+    function handleSendMessage() {
+        let fileInput = document.getElementById("file-input");
+        let textareaInput = document.getElementById("message-box");
+
+        let hasText = false;
+        if (textareaInput.value !== null && textareaInput.value.length > 0) {
+            hasText = true;
+        }
+
+        let hasFile = false;
+        if (fileInput.files != null && fileInput.files.length > 0) {
+            if (fileInput.files.length > 1) {
+                alert("Выбрано больше 1 файлы. Сообщение не будет отправлено! Можно отправлять только 1 файл.")
+                return;
+            }
+            hasFile = true;
+        }
+
+        if (hasText || hasFile) {
+            const formdata = new FormData();
+
+            const requestOptions = {
+                method: "POST",
+                body: formdata,
+                redirect: "follow"
+            };
+
+            if (hasFile) formdata.append("file", fileInput.files[0], fileInput.files[0].name);
+            if (hasText) formdata.append("messageText", textareaInput.value);
+
+            formdata.append("chatId", "" + chatId);
+            formdata.append("userId", "" + userId);
+
+            disableSendBtn();
+
+            fetch("/api/messenger/send-message-via-http", requestOptions)
+                .then((response) => response.text())
+                .then(() => enableSendBtn())
+                .then(() => syncMessages())
+                .then(() => {
+                    textareaInput.value = "";
+                    fileInput.value = "";
+                })
+                .catch((error) => {
+                    alert("Не получилось отправить сообщение.");
+                    enableSendBtn();
+                    console.log(error);
+                    ERROR_COUNT++;
+                });
+        }
+    }
+
+    function disableSendBtn() {
+        document.getElementById("send-btn").setAttribute("disabled", "");
+        document.getElementById("file-input").setAttribute("disabled", "");
+        document.getElementById("message-box").setAttribute("disabled", "");
+    }
+
+    function enableSendBtn() {
+        document.getElementById("send-btn").removeAttribute("disabled");
+        document.getElementById("file-input").removeAttribute("disabled");
+        document.getElementById("message-box").removeAttribute("disabled");
+    }
+
+    function postChatInitialization() {
+        const loadActivityIntervalId = setInterval(() => loadUserActivity(), 30000);
+        const syncMessagesIntervalId = setInterval(() => syncMessages(), 1800);
+
+        let errorCheckCount = 0;
+        const errorCheckIntervalId = setInterval(() => {
+            if (ERROR_COUNT > 5) {
+                clearInterval(errorCheckIntervalId);
+                clearInterval(loadActivityIntervalId);
+                clearInterval(syncMessagesIntervalId);
+                alert("Из-за большого кол-ва ошибок страница будет перезагружена!")
+                location.reload();
+            }
+            errorCheckCount++;
+            if (errorCheckCount % 100 === 0) {
+                ERROR_COUNT = 0;
+            }
+        }, 500);
+    }
+
+    const selectedBox = document.querySelector('[selected=true]');
+    const selectedBoxTopPos = selectedBox.offsetTop;
+
+    document.getElementById('forward-orders-box').scrollTop = selectedBoxTopPos;
+
+    function onSearchBarClearBtnClick() {
+        document.getElementById("search-input").value = "";
+
+        document.querySelectorAll("[searchable=true]").forEach(el => {
+            el.classList.remove("d-none");
+        })
+    }
+
+    function onSearchBarBtnClick() {
+        let target = document.getElementById("search-input").value.toLowerCase();
+
+        document.querySelectorAll("[searchable=true]").forEach(el => {
+            let text = el.getAttribute("search-text");
+            if (!text.toLowerCase().includes(target)) {
+                el.classList.add("d-none");
+            }
+        })
+    }
+</script>
+</body>
+</html>

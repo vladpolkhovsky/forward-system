@@ -32,6 +32,9 @@ public class UpdateOrderRequestEntity {
     @Column(name = "experts_ids", length = 1024)
     private String expertsIds;
 
+    @Column(name = "is_forward_order")
+    private Boolean isForwardOrder;
+
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "new_status", nullable = false)
     private OrderStatusEntity newStatus;

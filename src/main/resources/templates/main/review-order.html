@@ -47,13 +47,20 @@
                 </li>
             </ul>
         </div>
+        <div class="form-check mt-3 ms-3">
+            <input class="form-check-input" type="checkbox" value="" id="forward-order-checkbox" name="isForwardOrder" th:checked="${isForwardOrder}">
+            <label class="form-check-label" for="forward-order-checkbox">
+                <span class="h5">Общение напрямую с заказчиком.</span>
+                <span class="d-block">Если включена, то общение по заказу будет напрямую с заказчиком и хост не указывается.</span>
+            </label>
+        </div>
         <p class="mt-3">Хост</p>
         <div class="col-12">
             <ul class="list-group">
                 <li class="list-group-item" th:each="host, hostStat : ${hosts}">
                     <div class="form-check">
-                        <input class="form-check-input" name="host" th:checked="${host.getChecked()}"
-                               th:id="|host-| + ${host.getId()}" th:value="${host.getId()}" type="radio">
+                        <input class="form-check-input" name="host" th:checked="${host.getChecked()}" input-group="host"
+                               th:id="|host-| + ${host.getId()}" th:value="${host.getId()}" type="radio" th:disabled="${isForwardOrder}">
                         <label class="form-check-label" th:for="|host-| + ${host.getId()}"
                                th:text="${host.getFio()} + | (| + ${host.getUsername()} + |)|"></label>
                     </div>
@@ -70,5 +77,14 @@
         </div>
         <input class="form-control btn btn-primary mt-3" th:if="${!isViewed}" type="submit" value="Сохранить">
     </form>
+    <script>
+        document.getElementById("forward-order-checkbox").addEventListener("change", e => {
+            let isActive = e.target.checked;
+            document.querySelectorAll(`[input-group="host"]`).forEach(el => {
+                el.checked = false;
+                el.disabled = isActive;
+            });
+        });
+    </script>
 </div>
 </body>

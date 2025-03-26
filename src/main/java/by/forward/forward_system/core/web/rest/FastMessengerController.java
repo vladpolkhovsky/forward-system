@@ -67,4 +67,14 @@ public class FastMessengerController {
     public ResponseEntity<List<String>> loadWhoReadMessage(@PathVariable Long messageId) {
         return ResponseEntity.ok(fastChatService.loadWhoReadMessage(messageId));
     }
+
+    @PostMapping(value = "/new-messages-ids-by-http", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<List<Long>> newMessageIdsByHttp(@RequestBody LoadNewChatIdsRequestDto requestDto) {
+        return ResponseEntity.ok(fastChatService.newMessageIdsByHttp(requestDto.getChatId(), requestDto.getUserId()));
+    }
+
+    @PostMapping(value = "/messages-by-ids-http/{userId}", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<List<FastChatMessageDto>> loadMessagesByIds(@PathVariable Long userId, @RequestBody List<Long> messageIds) {
+        return ResponseEntity.ok(fastChatService.loadChatMessagesByIds(messageIds, userId));
+    }
 }

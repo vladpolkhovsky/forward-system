@@ -27,11 +27,15 @@ public class AuthorService {
     private final PasswordEncoder passwordEncoder;
 
     private final ChatService chatService;
-    private final UserRepository userRepository;
+
     private final ChatMemberService chatMemberService;
+
     private final ChatTypeRepository chatTypeRepository;
+
     private final AuthorDisciplineRepository authorDisciplineRepository;
+
     private final ChatMetadataRepository chatMetadataRepository;
+
     private final ChatUtilsService chatUtilsService;
 
     public Optional<AuthorEntity> getById(Long id) {
@@ -95,6 +99,7 @@ public class AuthorService {
         if (manager != null || author != null) {
             ChatMetadataEntity chatMetadataEntity = new ChatMetadataEntity();
             chatMetadataEntity.setOwnerTypePermission(false);
+            chatMetadataEntity.setAuthorCanSubmitFiles(true);
             chatMetadataEntity.setManager(manager);
             chatMetadataEntity.setUser(author);
             chatMetadataEntity.setChat(chat);

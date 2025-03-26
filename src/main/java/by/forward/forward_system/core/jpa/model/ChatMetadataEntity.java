@@ -30,4 +30,7 @@ public class ChatMetadataEntity {
     @Column(name = "owner_type_permission")
     private Boolean ownerTypePermission;
 
+    @Column(name = "author_can_submit_files")
+    private Boolean authorCanSubmitFiles;
+
 }

@@ -22,14 +22,15 @@ public class RegisterCommandResolver implements CommandResolver {
     @Override
     public void resolve(TelegramClient telegramClient, Update update) throws TelegramApiException {
         String text = update.getMessage().getText();
-        String[] args = text.split(" ");
+        String[] args = text.split(" +");
 
         if (args.length != 2) {
             SendMessage build = SendMessage.builder()
-                .text("Непраивльная команда. \nПожалуйста, зарегистрируйтесь используя комманду: \n/register <Код> или /reg <Код>. \nНапример: /reg 123456")
+                .text(TextHelper.REGISTER_HELP_TEXT_ERROR)
                 .chatId(update.getMessage().getChatId())
                 .build();
             telegramClient.execute(build);
+            return;
         }
 
         String code = args[1];

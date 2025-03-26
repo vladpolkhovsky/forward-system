@@ -15,4 +15,8 @@ public class MessageCounter {
         return messageRepository.getNewMessageByUserId(userUiService.getCurrentUserId());
     }
 
+    public Integer newForwardMessageCount() {
+        return messageRepository.getNewForwardMessageByUserId(userUiService.getCurrentUserId());
+    }
+
 }

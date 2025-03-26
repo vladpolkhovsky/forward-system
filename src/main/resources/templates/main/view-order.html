@@ -16,8 +16,13 @@
     </div>
 </div>
 <div class="container">
-    <a class="mt-3 mb-3" th:href="|/new-messenger?tab=orders&chatId=| + ${mainChatId}" th:if="hasMainChat">Перейти в чат
+    <a class="mt-3 mb-3" th:href="|/new-messenger?tab=orders&chatId=| + ${mainChatId}" th:if="${hasMainChat}">Перейти в чат
         заказа</a>
+
+    <div class="alert alert-success mt-3 mb-3 fs-5" role="alert"
+         th:if="${hasForwardOrderChat}" th:utext="'Прямой заказ. Заказчик может присоединиться к чату введя комманду в чат боте: ' + ${forwardOrderChat}">
+    </div>
+
     <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="status">Статус</label>
         <div class="col-sm-10">
@@ -111,7 +116,7 @@
     <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="other">Дополнительные требования и пожелания</label>
         <div class="col-sm-10">
-            <textarea class="form-control-plaintext" id="other" readonly rows="15"
+            <textarea class="form-control-plaintext" id="other" readonly rows="7"
                       th:text="${order.getOther()}"></textarea>
         </div>
     </div>
@@ -119,7 +124,7 @@
     <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="violationsInformation">Штрафы</label>
         <div class="col-sm-10">
-            <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="8"
+            <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="7"
                       th:text="${order.getViolationsInformation()}"></textarea>
         </div>
     </div>
