@@ -114,24 +114,31 @@ public class AppConfig {
     private static AtomicInteger counter = new AtomicInteger(0);
 
     @Bean
-    public Executor executor() {
-        return Executors.newCachedThreadPool(r -> {
-            Thread thread = new Thread(r, "thread-executor-" + counter.incrementAndGet());
+    public TaskExecutor taskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+
+        threadPoolTaskExecutor.setCorePoolSize(2);
+        threadPoolTaskExecutor.setMaxPoolSize(4);
+
+        threadPoolTaskExecutor.setQueueCapacity(10_000);
+
+        threadPoolTaskExecutor.setThreadFactory(r -> {
+            Thread thread = new Thread(r, "thread-pool-executor-" + counter.incrementAndGet());
 
             thread.setDaemon(true);
             thread.setPriority(7);
             thread.setUncaughtExceptionHandler((t, e) -> {
-                    log.error("Exception in thread executor {}: ", t.getName(), e);
-                });
+                log.error("Exception in thread executor {}: ", t.getName(), e);
+            });
 
             return thread;
         });
+
+        threadPoolTaskExecutor.afterPropertiesSet();
+
+        return threadPoolTaskExecutor;
     }
 
-    @Bean
-    public TaskExecutor taskExecutor(@Qualifier("executor") Executor executor) {
-        return new TaskExecutorAdapter(executor);
-    }
 
     @Bean
     public TaskScheduler taskScheduler(@Qualifier("taskExecutor") TaskExecutor taskExecutor) {
