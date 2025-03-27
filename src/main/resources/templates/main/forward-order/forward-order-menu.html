@@ -71,14 +71,14 @@
                         <h6 class="card-subtitle mb-2 text-body-secondary"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
                         <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
-                           th:class="'d-inline-block mb-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                           th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
                         >Чат
                             <span class="ms-1 badge bg-danger"
                                   th:if="${idToMessageCount.containsKey(forwardOrder.getChatId())}"
                                   th:text="${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}">12</span>
                         </a>
                         <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getAdminChatId()} +'#main-view'"
-                           th:class="'d-inline-block ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                           th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
                            th:if="${isAdmin}">Администрация
                             <span class="ms-1 badge bg-danger"
                                   th:if="${idToMessageCount.containsKey(forwardOrder.getAdminChatId())}"
