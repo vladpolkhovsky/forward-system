@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.bot;
 
 import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
+import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
 import by.forward.forward_system.core.jpa.repository.BotIntegrationDataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
@@ -151,7 +152,8 @@ public class CustomerCommunicationProcessor {
 
         Map<String, String> fileIdToName = new HashMap<>();
 
-        List<String> photosFileIds = CollectionUtils.emptyIfNull(photo).stream().max(Comparator.comparing(PhotoSize::getFileSize))
+        List<String> photosFileIds = CollectionUtils.emptyIfNull(photo).stream()
+            .max(Comparator.comparing(PhotoSize::getFileSize))
             .stream()
             .filter(t -> {
                 if (t.getFileSize() > FILE_SIZE_LIMIT) {
@@ -213,11 +215,15 @@ public class CustomerCommunicationProcessor {
             return;
         }
 
-        forwardOrderService.sendCustomerTelegramMessageToChat(systemChatId, botIntegrationData.getTelegramChatId(), text, files);
+        ChatMessageEntity message = forwardOrderService.sendCustomerTelegramMessageToChat(
+            systemChatId,
+            text,
+            files
+        );
 
         telegramClient.execute(SendMessage.builder()
             .chatId(botIntegrationData.getTelegramChatId())
-            .text("Сообщение отправлено в чат **%s**".formatted(chatRepository.findChatNameById(systemChatId).get()))
+            .text("Сообщение отправлено в чат **%s**".formatted(message.getChat().getChatName()))
             .replyToMessageId(telegramMessageId)
             .parseMode("markdown")
             .build());

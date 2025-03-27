@@ -94,28 +94,28 @@ public class BotNotificationService {
     public Optional<ForwardOrderEntity> registerBotUserByForwardOrder(Long telegramChatId, Long telegramUserId, String code) {
         Optional<ForwardOrderEntity> byCode = forwardOrderRepository.findByCode(code);
 
-        if (botIntegrationDataRepository.findUserIdByChatId(telegramChatId).isPresent()) {
-            telegramClient.execute(SendMessage.builder()
-                .chatId(telegramChatId)
-                .text("Вы не можете присоединиться к чату. Вы уже зарегистрированы!")
-                .build()
-            );
-            return Optional.empty();
-        }
-
         if (byCode.isPresent()) {
-            BotTypeEntity botTypeEntity = botTypeRepository.findById(BotType.TELEGRAM_BOT.getName()).get();
 
-            BotIntegrationDataEntity botIntegrationDataEntity = new BotIntegrationDataEntity();
-            botIntegrationDataEntity.setBotType(botTypeEntity);
-            botIntegrationDataEntity.setTelegramChatId(telegramChatId);
-            botIntegrationDataEntity.setTelegramUserId(telegramUserId);
+            BotIntegrationDataEntity botIntegrationData = null;
 
-            BotIntegrationDataEntity save = botIntegrationDataRepository.save(botIntegrationDataEntity);
+            Optional<BotIntegrationDataEntity> firstByTelegramChatId = botIntegrationDataRepository.findFirstByTelegramChatId(telegramChatId);
+
+            if (firstByTelegramChatId.isEmpty()) {
+                BotTypeEntity botTypeEntity = botTypeRepository.findById(BotType.TELEGRAM_BOT.getName()).get();
+
+                BotIntegrationDataEntity botIntegrationDataEntity = new BotIntegrationDataEntity();
+                botIntegrationDataEntity.setBotType(botTypeEntity);
+                botIntegrationDataEntity.setTelegramChatId(telegramChatId);
+                botIntegrationDataEntity.setTelegramUserId(telegramUserId);
+
+                botIntegrationData = botIntegrationDataRepository.save(botIntegrationDataEntity);
+            } else {
+                botIntegrationData = firstByTelegramChatId.get();
+            }
 
             CustomerTelegramToForwardOrderEntity customerTelegramToForwardOrder = new CustomerTelegramToForwardOrderEntity();
             customerTelegramToForwardOrder.setForwardOrder(byCode.get());
-            customerTelegramToForwardOrder.setBotIntegrationData(save);
+            customerTelegramToForwardOrder.setBotIntegrationData(botIntegrationData);
             customerTelegramToForwardOrder.setLastUpdateAt(LocalDateTime.now().minusYears(1));
             customerTelegramToForwardOrder.setCreatedAt(LocalDateTime.now());
 

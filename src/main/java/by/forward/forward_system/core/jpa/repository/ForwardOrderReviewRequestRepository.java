@@ -3,6 +3,7 @@ package by.forward.forward_system.core.jpa.repository;
 import by.forward.forward_system.core.jpa.model.ForwardOrderReviewRequestEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewRequestProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -31,4 +32,8 @@ public interface ForwardOrderReviewRequestRepository extends JpaRepository<Forwa
     List<ReviewRequestProjection> findReviewProjectionsByForwardOrder_Id(Long forwardOrderId);
 
     Optional<ForwardOrderReviewRequestEntity> findFirstByReview_Id(Long reviewId);
+
+    @Modifying
+    @Query("delete from ForwardOrderReviewRequestEntity where forwardOrder.id = :forwardOrderId")
+    void deleteByForwardOrderId(Long forwardOrderId);
 }

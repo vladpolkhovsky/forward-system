@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -36,4 +37,7 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
                                        "    order by u.username ")
     List<String> findWhoReadMessage(Long messageId);
 
+    @Modifying
+    @Query("delete from ChatMessageEntity where chat.id = :chatId")
+    void deleteByChatId(Long chatId);
 }

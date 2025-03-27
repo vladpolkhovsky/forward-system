@@ -4,6 +4,7 @@ import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.messenger.UserDto;
 import by.forward.forward_system.core.dto.rest.AttachmentDto;
+import by.forward.forward_system.core.jpa.model.AttachmentEntity;
 import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UserService;
@@ -90,17 +91,16 @@ public class MessengerRestController {
                                                    @RequestParam(value = "messageText", required = false) String messageText,
                                                    @RequestParam(value = "chatId") Long chatId,
                                                    @RequestParam(value = "userId") Long userId) {
-        Long fileId = Optional.ofNullable(file)
-            .map(this::saveMultipartFile)
-            .orElse(null);
+        Optional<AttachmentEntity> fileEntity = Optional.ofNullable(file)
+            .map(this::saveMultipartFile);
 
         return ResponseEntity.ok(
-            chatService.sendMessageViaHttp(fileId, messageText, chatId, userId)
+            chatService.sendMessageViaHttp(fileEntity, messageText, chatId, userId)
         );
     }
 
     @SneakyThrows
-    private Long saveMultipartFile(MultipartFile t) {
-        return attachmentService.saveAttachmentRaw(t.getOriginalFilename(), t.getBytes());
+    private AttachmentEntity saveMultipartFile(MultipartFile t) {
+        return attachmentService.saveAttachment(t.getOriginalFilename(), t.getBytes());
     }
 }

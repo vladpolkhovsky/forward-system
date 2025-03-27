@@ -35,6 +35,7 @@ public class PlanService {
     public List<UserPlanProjectionDto> getAllUserPlans(Long userId) {
         return planRepository.loadUserPlans(userId);
     }
+
     public List<UserPlanProjectionDto> getAllUsersPlans(List<Long> userId) {
         return planRepository.loadUsersPlans(userId);
     }

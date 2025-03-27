@@ -17,6 +17,7 @@ public class ChatNames {
     public static final Long ERRORS_CHAT_ID = -1L;
     public static final Long EXPERT_USER_ID = -10L;
     public static final Long ADMIN_USER_ID = -20L;
+    public static final Long ALWAYS_SHOW_NAME_ID_LIMIT = 0L;
 
     public static final String JOIN_FORWARD_ORDER_HTML = "<kbd>/join %s</kbd>";
 }

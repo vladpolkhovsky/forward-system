@@ -29,4 +29,8 @@ public interface ChatMessageToUserRepository extends JpaRepository<ChatMessageTo
 
     @Query(nativeQuery = true, value = "select cmtu.id from forward_system.chat_message_to_user cmtu where cmtu.is_viewed and cmtu.created_at < :olderThen order by cmtu.created_at limit 3000")
     List<Long> getAllViewedOlderThen(LocalDateTime olderThen);
+
+    @Modifying
+    @Query("delete from ChatMessageToUserEntity where chat.id = :chatId")
+    void deleteByChatId(Long chatId);
 }

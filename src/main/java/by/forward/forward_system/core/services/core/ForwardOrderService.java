@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
@@ -13,16 +14,19 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,7 +39,6 @@ public class ForwardOrderService {
     private final ForwardOrderRepository forwardOrderRepository;
 
     private final AttachmentService attachmentService;
-    private final AttachmentRepository attachmentRepository;
     private final UserRepository userRepository;
     private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
 
@@ -43,6 +46,8 @@ public class ForwardOrderService {
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final BotNotificationService botNotificationService;
     private final ChatMetadataRepository chatMetadataRepository;
+    private final TaskScheduler taskScheduler;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public Map<Long, Long> newMessageCount(Long currentUserId) {
         List<NewMessageCountProjection> newMessageCountProjections = forwardOrderRepository.calcNewMessageCount(currentUserId);
@@ -69,7 +74,7 @@ public class ForwardOrderService {
         ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid forward order id: " + forwardOrderId));
 
-        Long fileId = attachmentService.saveAttachmentRaw(
+        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(
             "Запрос на проверку ТЗ %s От %s Файл %s".formatted(
                 forwardOrderEntity.getOrder().getTechNumber(),
                 LocalDateTime.now().format(outputDateTimeFormat),
@@ -77,9 +82,6 @@ public class ForwardOrderService {
             ),
             file.getBytes()
         );
-
-        AttachmentEntity attachmentEntity = attachmentRepository.findById(fileId)
-            .orElseThrow(() -> new RuntimeException("File not found id: " + fileId));
 
         ForwardOrderReviewRequestEntity requestEntity = new ForwardOrderReviewRequestEntity();
         requestEntity.setForwardOrder(forwardOrderEntity);
@@ -207,7 +209,12 @@ public class ForwardOrderService {
         messageService.sendMessage(
             null,
             forwardOrder.getChat(),
-            "Заказчик присоединился к чату. <strong>Сообщения до этого он не увидит.</strong> Уточните детали работы.",
+            """
+                Заказчик присоединился к чату.
+                Поприветствуйте его!
+                
+                *если нет обратной связи - обратитесь к администратору
+                """,
             true,
             chatMessageTypeEntity,
             List.of(),
@@ -217,7 +224,10 @@ public class ForwardOrderService {
         messageService.sendMessage(
             null,
             forwardOrder.getAdminChat(),
-            "Заказчик присоединился к чату.",
+            """
+                Заказчик присоединился к чату.
+                Поприветствуйте его!
+                """,
             true,
             chatMessageTypeEntity,
             List.of(),
@@ -226,7 +236,7 @@ public class ForwardOrderService {
     }
 
     @Transactional
-    public void sendCustomerTelegramMessageToChat(Long systemChatId, Long telegramChatId, String text, Map<String, byte[]> files) {
+    public ChatMessageEntity sendCustomerTelegramMessageToChat(Long systemChatId, String text, Map<String, byte[]> files) {
         ChatEntity chatEntity = forwardOrderRepository.findForwardOrderChatByChatId(systemChatId)
             .orElseThrow(() -> new RuntimeException("Invalid system chat id: " + systemChatId));
 
@@ -234,14 +244,11 @@ public class ForwardOrderService {
             .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
         List<ChatMessageAttachmentEntity> attachments = files.entrySet().stream()
-            .map(entry -> attachmentService.saveAttachmentRaw(entry.getKey(), entry.getValue()))
-            .map(attachmentRepository::findById)
-            .filter(Optional::isPresent)
-            .map(Optional::get)
+            .map(entry -> attachmentService.saveAttachment(entry.getKey(), entry.getValue()))
             .map(ChatMessageAttachmentEntity::of)
             .toList();
 
-        messageService.sendMessage(
+        ChatMessageEntity message = messageService.sendMessage(
             null,
             chatEntity,
             text,
@@ -250,5 +257,16 @@ public class ForwardOrderService {
             attachments,
             List.of()
         );
+
+        taskScheduler.schedule(() -> applicationEventPublisher.publishEvent(new CheckMessageByAiEvent(message.getId())), plusSeconds(5));
+
+        return message;
+    }
+
+    public Instant plusSeconds(int seconds) {
+        return LocalDateTime.now()
+            .plusSeconds(seconds)
+            .atZone(ZoneId.of("Europe/Moscow"))
+            .toInstant();
     }
 }

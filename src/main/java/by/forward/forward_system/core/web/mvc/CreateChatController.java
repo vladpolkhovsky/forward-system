@@ -97,7 +97,7 @@ public class CreateChatController {
     public RedirectView deleteChat(@PathVariable Long chatId) {
         userUiService.checkAccessOwner();
 
-        chatService.deleteChat(chatId).get();
+        chatService.deleteChat(chatId);
 
         return new RedirectView("/update-chat");
     }

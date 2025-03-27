@@ -99,7 +99,7 @@ public class UserUiService {
     public Boolean isCurrentUserManager() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
-        return byUsername.get().hasAuthority(Authority.ADMIN);
+        return byUsername.get().hasAuthority(Authority.MANAGER);
     }
 
     public Boolean isCurrentUserAdmin() {

@@ -28,6 +28,8 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.security:spring-security-messaging")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	implementation("org.springframework.retry:spring-retry:2.0.11")
+	implementation("org.springframework:spring-aspects:6.2.5")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	//implementation("org.springframework.session:spring-session-jdbc")
 	implementation("org.springframework.boot:spring-boot-starter-websocket")

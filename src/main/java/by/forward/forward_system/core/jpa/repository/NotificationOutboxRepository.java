@@ -23,4 +23,8 @@ public interface NotificationOutboxRepository extends JpaRepository<Notification
     @Query(nativeQuery = true, value = "delete from forward_system.notification_outbox no where no.user_id = :userId")
     @Modifying
     void deleteAllByUserId(Long userId);
+
+    @Modifying
+    @Query("delete from NotificationOutboxEntity where chat.id = :chatId")
+    void deleteByChatId(Long chatId);
 }

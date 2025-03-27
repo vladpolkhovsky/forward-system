@@ -3,6 +3,7 @@ package by.forward.forward_system.core.services.messager;
 import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
@@ -10,16 +11,21 @@ import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class ChatService {
@@ -60,11 +66,9 @@ public class ChatService {
 
     private final SavedChatRepository savedChatRepository;
 
-    private final AttachmentRepository attachmentRepository;
-
-    private final ForwardOrderRepository forwardOrderRepository;
-
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final LastMessageRepository lastMessageRepository;
+    private final TaskScheduler taskScheduler;
 
     @Transactional
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
@@ -268,65 +272,84 @@ public class ChatService {
         return chatMessageToUserRepository.getAllNotViewed();
     }
 
-    @Async
     @Transactional
-    public CompletableFuture<Void> deleteChat(Long chatId) {
-        List<SavedChatEntity> savedChats = savedChatRepository.findAllByChatId(chatId);
-        savedChatRepository.deleteAllInBatch(savedChats);
+    public void deleteChat(Long chatId) {
+        log.info("Удаляем чат id={}", chatId);
 
-        List<ChatNoteEntity> allByChatId = chatNoteRepository.findAllByChatId(chatId);
-        chatNoteRepository.deleteAllInBatch(allByChatId);
+        Optional<ChatEntity> byId = chatRepository.findById(chatId);
 
-        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
-        chatMemberRepository.deleteAllInBatch(chatEntity.getChatMembers());
-
-        List<SkipChatNotificationEntity> byChatId = skipChatNotificationRepository.findByChatId(chatId);
-        skipChatNotificationRepository.deleteAllInBatch(byChatId);
-
-        List<NotificationOutboxEntity> notificationOutbox = notificationOutboxRepository.findAllByChatId(chatId);
-        notificationOutboxRepository.deleteAllInBatch(notificationOutbox);
-
-        List<ChatMessageToUserEntity> messagesToUser = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageToUsers().stream()).toList();
-        chatMessageToUserRepository.deleteAllInBatch(messagesToUser);
-
-        List<ChatMessageAttachmentEntity> chatAttachments = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageAttachments().stream()).toList();
-        chatMessageAttachmentRepository.deleteAllInBatch(chatAttachments);
-
-        List<ChatMessageOptionEntity> chatMessageOptions = chatEntity.getChatMassages().stream().flatMap(t -> t.getChatMessageOptions().stream()).toList();
-        chatMessageOptionRepository.deleteAllInBatch(chatMessageOptions);
-
-        chatMessageToUserRepository.deleteAllInBatch(chatEntity.getChatMessageToUsers());
-        messageRepository.deleteAllInBatch(chatEntity.getChatMassages());
-
-        if (chatEntity.getChatMetadata() != null) {
-            chatMetadataRepository.delete(chatEntity.getChatMetadata());
+        if (byId.isEmpty()) {
+            log.info("Нет чат id={}", chatId);
+            return;
         }
+
+        ChatEntity chatEntity = byId.get();
+
+        chatMemberRepository.deleteByChatId(chatEntity.getId());
+        chatEntity.getChatMembers().clear();
+
+        savedChatRepository.deleteByChatId(chatEntity.getId());
+        chatNoteRepository.deleteByChatId(chatEntity.getId());
+
+        skipChatNotificationRepository.deleteByChatId(chatEntity.getId());
+
+        notificationOutboxRepository.deleteByChatId(chatEntity.getId());
+
+        chatMessageToUserRepository.deleteByChatId(chatEntity.getId());
+        chatEntity.getChatMessageToUsers().clear();
+
+        chatMessageAttachmentRepository.deleteByChatId(chatEntity.getId());
+
+        chatMessageOptionRepository.deleteByChatId(chatEntity.getId());
+
+        lastMessageRepository.deleteByChatId(chatEntity.getId());
+
+        messageRepository.deleteByChatId(chatEntity.getId());
+        chatEntity.getChatMassages().clear();
+
+        chatMetadataRepository.deleteById(chatEntity.getId());
 
         chatRepository.delete(chatEntity);
 
-        return CompletableFuture.completedFuture(null);
+        log.info("Удалили чат id={}", chatId);
     }
 
-    public Long sendMessageViaHttp(Long attachmentId, String messageText, Long chatId, Long userId) {
-        UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
-        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
-        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Chat message type not found"));
+    @Transactional
+    public Long sendMessageViaHttp(Optional<AttachmentEntity> file, String messageText, Long chatId, Long userId) {
+        UserEntity userEntity = userRepository.findById(userId).
+            orElseThrow(() -> new RuntimeException("User not found with id " + userId));
+
+        ChatEntity chatEntity = chatRepository.findById(chatId)
+            .orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
+
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
         List<ChatMessageAttachmentEntity> attachments = new ArrayList<>();
 
-        Optional.ofNullable(attachmentId).stream()
-            .map(attachmentRepository::findById)
-            .map(Optional::get)
+        file.stream()
             .map(ChatMessageAttachmentEntity::of)
             .forEach(attachments::add);
 
-        return messageService.sendMessage(userEntity,
+        ChatMessageEntity message = messageService.sendMessage(
+            userEntity,
             chatEntity,
             messageText,
             false,
             chatMessageTypeEntity,
             attachments,
             List.of()
-        ).getId();
+        );
+
+        taskScheduler.schedule(() -> applicationEventPublisher.publishEvent(new CheckMessageByAiEvent(message.getId())), plusSeconds(5));
+
+        return message.getId();
+    }
+
+    public Instant plusSeconds(int seconds) {
+        return LocalDateTime.now()
+            .plusSeconds(seconds)
+            .atZone(ZoneId.of("Europe/Moscow"))
+            .toInstant();
     }
 }

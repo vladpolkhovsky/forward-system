@@ -282,7 +282,7 @@ public class ReviewController {
             .filter(t -> !t.getId().equals(reviewId))
             .toList();
 
-        model.addAttribute("isManager", userUiService.isCurrentUserAdmin() || userUiService.isCurrentUserAdmin());
+        model.addAttribute("isManager", userUiService.isCurrentUserAdmin() || userUiService.isCurrentUserManager());
         model.addAttribute("expertUsername", reviewById.getExpertUsername());
         model.addAttribute("menuName", "Вердикт проверки.");
         model.addAttribute("userShort", userUiService.getCurrentUser());

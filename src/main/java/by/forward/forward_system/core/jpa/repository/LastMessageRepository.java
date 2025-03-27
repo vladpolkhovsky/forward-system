@@ -27,4 +27,8 @@ public interface LastMessageRepository extends JpaRepository<LastMessageEntity, 
     @Modifying
     @Query(value = "delete from LastMessageEntity where createdAt < :createdAtBefore")
     void deleteAllByCreatedAtBefore(LocalDateTime createdAtBefore);
+
+    @Modifying
+    @Query(value = "delete from LastMessageEntity where chat.id = :chatId")
+    void deleteByChatId(Long chatId);
 }

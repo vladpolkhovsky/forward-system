@@ -21,6 +21,7 @@ import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class OrderService {
@@ -62,6 +64,8 @@ public class OrderService {
     private final ForwardOrderRepository forwardOrderRepository;
     private final ChatMemberRepository chatMemberRepository;
     private final ChatMetadataRepository chatMetadataRepository;
+    private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
+    private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -952,10 +956,42 @@ public class OrderService {
         return null;
     }
 
-    @Transactional
     @SneakyThrows
+    @Transactional
     public void deleteOrder(Long orderId) {
-        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order with id " + orderId + " not found"));
+        log.info("Удаляем заказ {}", orderId);
+
+        OrderEntity orderEntity = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order with id " + orderId + " not found"));
+
+        Optional<ForwardOrderEntity> forwardOrder = forwardOrderRepository.findByOrder_Id(orderId);
+
+        List<CompletableFuture<Void>> wait = new ArrayList<>();
+
+        HashSet<Long> deletedChatIds  = new HashSet<>();
+
+        if (forwardOrder.isPresent()) {
+            ForwardOrderEntity forwardOrderEntity = forwardOrder.get();
+
+            forwardOrderReviewRequestRepository.deleteByForwardOrderId(forwardOrderEntity.getId());
+
+            Long id = forwardOrderEntity.getChat().getId();
+            Long adminId = forwardOrderEntity.getAdminChat().getId();
+
+            List<CustomerTelegramToForwardOrderEntity> customerTelegramToForwardOrders = customerTelegramToForwardOrderRepository.findAllByForwardOrder_Id(forwardOrderEntity.getId());
+            customerTelegramToForwardOrderRepository.deleteAll(customerTelegramToForwardOrders);
+
+            forwardOrderRepository.delete(forwardOrderEntity);
+
+            chatService.deleteChat(id);
+            chatService.deleteChat(adminId);
+
+            orderEntity.getChats().clear();
+        }
+
+        for (ChatEntity chat : orderEntity.getChats()) {
+            chatService.deleteChat(chat.getId());
+        }
 
         List<OrderAttachmentEntity> orderAttachment = orderEntity.getOrderAttachment();
         orderAttachmentRepository.deleteAll(orderAttachment);
@@ -965,19 +1001,8 @@ public class OrderService {
         orderParticipantRepository.deleteAll(orderParticipants);
         orderEntity.getOrderParticipants().clear();
 
-        List<ReviewEntity> reviewEntities = reviewRepository.findAllByOrderId(orderId);
-        reviewRepository.deleteAll(reviewEntities);
-
-        List<CompletableFuture<Void>> wait = new ArrayList<>();
-
-        for (ChatEntity chat : orderEntity.getChats()) {
-            CompletableFuture<Void> voidCompletableFuture = chatService.deleteChat(chat.getId());
-            wait.add(voidCompletableFuture);
-        }
-
-        for (CompletableFuture<Void> voidCompletableFuture : wait) {
-            voidCompletableFuture.get();
-        }
+        List<Long> reviewEntities = reviewRepository.findAllByOrderId(orderId);
+        reviewRepository.deleteAllById(reviewEntities);
 
         orderEntity.getChats().clear();
 
@@ -985,5 +1010,7 @@ public class OrderService {
         updateOrderRequestRepository.deleteAll(updateOrderRequestEntities);
 
         orderRepository.delete(orderEntity);
+
+        log.info("Удалили заказ {}", orderId);
     }
 }

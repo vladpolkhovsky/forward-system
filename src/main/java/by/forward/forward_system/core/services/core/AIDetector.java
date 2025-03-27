@@ -8,6 +8,7 @@ import by.forward.forward_system.core.services.messager.MessageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
+@Slf4j
 @Service
 public class AIDetector {
 
@@ -104,6 +106,8 @@ public class AIDetector {
             .retrieve()
             .bodyToMono(AIResponse.class)
             .block();
+
+        log.info("AI: Проверил сообщение. request={}, response={}", request, response);
 
         Long logId = saveToIntegrationTable(request, response, null, attachmentId);
 

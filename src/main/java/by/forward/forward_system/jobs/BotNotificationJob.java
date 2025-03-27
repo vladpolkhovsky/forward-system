@@ -2,6 +2,7 @@ package by.forward.forward_system.jobs;
 
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.events.events.NotifyChatEvent;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -51,25 +53,26 @@ public class BotNotificationJob {
     }
 
     @SneakyThrows
+    @EventListener(NotifyChatEvent.class)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void notifyByChatId(Long chatId) {
+    public void notifyByChatId(NotifyChatEvent event) {
 
         getSemaphoreSemaphore.acquire();
 
-        Semaphore semaphore = semaphorePerUser.getOrDefault(chatId, new Semaphore(1));
-        semaphorePerUser.put(chatId, semaphore);
+        Semaphore semaphore = semaphorePerUser.getOrDefault(event.chatId(), new Semaphore(1));
+        semaphorePerUser.put(event.chatId(), semaphore);
 
         getSemaphoreSemaphore.release();
 
         try {
             semaphore.acquire();
-            log.info("Начало отправки уведомлений для чата {}", chatId);
-            List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(chatId);
+            log.info("Начало отправки уведомлений для чата {}", event.chatId());
+            List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(event.chatId());
             botNotificationJob.process(allMessagesOlderThen);
         } catch (Exception ex) {
-            log.error("Error in notifyByChatId chatId={}", chatId, ex);
+            log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
         } finally {
-            log.info("Завершение отправки уведомлений для чата {}", chatId);
+            log.info("Завершение отправки уведомлений для чата {}", event.chatId());
             semaphore.release();
         }
     }

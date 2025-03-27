@@ -27,19 +27,13 @@ public class UserDeletionService {
     public void deleteUser(Long userId) {
         List<Long> chatsByUserId = chatMetadataRepository.findChatsByUserId(userId);
 
-        List<CompletableFuture<Void>> wait = new ArrayList<>();
-
-        for (Long l : chatsByUserId) {
-            wait.add(chatService.deleteChat(l));
+        for (Long chatId : chatsByUserId) {
+            chatService.deleteChat(chatId);
         }
 
         notificationOutboxRepository.deleteAllByUserId(userId);
         botNotificationCodeRepository.deleteById(userId);
         botIntegrationDataRepository.deleteByUserId(userId);
-
-        for (CompletableFuture<Void> voidCompletableFuture : wait) {
-            voidCompletableFuture.get();
-        }
 
         userRepository.findById(userId).ifPresent(user -> {
             user.setUsername("Пользователь удалён (id=%d, username=\"%s\")".formatted(user.getId(), user.getUsername()));

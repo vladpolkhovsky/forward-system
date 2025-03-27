@@ -42,8 +42,8 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
         """)
     List<ReviewProjectionDto> findAllNotReviewed(int offset, int limit);
 
-    @Query("from ReviewEntity where order.id = :orderId")
-    List<ReviewEntity> findAllByOrderId(Long orderId);
+    @Query("select id from ReviewEntity where order.id = :orderId")
+    List<Long> findAllByOrderId(Long orderId);
 
     @Query(value = """
         select new by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto(o.techNumber, o.id, r.id, r.createdAt, r.reviewDate, o.name, r.isReviewed, r.isAccepted) from ReviewEntity r

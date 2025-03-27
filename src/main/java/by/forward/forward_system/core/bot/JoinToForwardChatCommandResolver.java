@@ -35,6 +35,7 @@ public class JoinToForwardChatCommandResolver implements CommandResolver {
         if (args.length != 2) {
             SendMessage build = SendMessage.builder()
                 .text("Неправильный набор аргументов. Используйте: `/join <код>`")
+                .parseMode("markdown")
                 .chatId(update.getMessage().getChatId())
                 .build();
             telegramClient.execute(build);
@@ -49,7 +50,12 @@ public class JoinToForwardChatCommandResolver implements CommandResolver {
 
         byCode.ifPresent(forwardOrderService::notifyCustomerJoinToChat);
 
-        String answer = byCode.isPresent() ? "Вы успешно зарегистрировались!" : "Неправильный код!";
+        String answer = byCode.isPresent() ? """
+            Вы успешно зарегистрировались!
+            
+            Напоминаем:
+            В чате действует правило конфиденциальности: обмен контактами запрещен!
+            """ : "Неправильный код!";
 
         telegramClient.execute(SendMessage.builder()
             .text(answer)

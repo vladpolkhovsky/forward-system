@@ -4,7 +4,7 @@ import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.dto.websocket.WSAttachment;
 import by.forward.forward_system.core.dto.websocket.WSChatMessage;
-import by.forward.forward_system.core.events.events.CheckMessageByAiEventDto;
+import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
@@ -18,9 +18,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +48,7 @@ public class WebsocketMassageService {
     private final ChatRepository chatRepository;
 
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final TaskScheduler taskScheduler;
 
     @Transactional
     public void handleWebsocketMessage(WSChatMessage chatMessage) {
@@ -77,13 +82,6 @@ public class WebsocketMassageService {
             return;
         }
 
-        applicationEventPublisher.publishEvent(new CheckMessageByAiEventDto(
-            userId,
-            chatId,
-            Optional.ofNullable(message),
-            attachmentIds
-        ));
-
         MessageDto messageDto = null;
 
         for (int i = 0; i < 3; i++) {
@@ -101,12 +99,22 @@ public class WebsocketMassageService {
             throw new RuntimeException("Error in handleWsMessage userId = " + userId + ", message = " + message);
         }
 
+        long messageId = messageDto.getId();
+        taskScheduler.schedule(() -> applicationEventPublisher.publishEvent(new CheckMessageByAiEvent(messageId)), plusSeconds(5));
+
         List<Long> chatMemberIds = new ArrayList<>(messageDto.getMessageToUser().stream()
             .map(MessageToUserDto::getUserId)
             .toList());
         chatMemberIds.add(userId);
 
         sendMessageToUsers(chatMemberIds, messageDto);
+    }
+
+    public Instant plusSeconds(int seconds) {
+        return LocalDateTime.now()
+            .plusSeconds(seconds)
+            .atZone(ZoneId.of("Europe/Moscow"))
+            .toInstant();
     }
 
     public void sendMessageToUsers(List<Long> userIds, MessageDto chatMessage) {

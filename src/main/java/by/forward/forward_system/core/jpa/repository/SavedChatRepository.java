@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.SavedChatEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,4 +16,8 @@ public interface SavedChatRepository extends JpaRepository<SavedChatEntity, Long
     Optional<SavedChatEntity> findByUserIdAndChatId(Long userId, Long chatId);
 
     List<SavedChatEntity> findAllByChatId(Long chatId);
+
+    @Modifying
+    @Query("delete from SavedChatEntity where chatId = :chatId")
+    void deleteByChatId(Long chatId);
 }

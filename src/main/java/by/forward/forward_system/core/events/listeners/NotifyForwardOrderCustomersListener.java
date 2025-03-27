@@ -2,19 +2,21 @@ package by.forward.forward_system.core.events.listeners;
 
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.auth.Authority;
-import by.forward.forward_system.core.events.events.NotifyForwardOrderCustomersDto;
+import by.forward.forward_system.core.events.events.NotifyForwardOrderCustomersEvent;
 import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
 import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
 import by.forward.forward_system.core.jpa.model.ForwardOrderEntity;
 import by.forward.forward_system.core.jpa.repository.CustomerTelegramToForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.MessageRepository;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -36,8 +38,9 @@ public class NotifyForwardOrderCustomersListener {
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
     private final TelegramClient telegramClient;
 
-    @EventListener(NotifyForwardOrderCustomersDto.class)
-    public void listen(NotifyForwardOrderCustomersDto event) {
+    @EventListener(NotifyForwardOrderCustomersEvent.class)
+    @Transactional
+    public void listen(NotifyForwardOrderCustomersEvent event) {
         Optional<ChatMessageEntity> messageById = messageRepository.findById(event.getChatMessageId());
         Optional<ForwardOrderEntity> forwardOrderId = forwardOrderRepository.findById(event.getForwardOrderId());
 
@@ -82,8 +85,11 @@ public class NotifyForwardOrderCustomersListener {
 
         String username = Optional.ofNullable(message.getFromUser())
             .map(t -> {
-                if (t.hasAuthority(Authority.ADMIN)) {
+                if (t.getId() <= ChatNames.ALWAYS_SHOW_NAME_ID_LIMIT) {
                     return t.getUsername();
+                }
+                if (t.hasAuthority(Authority.ADMIN)) {
+                    return "Администратор";
                 }
                 return "Автор";
             }).orElse("<Анонимный пользователь>");
@@ -109,30 +115,5 @@ public class NotifyForwardOrderCustomersListener {
 
         return builder.text(fakeNewMassage)
             .parseMode("markdown");
-
-//        String messageText = """
-//            Чат: *%s*
-//            У вас новое сообщение.
-//            ↓↓↓↓
-//            *%s*:
-//            %s
-//            """.formatted(message.getChat().getChatName(), username, messageContent);
-//
-//        if (CollectionUtils.isNotEmpty(message.getChatMessageAttachments())) {
-//            messageText += """
-//                Так же к чату прикреплены файлы.
-//                """;
-//
-//            List<InlineKeyboardRow> rows = message.getChatMessageAttachments().stream()
-//                .map(t -> new InlineKeyboardRow(InlineKeyboardButton.builder()
-//                    .text("Скачать " + t.getAttachment().getFilename())
-//                    .callbackData("/q-load-file " + t.getAttachment().getId())
-//                    .build()))
-//                .toList();
-//            builder.replyMarkup(new InlineKeyboardMarkup(rows));
-//        }
-//
-//        return builder.text(messageText)
-//            .parseMode("markdown");
     }
 }
