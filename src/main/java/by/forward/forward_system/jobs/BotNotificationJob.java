@@ -36,9 +36,6 @@ public class BotNotificationJob {
 
     private static final int WAIT_MINS = 10;
 
-    private final Semaphore getSemaphoreSemaphore = new Semaphore(1);
-    private final Map<Long, Semaphore> semaphorePerUser = Collections.synchronizedMap(new HashMap<>());
-
     private final BotNotificationService botNotificationService;
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatMetadataRepository chatMetadataRepository;
@@ -56,24 +53,14 @@ public class BotNotificationJob {
     @EventListener(NotifyChatEvent.class)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void notifyByChatId(NotifyChatEvent event) {
-
-        getSemaphoreSemaphore.acquire();
-
-        Semaphore semaphore = semaphorePerUser.getOrDefault(event.chatId(), new Semaphore(1));
-        semaphorePerUser.put(event.chatId(), semaphore);
-
-        getSemaphoreSemaphore.release();
-
         try {
-            semaphore.acquire();
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
             List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(event.chatId());
             botNotificationJob.process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
         } finally {
-            log.info("Завершение отправки уведомлений для чата {}", event.chatId());
-            semaphore.release();
+            log.info("Завершение отправки уведомлений для чата {}", event.chatId());;
         }
     }
 
@@ -175,11 +162,12 @@ public class BotNotificationJob {
                 sendRequestOrderNotification(user, chatName, newMessageCount, messageText);
                 sandedMessageCount++;
             }
-        } else if (chatType.equals(ChatType.ADMIN_TALK_CHAT)) {
+        } else if (chatType.equals(ChatType.ADMIN_TALK_CHAT) || chatType.equals(ChatType.FORWARD_ORDER_ADMIN_CHAT)) {
             sendAdminTalkNotification(user, chatName, newMessageCount, messageText);
             sandedMessageCount++;
-        } else if (chatType.equals(ChatType.ORDER_CHAT)) {
+        } else if (chatType.equals(ChatType.ORDER_CHAT) || chatType.equals(ChatType.FORWARD_ORDER_CHAT)) {
             ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found"));
+
             String techNumber = "Не определён";
             boolean isNeedToSend = false;
 
@@ -203,6 +191,7 @@ public class BotNotificationJob {
             sendSpecialAndOtherNotification(user, chatName, newMessageCount, messageText);
             sandedMessageCount++;
         }
+
         return sandedMessageCount;
     }
 
@@ -258,7 +247,7 @@ public class BotNotificationJob {
             return true;
         }
         ChatEntity chatEntity = chatRepository.findById(chatId).get();
-        return chatEntity.isChatTypeIs(ChatType.ADMIN_TALK_CHAT)
+        return (chatEntity.isChatTypeIs(ChatType.ADMIN_TALK_CHAT) || chatEntity.isChatTypeIs(ChatType.FORWARD_ORDER_ADMIN_CHAT))
                && user.hasAuthority(Authority.OWNER);
     }
 }
