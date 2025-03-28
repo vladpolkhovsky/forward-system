@@ -67,8 +67,8 @@
                      th:attrappend="selected=${forwardOrderId eq forwardOrder.getId()}, search-text=${forwardOrder.getTechNumber()}, searchable=true"
                      th:each="forwardOrder : ${forwardOrders}">
                     <div class="card-body p-2">
-                        <h5 class="card-title" th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}"></h5>
-                        <h6 class="card-subtitle mb-2 text-body-secondary"
+                        <h6 class="card-title" th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}"></h6>
+                        <h6 class="card-subtitle mb-2 text-body-secondary fs-7"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
                         <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
                            th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
