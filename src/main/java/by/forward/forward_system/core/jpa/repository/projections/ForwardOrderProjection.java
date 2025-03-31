@@ -6,6 +6,7 @@ public interface ForwardOrderProjection {
     Long getChatId();
     Long getAdminChatId();
     Long getAuthorUserId();
+    Boolean getIsPaymentSend();
     String getAuthorUserUsername();
     String getTechNumber();
 }

@@ -15,18 +15,16 @@ import java.util.Optional;
 
 @Component
 @AllArgsConstructor
-public class JoinToForwardChatCommandResolver implements CommandResolver {
+public class JoinToForwardChatCommandResolver {
 
     private final BotNotificationService botNotificationService;
 
     private final ForwardOrderService forwardOrderService;
 
-    @Override
     public boolean accept(String command) {
         return command.startsWith("/join");
     }
 
-    @Override
     @Transactional
     public void resolve(TelegramClient telegramClient, Update update) throws TelegramApiException {
         String text = update.getMessage().getText();

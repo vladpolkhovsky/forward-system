@@ -71,6 +71,7 @@ vapid:
 
 telegram:
   bot_token: ${bot_token}
+  customer_bot_token: ${customer_bot_token}
 
 ai:
   url: ${AI_URL}

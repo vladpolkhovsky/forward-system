@@ -589,6 +589,9 @@ public class OrderService {
             chatRepository.save(forwardOrder.getChat());
             chatRepository.save(forwardOrder.getAdminChat());
 
+            forwardOrder.setAuthor(mainAuthorUser);
+            forwardOrderRepository.save(forwardOrder);
+
             ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).get();
             messageService.sendMessage(null, forwardOrder.getChat(), "Автор заменён на " + mainAuthorUser.getUsername(), true, chatMessageTypeEntity, List.of(), List.of(), false);
 
@@ -635,6 +638,7 @@ public class OrderService {
         forwardOrderEntity.setChat(forwardOrderChat);
         forwardOrderEntity.setAdminChat(forwardOrderAdminChat);
         forwardOrderEntity.setCode(code);
+        forwardOrderEntity.setIsPaymentSend(false);
         forwardOrderEntity.setCreatedAt(LocalDateTime.now());
 
         forwardOrderRepository.save(forwardOrderEntity);

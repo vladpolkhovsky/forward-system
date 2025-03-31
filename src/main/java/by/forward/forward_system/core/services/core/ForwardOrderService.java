@@ -144,7 +144,7 @@ public class ForwardOrderService {
     }
 
     @Transactional
-    public void changePaymentStatus(Long forwardOrderId, Boolean allowSendFile, Long currentUserId) {
+    public void changeFileSubmissionStatus(Long forwardOrderId, Boolean allowSendFile, Long currentUserId) {
         UserEntity fromUserEntity = userRepository.findById(currentUserId)
             .orElseThrow(() -> new RuntimeException("User not found id: " + currentUserId));
 
@@ -160,12 +160,39 @@ public class ForwardOrderService {
         ChatMetadataEntity chatMetadata = forwardOrderEntity.getChat().getChatMetadata();
         chatMetadata.setAuthorCanSubmitFiles(allowSendFile);
 
-        chatMetadataRepository.save(chatMetadata);
-
         ChatMessageEntity message = messageService.sendMessage(
             null,
             forwardOrderEntity.getChat(),
             "Пользователь %s %s отправку в чат файлов.".formatted(fromUserEntity.getUsername(), allowText),
+            true,
+            chatMessageTypeEntity,
+            List.of(),
+            List.of()
+        );
+    }
+
+    @Transactional
+    public void changePaymentStatus(Long forwardOrderId, Boolean isPaymentSend, Long currentUserId) {
+        UserEntity fromUserEntity = userRepository.findById(currentUserId)
+            .orElseThrow(() -> new RuntimeException("User not found id: " + currentUserId));
+
+        ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
+            .orElseThrow(() -> new RuntimeException("Invalid forward order id: " + forwardOrderId));
+
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Chat message type not found"));
+
+        String allowText = isPaymentSend ? "<span class=\"badge text-bg-success\">Заказ оплачен</span>"
+            : "<span class=\"badge text-bg-warning\">Заказ не оплачен</span>";
+
+        forwardOrderEntity.setIsPaymentSend(isPaymentSend);
+
+        forwardOrderRepository.save(forwardOrderEntity);
+
+        ChatMessageEntity message = messageService.sendMessage(
+            null,
+            forwardOrderEntity.getChat(),
+            "Пользователь %s изменил статус оплаты на: %s".formatted(fromUserEntity.getUsername(), allowText),
             true,
             chatMessageTypeEntity,
             List.of(),

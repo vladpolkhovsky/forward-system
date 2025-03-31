@@ -32,7 +32,9 @@ public class BotNotificationService {
     private final WebPushNotification webPushNotification;
 
     private final TelegramClient telegramClient;
+
     private final ForwardOrderRepository forwardOrderRepository;
+
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
     @Transactional
@@ -95,13 +97,14 @@ public class BotNotificationService {
         Optional<ForwardOrderEntity> byCode = forwardOrderRepository.findByCode(code);
 
         if (byCode.isPresent()) {
-
             BotIntegrationDataEntity botIntegrationData = null;
 
-            Optional<BotIntegrationDataEntity> firstByTelegramChatId = botIntegrationDataRepository.findFirstByTelegramChatId(telegramChatId);
+            Optional<BotIntegrationDataEntity> firstByTelegramChatId = botIntegrationDataRepository
+                .findFirstByTelegramChatId(telegramChatId, BotType.CUSTOMER_TELEGRAM_BOT.getName());
 
             if (firstByTelegramChatId.isEmpty()) {
-                BotTypeEntity botTypeEntity = botTypeRepository.findById(BotType.TELEGRAM_BOT.getName()).get();
+                BotTypeEntity botTypeEntity = botTypeRepository.findById(BotType.CUSTOMER_TELEGRAM_BOT.getName())
+                    .get();
 
                 BotIntegrationDataEntity botIntegrationDataEntity = new BotIntegrationDataEntity();
                 botIntegrationDataEntity.setBotType(botTypeEntity);

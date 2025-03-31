@@ -36,7 +36,7 @@ public class NotifyForwardOrderCustomersListener {
     private final MessageRepository messageRepository;
     private final ForwardOrderRepository forwardOrderRepository;
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
-    private final TelegramClient telegramClient;
+    private final TelegramClient customerTelegramClient;
 
     @EventListener(NotifyForwardOrderCustomersEvent.class)
     @Transactional
@@ -66,9 +66,9 @@ public class NotifyForwardOrderCustomersListener {
                 .chatId(botIntegrationData.getTelegramChatId())
                 .build();
 
-            Message fakeNewMessage = telegramClient.execute(renderedMessage);
+            Message fakeNewMessage = customerTelegramClient.execute(renderedMessage);
 
-            telegramClient.execute(SendMessage.builder()
+            customerTelegramClient.execute(SendMessage.builder()
                 .replyToMessageId(fakeNewMessage.getMessageId())
                 .text("У вас новое сообщение в чате: *%s*".formatted(message.getChat().getChatName()))
                 .parseMode("markdown")

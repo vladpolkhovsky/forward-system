@@ -44,6 +44,9 @@ public class AppConfig {
     @Value("${telegram.bot_token}")
     private String botToken;
 
+    @Value("${telegram.customer_bot_token}")
+    private String customerTelegramToken;
+
     @Value("${site.domain}")
     private String siteDomain;
 
@@ -71,6 +74,11 @@ public class AppConfig {
         return botToken;
     }
 
+    @Bean("customerTelegramToken")
+    public String customerTelegramToken() {
+        return customerTelegramToken;
+    }
+
     @Bean("siteDomain")
     public String siteDomain() {
         return siteDomain;
@@ -84,6 +92,11 @@ public class AppConfig {
     @Bean
     public TelegramClient telegramClient() {
         return new OkHttpTelegramClient(botToken);
+    }
+
+    @Bean
+    public TelegramClient customerTelegramClient() {
+        return new OkHttpTelegramClient(customerTelegramToken);
     }
 
     @Bean("newMsgCount")

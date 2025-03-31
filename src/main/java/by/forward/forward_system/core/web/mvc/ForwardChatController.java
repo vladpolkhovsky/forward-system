@@ -80,6 +80,7 @@ public class ForwardChatController {
         OrderDto order = orderService.getOrder(forwardOrder.getOrderId());
 
         boolean isEnabledFileSubmission = forwardOrderRepository.isEnabledFileSubmission(forwardOrderId);
+        boolean isPaymentSend = forwardOrder.getIsPaymentSend();
 
         model.addAttribute("forwardOrder", forwardOrder);
         model.addAttribute("forwardOrderId", forwardOrderId);
@@ -94,6 +95,7 @@ public class ForwardChatController {
         model.addAttribute("initJavascript", true);
 
         model.addAttribute("isEnabledFileSubmission", isEnabledFileSubmission);
+        model.addAttribute("isPaymentSend", isPaymentSend);
 
         List<ReviewRequestProjection> reviewRequestsBy = forwardOrderService.findReviewRequestsBy(forwardOrderId);
 
@@ -134,10 +136,19 @@ public class ForwardChatController {
 
     @PostMapping("/forward/change-payment-status/{forwardOrderId}")
     public RedirectView changePaymentStatus(@PathVariable Long forwardOrderId,
+                                            @RequestParam(value = "is-payment-send") Boolean isPaymentSend,
+                                            @RequestParam(value = "redirect-url") String redirectUrl) {
+        Long currentUserId = userUiService.getCurrentUserId();
+        forwardOrderService.changePaymentStatus(forwardOrderId, isPaymentSend, currentUserId);
+        return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("/forward/change-file-submission-status/{forwardOrderId}")
+    public RedirectView changeFileSubmissionStatus(@PathVariable Long forwardOrderId,
                                             @RequestParam(value = "allow-send-file") Boolean allowSendFile,
                                             @RequestParam(value = "redirect-url") String redirectUrl) {
         Long currentUserId = userUiService.getCurrentUserId();
-        forwardOrderService.changePaymentStatus(forwardOrderId, allowSendFile, currentUserId);
+        forwardOrderService.changeFileSubmissionStatus(forwardOrderId, allowSendFile, currentUserId);
         return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
     }
 

@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public enum BotType {
     TELEGRAM_BOT("TELEGRAM_BOT", "Телеграм бот"),
+    CUSTOMER_TELEGRAM_BOT("CUSTOMER_TELEGRAM_BOT", "Телеграм бот для заказчиков"),
 
     ;
 

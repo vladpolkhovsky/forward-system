@@ -62,12 +62,16 @@
                     </button>
                 </div>
             </div>
-            <div id="forward-orders-box" style="min-height: 90vh; max-height: 90vh" class="overflow-scroll mt-1" th:if="${hasForwardOrders}">
+            <div id="forward-orders-box" style="min-height: 90vh; max-height: 90vh" class="overflow-scroll mt-1"
+                 th:if="${hasForwardOrders}">
                 <div th:class="'card mt-1 ' + ${forwardOrderId eq forwardOrder.getId() ? 'bg-success-subtle' : ''}"
                      th:attrappend="selected=${forwardOrderId eq forwardOrder.getId()}, search-text=${forwardOrder.getTechNumber()}, searchable=true"
                      th:each="forwardOrder : ${forwardOrders}">
                     <div class="card-body p-2">
-                        <h6 class="card-title" th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}"></h6>
+                        <h6 class="card-title" >
+                            <span th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}" class="me-1"></span>
+                            <span class="text-start mx-auto badge bg-success m-0 mt-1" th:if="${isPaymentSend}">Заказ оплачен.</span>
+                        </h6>
                         <h6 class="card-subtitle mb-2 text-body-secondary fs-7"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
                         <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
@@ -147,21 +151,19 @@
         </div>
         <div class="col-12 col-lg-4" th:if="${hasOptionWindow}">
             <div style="min-height: 90vh; max-height: 90vh" class="overflow-scroll">
-                <a th:href="'/order-info/' + ${forwardOrder.getOrderId()}" target="_blank" class="h5 me-3"
+                <a th:href="'/order-info/' + ${forwardOrder.getOrderId()}" target="_blank" class="h5 m-0 mt-1 me-1"
                    th:text="'ТЗ № ' + ${forwardOrder.getTechNumber()}">ТЗ №100500</a>
 
-                <p class="p-2 mt-3 mb-3 text-start mx-auto badge bg-danger" th:if="${!isEnabledFileSubmission}">Заказ не
-                    оплачен. Прикреплять файлы в чат
+                <p class="p-2 text-start mx-auto badge bg-success m-0 mt-1 me-1" th:if="${isPaymentSend}">Заказ оплачен.</p>
+
+                <p class="p-2 text-start mx-auto badge bg-danger m-0 mt-1 me-1" th:unless="${isPaymentSend}">Заказ не
+                    оплачен.</p>
+
+                <p class="p-2 text-start mx-auto badge bg-warning text-dark m-0 mt-1 me-1"
+                   th:if="${!isEnabledFileSubmission}">Прикреплять файлы в чат
                     нельзя!</p>
 
                 <hr class="mt-2 mb-2"/>
-
-                <label for="order-deadline" class="form-label mt-2">Название:</label>
-                <textarea type="text" readonly disabled name="order-name" id="order-name"
-                          th:if="${orderInfo.getName()}"
-                          th:text="${orderInfo.getName()}"
-                          style="field-sizing: content;"
-                          class="form-control form-control-plaintext ps-2"></textarea>
 
                 <label for="order-deadline" class="form-label mt-2">Тип работы:</label>
                 <input type="text" readonly disabled name="order-work-type" id="order-"
@@ -301,24 +303,53 @@
                     </div>
                 </div>
 
-                <div class="d-flex mt-2">
-                    <form class="m-2 ms-0"
-                          method="post"
-                          th:if="${isAdmin && !isEnabledFileSubmission}"
-                          th:action="'/forward/change-payment-status/' + ${forwardOrderId} + '?allowSendFiles=true'">
-                        <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
-                        <input name="allow-send-file" value="true" class="d-none">
-                        <input type="submit" value="Разрешить прикреплять файлы в чат" class="btn btn-success btn-sm">
-                    </form>
+                <div class="mt-2" th:if="${isAdmin}">
+                    <p class="m-0">Статус отправки файлов:</p>
+                    <div class="d-flex">
+                        <form class="m-2 ms-0"
+                              method="post"
+                              th:if="${isAdmin && !isEnabledFileSubmission}"
+                              th:action="'/forward/change-file-submission-status/' + ${forwardOrderId} + '?allowSendFiles=true'">
+                            <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                            <input name="allow-send-file" value="true" class="d-none">
+                            <input type="submit" value="Разрешить прикреплять файлы в чат"
+                                   class="btn btn-success btn-sm">
+                        </form>
 
-                    <form class="m-2 ms-0"
-                          method="post"
-                          th:if="${isAdmin && isEnabledFileSubmission}"
-                          th:action="'/forward/change-payment-status/' + ${forwardOrderId}">
-                        <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
-                        <input name="allow-send-file" value="false" class="d-none">
-                        <input type="submit" value="Запретить прикреплять файлы в чат" class="btn btn-danger btn-sm">
-                    </form>
+                        <form class="m-2 ms-0"
+                              method="post"
+                              th:if="${isAdmin && isEnabledFileSubmission}"
+                              th:action="'/forward/change-file-submission-status/' + ${forwardOrderId}">
+                            <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                            <input name="allow-send-file" value="false" class="d-none">
+                            <input type="submit" value="Запретить прикреплять файлы в чат"
+                                   class="btn btn-danger btn-sm">
+                        </form>
+                    </div>
+                </div>
+                <div class="mt-2" th:if="${isAdmin}">
+                    <p class="m-0">Статус оплаты:</p>
+                    <div class="d-flex">
+                        <form class="m-2 ms-0"
+                              method="post"
+                              th:if="${isAdmin && !isPaymentSend}"
+                              th:action="'/forward/change-payment-status/' + ${forwardOrderId} + '?allowSendFiles=true'">
+                            <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                            <input name="is-payment-send" value="true" class="d-none">
+                            <input type="submit" value="Пометить заказ как оплаченный"
+                                   class="btn btn-success btn-sm">
+                        </form>
+
+                        <form class="m-2 ms-0"
+                              method="post"
+                              th:if="${isAdmin && isPaymentSend}"
+                              th:action="'/forward/change-payment-status/' + ${forwardOrderId}">
+                            <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                            <input name="is-payment-send" value="false" class="d-none">
+                            <input type="submit" value="Пометить заказ как не оплаченный"
+                                   class="btn btn-danger btn-sm">
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

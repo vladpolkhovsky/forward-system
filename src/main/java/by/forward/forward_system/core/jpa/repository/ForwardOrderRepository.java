@@ -38,7 +38,8 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
                foe.author.id as authorUserId, 
                foe.author.username as authorUserUsername, 
                foe.adminChat.id as adminChatId, 
-               foe.order.techNumber as techNumber 
+               foe.order.techNumber as techNumber,
+               foe.isPaymentSend as isPaymentSend 
         from ForwardOrderEntity foe
         """)
     List<ForwardOrderProjection> findAllProjections();

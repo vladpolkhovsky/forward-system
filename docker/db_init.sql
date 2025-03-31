@@ -716,3 +716,10 @@ create table forward_system.customer_telegram_to_forward_order
 );
 
 create unique index customer_telegram_to_forward_order_idx on forward_system.customer_telegram_to_forward_order (forward_order_id, bot_integration_data_id);
+
+alter table forward_system.forward_order
+    add column is_payment_send bool not null default false;
+
+insert into forward_system.bot_type values ('CUSTOMER_TELEGRAM_BOT');
+
+create unique index chat_id_to_bot_type_idx on forward_system.bot_integration_data(bot_type, user_id, telegram_chat_id);

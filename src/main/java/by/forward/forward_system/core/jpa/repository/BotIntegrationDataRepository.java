@@ -32,5 +32,6 @@ public interface BotIntegrationDataRepository extends JpaRepository<BotIntegrati
     @Modifying
     void deleteByUserId(Long userId);
 
-    Optional<BotIntegrationDataEntity> findFirstByTelegramChatId(Long telegramChatId);
+    @Query(value = "from BotIntegrationDataEntity where telegramChatId = :telegramChatId and botType.name = :botType")
+    Optional<BotIntegrationDataEntity> findFirstByTelegramChatId(Long telegramChatId, String botType);
 }

@@ -1,9 +1,9 @@
 package by.forward.forward_system.core.bot;
 
+import by.forward.forward_system.core.enums.BotType;
 import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
 import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
 import by.forward.forward_system.core.jpa.repository.BotIntegrationDataRepository;
-import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
 import by.forward.forward_system.core.services.core.AttachmentService;
@@ -44,10 +44,9 @@ public class CustomerCommunicationProcessor {
     private static final Integer FILE_SIZE_LIMIT = 50 * 1024 * 1024;
     private static final Integer FILE_MEGABYTE = 1024 * 1024;
 
-    private final TelegramClient telegramClient;
+    private final TelegramClient customerTelegramClient;
     private final BotIntegrationDataRepository botIntegrationDataRepository;
     private final ForwardOrderRepository forwardOrderRepository;
-    private final ChatRepository chatRepository;
     private final ForwardOrderService forwardOrderService;
 
     @Qualifier("telegramToken")
@@ -57,9 +56,18 @@ public class CustomerCommunicationProcessor {
     @SneakyThrows
     @Transactional
     public void process(Update update, Long chatId) {
+        Optional<BotIntegrationDataEntity> botIntegrationDataOpt = botIntegrationDataRepository
+            .findFirstByTelegramChatId(chatId, BotType.CUSTOMER_TELEGRAM_BOT.getName());
 
-        BotIntegrationDataEntity botIntegrationData = botIntegrationDataRepository.findFirstByTelegramChatId(chatId)
-            .orElseThrow(() -> new RuntimeException("Cant find BotIntegrationDataEntity chat id = " + chatId));
+        if (botIntegrationDataOpt.isEmpty()) {
+            customerTelegramClient.execute(SendMessage.builder()
+                .text("Вы не зарегистрированы. Зарегистрируйтесь используя /join <Код>.")
+                .chatId(chatId)
+                .build());
+            return;
+        }
+
+        BotIntegrationDataEntity botIntegrationData = botIntegrationDataOpt.get();
 
         if (update.hasCallbackQuery()) {
             processCallbackQuery(update, botIntegrationData);
@@ -67,7 +75,7 @@ public class CustomerCommunicationProcessor {
         }
 
         if (!update.hasMessage()) {
-            telegramClient.execute(SendMessage.builder()
+            customerTelegramClient.execute(SendMessage.builder()
                 .text("Мы не поняли ваше сообщение. Бот не поддерживает удаление и исправление сообщений :(")
                 .chatId(update.getMessage().getChatId())
                 .build()
@@ -85,7 +93,7 @@ public class CustomerCommunicationProcessor {
 
     @SneakyThrows
     private void handleUserMessage(Message message, BotIntegrationDataEntity botIntegrationData) {
-        telegramClient.execute(SendMessage.builder()
+        customerTelegramClient.execute(SendMessage.builder()
             .replyToMessageId(message.getMessageId())
             .text("В какой чат отправить данное сообщение?")
             .replyMarkup(replyMarkupForChatSelection(botIntegrationData, message.getMessageId().longValue()))
@@ -110,7 +118,7 @@ public class CustomerCommunicationProcessor {
             return;
         }
 
-        telegramClient.execute(SendMessage.builder()
+        customerTelegramClient.execute(SendMessage.builder()
             .text("Не понял команды: `update.getCallbackQuery().getData() -> %s`".formatted(update.getCallbackQuery().getData()))
             .chatId(botIntegrationData.getTelegramChatId())
             .build());
@@ -123,7 +131,7 @@ public class CustomerCommunicationProcessor {
 
         AttachmentService.AttachmentFile attachmentFile = attachmentService.loadAttachment(fileId);
 
-        telegramClient.execute(SendDocument.builder()
+        customerTelegramClient.execute(SendDocument.builder()
             .chatId(botIntegrationData.getTelegramChatId())
             .caption("Файл `%s`".formatted(attachmentFile.filename()))
             .document(new InputFile(new ByteArrayInputStream(attachmentFile.content()), attachmentFile.filename()))
@@ -138,7 +146,7 @@ public class CustomerCommunicationProcessor {
         MaybeInaccessibleMessage messageAskToSendToChat = update.getCallbackQuery()
             .getMessage();
 
-        Message messageCopy = telegramClient.execute(ForwardMessage.builder()
+        Message messageCopy = customerTelegramClient.execute(ForwardMessage.builder()
             .chatId(botIntegrationData.getTelegramChatId())
             .messageId(telegramMessageId)
             .fromChatId(botIntegrationData.getTelegramChatId())
@@ -204,11 +212,11 @@ public class CustomerCommunicationProcessor {
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         if (StringUtils.isBlank(text) && files.isEmpty()) {
-            telegramClient.execute(SendMessage.builder()
+            customerTelegramClient.execute(SendMessage.builder()
                 .chatId(botIntegrationData.getTelegramChatId())
                 .text("Мы не поняли что нужно отправить. Данный тип сообщения не поддерживается :(")
                 .build());
-            telegramClient.execute(SendMessage.builder()
+            customerTelegramClient.execute(SendMessage.builder()
                 .chatId(botIntegrationData.getTelegramChatId())
                 .text("Вы можете отправлять текст, картинки, документы и видео.")
                 .build());
@@ -221,20 +229,20 @@ public class CustomerCommunicationProcessor {
             files
         );
 
-        telegramClient.execute(SendMessage.builder()
+        customerTelegramClient.execute(SendMessage.builder()
             .chatId(botIntegrationData.getTelegramChatId())
             .text("Сообщение отправлено в чат **%s**".formatted(message.getChat().getChatName()))
             .replyToMessageId(telegramMessageId)
             .parseMode("markdown")
             .build());
 
-        telegramClient.execute(DeleteMessage.builder()
+        customerTelegramClient.execute(DeleteMessage.builder()
             .chatId(botIntegrationData.getTelegramChatId())
             .messageId(messageAskToSendToChat.getMessageId())
             .build()
         );
 
-        telegramClient.execute(DeleteMessage.builder()
+        customerTelegramClient.execute(DeleteMessage.builder()
             .chatId(botIntegrationData.getTelegramChatId())
             .messageId(messageCopy.getMessageId())
             .build()
@@ -243,7 +251,7 @@ public class CustomerCommunicationProcessor {
 
     @SneakyThrows
     private void notifyLargeFile(String filename, Long fileSize, Long telegramChatId) {
-        telegramClient.execute(SendMessage.builder()
+        customerTelegramClient.execute(SendMessage.builder()
             .chatId(telegramChatId)
             .text("Файл `%s` слишком большой (%d мб). Наше ограничение на загрузку файлов - 50 мб. Используйте архив или пришлите ссылку на файл в облаке."
                 .formatted(filename, fileSize / FILE_MEGABYTE)
@@ -255,7 +263,7 @@ public class CustomerCommunicationProcessor {
     @SneakyThrows
     private Map.Entry<String, byte[]> downloadFile(String fileId, Map<String, String> fileIdToName) {
         GetFile getFile = new GetFile(fileId);
-        File file = telegramClient.execute(getFile);
+        File file = customerTelegramClient.execute(getFile);
         String fileUrl = file.getFileUrl(telegramToken);
         byte[] byteArray = IOUtils.toByteArray(new URL(fileUrl));
         return Map.entry(fileIdToName.get(fileId), byteArray);
