@@ -70,7 +70,7 @@
                     <div class="card-body p-2">
                         <h6 class="card-title" >
                             <span th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}" class="me-1"></span>
-                            <span class="text-start mx-auto badge bg-success m-0 mt-1" th:if="${isPaymentSend}">Заказ оплачен.</span>
+                            <span class="text-start mx-auto badge bg-success m-0 mt-1" th:if="${forwardOrder.getIsPaymentSend()}">Заказ оплачен.</span>
                         </h6>
                         <h6 class="card-subtitle mb-2 text-body-secondary fs-7"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
