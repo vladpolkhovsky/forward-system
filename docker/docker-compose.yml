@@ -4,6 +4,11 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
     container_name: app-server
     env_file:
       - .env
@@ -65,6 +70,19 @@ services:
       - "5432:5432"
     profiles:
       - dependency
+      - production
+
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "8090:8080"
+    networks:
+      - nginx-net
+    profiles:
+      - yandex
       - production
 
   adminer:

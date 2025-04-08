@@ -9,14 +9,13 @@ import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -73,6 +71,7 @@ public class BotNotificationJob {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Retryable
     public void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
         LocalDateTime startTime = LocalDateTime.now();
 

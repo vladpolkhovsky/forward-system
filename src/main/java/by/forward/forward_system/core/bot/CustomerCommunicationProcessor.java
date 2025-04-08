@@ -49,8 +49,8 @@ public class CustomerCommunicationProcessor {
     private final ForwardOrderRepository forwardOrderRepository;
     private final ForwardOrderService forwardOrderService;
 
-    @Qualifier("telegramToken")
-    private final String telegramToken;
+    @Qualifier("customerTelegramToken")
+    private final String customerTelegramToken;
     private final AttachmentService attachmentService;
 
     @SneakyThrows
@@ -264,7 +264,7 @@ public class CustomerCommunicationProcessor {
     private Map.Entry<String, byte[]> downloadFile(String fileId, Map<String, String> fileIdToName) {
         GetFile getFile = new GetFile(fileId);
         File file = customerTelegramClient.execute(getFile);
-        String fileUrl = file.getFileUrl(telegramToken);
+        String fileUrl = file.getFileUrl(customerTelegramToken);
         byte[] byteArray = IOUtils.toByteArray(new URL(fileUrl));
         return Map.entry(fileIdToName.get(fileId), byteArray);
     }
