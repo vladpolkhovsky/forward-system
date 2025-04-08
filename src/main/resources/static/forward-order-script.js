@@ -26,7 +26,8 @@ function sendMessageViewed() {
     fetch(`/api/messenger/message-viewed/${chatId}/${userId}`, requestOptions)
         .then((response) => response.text())
         .catch((err) => {
-            alert("Ошибка при сохранении факта прочтения сообщения.");
+            //alert("Ошибка при сохранении факта прочтения сообщения.");
+            console.error("Ошибка при сохранении факта прочтения сообщения. ", err);
             ERROR_COUNT++;
         });
 }
@@ -135,7 +136,7 @@ function syncMessages() {
                 .then((resp) => resp.json())
                 .then((appendMessages) => processNewLoadedMessages(appendMessages))
                 .catch((err) => {
-                    alert("Ошибка загрузки новых сообщений.");
+                    console.error("Ошибка загрузки новых сообщений. ", err);
                     ERROR_COUNT++;
                 })
                 .finally(() => {
@@ -144,7 +145,7 @@ function syncMessages() {
                 });
         })
         .catch((err) => {
-            alert("Ошибка загрузки новых сообщений.");
+            console.error("Ошибка загрузки новых сообщений. ", err);
             ERROR_COUNT++;
         })
         .finally(() => {

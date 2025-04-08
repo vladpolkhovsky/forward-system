@@ -425,7 +425,7 @@
                 .catch((error) => {
                     alert("Не получилось отправить сообщение.");
                     enableSendBtn();
-                    console.log(error);
+                    console.error("Не получилось отправить сообщение. ", error);
                     ERROR_COUNT++;
                 });
         }
