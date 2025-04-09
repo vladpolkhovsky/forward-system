@@ -9,4 +9,6 @@ public interface ForwardOrderProjection {
     Boolean getIsPaymentSend();
     String getAuthorUserUsername();
     String getTechNumber();
+    String getAuthorNotes();
+    String getAdminNotes();
 }

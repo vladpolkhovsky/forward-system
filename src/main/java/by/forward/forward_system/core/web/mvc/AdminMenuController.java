@@ -22,10 +22,7 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -63,6 +60,11 @@ public class AdminMenuController {
         List<UserSelectionUiDto> hosts = setChecked(orderUiService.getAllManagers(), byId.getHosts());
         List<UserSelectionUiDto> catchers = setChecked(orderUiService.getAllManagers(), byId.getCatchers());
 
+        UserSelectionUiDto selectedCatcher = catchers.stream()
+            .filter(UserSelectionUiDto::getChecked)
+            .findFirst()
+            .orElse(null);
+
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("isViewed", byId.getIsViewed());
         model.addAttribute("isForwardOrder", byId.getIsForwardOrder());
@@ -72,10 +74,16 @@ public class AdminMenuController {
         model.addAttribute("catchers", catchers);
         model.addAttribute("hosts", hosts);
         model.addAttribute("orderId", byId.getOrderId());
+        model.addAttribute("selectedCatcher", selectedCatcher);
 
         return "main/review-order";
     }
 
+    @GetMapping("/review-order-redirect-to-chat/{catcherId}/{authorId}")
+    public RedirectView reviewOrderRedirectWhenClickShowChat(@PathVariable Long catcherId, @PathVariable Long authorId) {
+        Long chatId = userUiService.getChatIdWithManagerAndAuthor(catcherId, authorId);
+        return new RedirectView("/new-messenger?tab=new-orders&chatId=%d".formatted(chatId));
+    }
 
     @GetMapping(value = "/create-plan")
     public String createPlan(Model model) {

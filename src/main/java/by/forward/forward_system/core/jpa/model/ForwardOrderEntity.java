@@ -40,6 +40,12 @@ public class ForwardOrderEntity {
     @Column(name = "is_payment_send", length = 8, nullable = false)
     private Boolean isPaymentSend;
 
+    @Column(name = "admin_notes", length = 8192)
+    private String adminNotes;
+
+    @Column(name = "author_notes", length = 8192)
+    private String authorNotes;
+
     @ColumnDefault("now()")
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

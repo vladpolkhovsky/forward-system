@@ -68,9 +68,10 @@
                      th:attrappend="selected=${forwardOrderId eq forwardOrder.getId()}, search-text=${forwardOrder.getTechNumber()}, searchable=true"
                      th:each="forwardOrder : ${forwardOrders}">
                     <div class="card-body p-2">
-                        <h6 class="card-title" >
+                        <h6 class="card-title">
                             <span th:text="'Прямой заказ №' + ${forwardOrder.getTechNumber()}" class="me-1"></span>
-                            <span class="text-start mx-auto badge bg-success m-0 mt-1" th:if="${forwardOrder.getIsPaymentSend()}">Заказ оплачен.</span>
+                            <span class="text-start mx-auto badge bg-success m-0 mt-1"
+                                  th:if="${forwardOrder.getIsPaymentSend()}">Заказ оплачен.</span>
                         </h6>
                         <h6 class="card-subtitle mb-2 text-body-secondary fs-7"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
@@ -154,7 +155,8 @@
                 <a th:href="'/order-info/' + ${forwardOrder.getOrderId()}" target="_blank" class="h5 m-0 mt-1 me-1"
                    th:text="'ТЗ № ' + ${forwardOrder.getTechNumber()}">ТЗ №100500</a>
 
-                <p class="p-2 text-start mx-auto badge bg-success m-0 mt-1 me-1" th:if="${isPaymentSend}">Заказ оплачен.</p>
+                <p class="p-2 text-start mx-auto badge bg-success m-0 mt-1 me-1" th:if="${isPaymentSend}">Заказ
+                    оплачен.</p>
 
                 <p class="p-2 text-start mx-auto badge bg-danger m-0 mt-1 me-1" th:unless="${isPaymentSend}">Заказ не
                     оплачен.</p>
@@ -177,10 +179,79 @@
                        th:value="${#temporals.format(orderInfo.getDeadline(), 'yyyy-MM-dd HH:mm')}"
                        class="form-control form-control-plaintext ps-2"/>
 
+                <div class="accordion mt-3" id="admin-notes-accordion" th:if="${isAdmin}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button h6 p-2" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#admin-note-accordion-body" aria-expanded="true"
+                                    aria-controls="admin-note-accordion-body">
+                                Просмотр заметок Администратора.
+                            </button>
+                        </h2>
+                        <div id="admin-note-accordion-body" class="accordion-collapse collapse show"
+                             data-bs-parent="#admin-note-accordion">
+                            <form th:action="'/forward/save-admin-note/' + ${forwardOrderId}"
+                                  enctype="multipart/form-data" method="post">
+                                <div class="form-floating mb-2 p-1">
+                                    <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                                    <textarea class="form-control" id="admin-note-text" name="text" rows="5"
+                                              th:text="${forwardOrder.getAdminNotes()}"
+                                              style="min-height: 100px"></textarea>
+                                    <label for="author-note-text">Текст заметки</label>
+                                    <div class="form-text text-danger d-none" id="admin-note-text-help-text">Сохраните
+                                        изменения!
+                                    </div>
+                                    <button class="btn btn-sm btn-success mt-1" type="submit">Сохранить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                        document.getElementById("admin-note-text").addEventListener("change", e => {
+                            $("#admin-note-text-help-text").removeClass("d-none");
+                        })
+                    </script>
+                </div>
+
+                <div class="accordion mt-3" id="author-note-accordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button h6 p-2" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#author-note-accordion-body" aria-expanded="true"
+                                    aria-controls="author-note-accordion-body">
+                                Просмотр заметок Автора.
+                            </button>
+                        </h2>
+                        <div id="author-note-accordion-body" class="accordion-collapse collapse show"
+                             data-bs-parent="#author-note-accordion">
+                            <form th:action="'/forward/save-author-note/' + ${forwardOrderId}"
+                                  enctype="multipart/form-data" method="post">
+                                <div class="form-floating mb-2 p-1">
+                                    <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                                    <textarea class="form-control" id="author-note-text" name="text" rows="5"
+                                              th:text="${forwardOrder.getAuthorNotes()}"
+                                              style="min-height: 100px"></textarea>
+                                    <label for="author-note-text">Текст заметки</label>
+                                    <div class="form-text text-danger d-none" id="author-note-text-help-text">Сохраните
+                                        изменения!
+                                    </div>
+                                    <button class="btn btn-sm btn-success mt-1" type="submit">Сохранить</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <script>
+                        document.getElementById("author-note-text").addEventListener("change", e => {
+                            $("#author-note-text-help-text").removeClass("d-none");
+                        })
+                    </script>
+                </div>
+
                 <div class="accordion mt-3" id="create-order-request-accordion">
                     <div class="accordion-item" th:if="${canAddReviewRequest}">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed h6 p-2" type="button" data-bs-toggle="collapse"
+                            <button class="accordion-button collapsed h6 p-2" type="button"
+                                    data-bs-toggle="collapse"
                                     data-bs-target="#create-order-request-accordion-body" aria-expanded="false"
                                     aria-controls="create-order-request-accordion-body">
                                 Создать запрос на проверку
@@ -203,7 +274,8 @@
                                         <label for="request-file" class="form-label">Файл на проверку</label>
                                         <input type="file" required class="form-control" id="request-file"
                                                name="request-file">
-                                        <div class="form-text" id="request-file-help-text">Прикрепите файлы, далее он
+                                        <div class="form-text" id="request-file-help-text">Прикрепите файлы, далее
+                                            он
                                             появится в чате. Заказчик его не увидит.
                                         </div>
                                     </div>
@@ -222,7 +294,8 @@
                 <div class="accordion mt-3" id="show-older-order-request-accordion">
                     <div class="accordion-item">
                         <h2 class="accordion-header">
-                            <button class="accordion-button collapsed h6 p-2" type="button" data-bs-toggle="collapse"
+                            <button class="accordion-button collapsed h6 p-2" type="button"
+                                    data-bs-toggle="collapse"
                                     data-bs-target="#show-older-order-request-accordion-body" aria-expanded="false"
                                     aria-controls="show-older-order-request-accordion-body"
                                     th:text="${'Запросы на проверку (' + reviewRequestsReviewed + ' / ' + reviewRequestsApproved + ' / ' + reviewRequests.size() + ')'}">
@@ -235,7 +308,8 @@
                                     <li class="list-group-item" th:each="reviewRequest : ${reviewRequests}">
                                         <div>
                                             <p class="h6 m-2 mb-0 d-inline"
-                                               th:text="'Запрос от ' + ${reviewRequest.getCreatedAtString()}">22.03.2025
+                                               th:text="'Запрос от ' + ${reviewRequest.getCreatedAtString()}">
+                                                22.03.2025
                                                 14:22</p>
                                             <p class="badge bg-warning m-2 d-inline text-black"
                                                th:unless="${reviewRequest.getDone()}">Администратор ещё не
@@ -245,16 +319,22 @@
                                         </div>
                                         <figure class="m-2 mb-0">
                                             <blockquote class="blockquote">
-                                                <p style="font-size: small" th:text="${reviewRequest.getNote()}">Lorem
+                                                <p style="font-size: small" th:text="${reviewRequest.getNote()}">
+                                                    Lorem
                                                     Ipsum is simply dummy text of the
                                                     printing and typesetting industry. Lorem Ipsum has been the
-                                                    industry's standard dummy text ever since the 1500s, when an unknown
+                                                    industry's standard dummy text ever since the 1500s, when an
+                                                    unknown
                                                     printer took a galley of type and scrambled it to make a type
-                                                    specimen book. It has survived not only five centuries, but also the
-                                                    leap into electronic typesetting, remaining essentially unchanged.
-                                                    It was popularised in the 1960s with the release of Letraset sheets
+                                                    specimen book. It has survived not only five centuries, but also
+                                                    the
+                                                    leap into electronic typesetting, remaining essentially
+                                                    unchanged.
+                                                    It was popularised in the 1960s with the release of Letraset
+                                                    sheets
                                                     containing Lorem Ipsum passages, and more recently with desktop
-                                                    publishing software like Aldus PageMaker including versions of Lorem
+                                                    publishing software like Aldus PageMaker including versions of
+                                                    Lorem
                                                     Ipsum.</p>
                                             </blockquote>
                                             <figcaption class="blockquote-footer"
@@ -265,7 +345,8 @@
                                         <a class="m-2 mb-0 d-block" target="_blank"
                                            th:href="'/expert-review-order-view/' + ${forwardOrder.getOrderId()} + '/' + ${reviewRequest.getReviewId()}"
                                            th:if="${reviewRequest.getReviewId()}"
-                                           th:text="${reviewRequest.getReviewStatusString()}">Открыть запрос (Проверен.
+                                           th:text="${reviewRequest.getReviewStatusString()}">Открыть запрос
+                                            (Проверен.
                                             Оценка: 5)</a>
                                         <div class="d-flex" th:if="${!reviewRequest.getDone()}">
                                             <div class="m-2" th:if="${isAdmin}">

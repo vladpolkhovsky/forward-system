@@ -252,4 +252,7 @@ public class UserUiService {
         return userEntity;
     }
 
+    public Long getChatIdWithManagerAndAuthor(Long catcherId, Long authorId) {
+        return chatUtilsService.getChatIdWithManagerAndAuthor(catcherId, authorId);
+    }
 }

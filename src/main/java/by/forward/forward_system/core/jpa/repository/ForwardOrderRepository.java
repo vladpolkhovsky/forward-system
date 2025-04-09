@@ -32,14 +32,16 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     List<NewMessageCountProjection> calcNewMessageCount(Long currentUserId);
 
     @Query(value = """
-        select foe.id as id, 
+        select foe.id as id,
                foe.order.id as orderId,
                foe.chat.id as chatId, 
                foe.author.id as authorUserId, 
                foe.author.username as authorUserUsername, 
                foe.adminChat.id as adminChatId, 
                foe.order.techNumber as techNumber,
-               foe.isPaymentSend as isPaymentSend 
+               foe.isPaymentSend as isPaymentSend,
+               foe.adminNotes as adminNotes,
+               foe.authorNotes as authorNotes
         from ForwardOrderEntity foe
         """)
     List<ForwardOrderProjection> findAllProjections();
@@ -51,13 +53,15 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     boolean isEnabledFileSubmission(Long forwardOrderId);
 
     @Query("""
-        select foe.id as id, 
+        select foe.id as id,
                foe.order.id as orderId,
                foe.chat.id as chatId, 
                foe.author.id as authorUserId, 
                foe.author.username as authorUserUsername, 
                foe.adminChat.id as adminChatId, 
-               foe.order.techNumber as techNumber 
+               foe.order.techNumber as techNumber,
+               foe.adminNotes as adminNotes,
+               foe.authorNotes as authorNotes
         from ForwardOrderEntity foe 
         inner join CustomerTelegramToForwardOrderEntity customer on customer.forwardOrder = foe
         inner join BotIntegrationDataEntity integrationData on customer.botIntegrationData = integrationData

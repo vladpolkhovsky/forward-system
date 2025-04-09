@@ -4,10 +4,7 @@ import by.forward.forward_system.core.dto.messenger.ChatDto;
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
-import by.forward.forward_system.core.jpa.repository.AuthorRepository;
-import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
-import by.forward.forward_system.core.jpa.repository.ChatTypeRepository;
-import by.forward.forward_system.core.jpa.repository.UserRepository;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
@@ -24,12 +21,12 @@ import java.util.List;
 public class ChatUtilsService {
 
     private final ChatService chatService;
-
     private final AuthorRepository authorRepository;
 
     private final UserRepository userRepository;
     private final ChatTypeRepository chatTypeRepository;
     private final ChatMetadataRepository chatMetadataRepository;
+    private final ChatRepository chatRepository;
 
     public void addToNewsChat(Long userId) {
         if (!chatService.isMember(ChatNames.NEWS_CHAT_ID, userId)) {
@@ -95,5 +92,11 @@ public class ChatUtilsService {
 
             chatMetadataRepository.save(chatMetadataEntity);
         }
+    }
+
+    public Long getChatIdWithManagerAndAuthor(Long catcherId, Long authorId) {
+        return chatRepository.findChatEntityByUserAndManagerId(authorId, catcherId)
+            .orElseThrow(() -> new RuntimeException("Can't find chat with author = %d and manager = %d".formatted(authorId, catcherId)))
+            .getId();
     }
 }

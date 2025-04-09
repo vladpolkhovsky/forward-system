@@ -164,4 +164,19 @@ public class ForwardChatController {
                + idToCount.getOrDefault(projection.getAdminChatId(), 0L);
     }
 
+    @PostMapping("/forward/save-author-note/{forwardOrderId}")
+    public RedirectView saveAuthorNote(@PathVariable Long forwardOrderId,
+                                       @RequestParam(value = "redirect-url") String redirectUrl,
+                                       @RequestParam(value = "text") String text) {
+        forwardOrderService.saveAuthorNote(forwardOrderId, text);
+        return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
+    }
+
+    @PostMapping("/forward/save-admin-note/{forwardOrderId}")
+    public RedirectView saveAdminNote(@PathVariable Long forwardOrderId,
+                                       @RequestParam(value = "redirect-url") String redirectUrl,
+                                       @RequestParam(value = "text") String text) {
+        forwardOrderService.saveAdminNote(forwardOrderId, text);
+        return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
+    }
 }

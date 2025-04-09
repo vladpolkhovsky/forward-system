@@ -43,6 +43,11 @@
                                th:id="|author-| + ${author.getId()}" th:value="${author.getId()}" type="checkbox">
                         <label class="form-check-label" th:for="|author-| + ${author.getId()}"
                                th:text="${author.getUsername()}"></label>
+                        <a class="fw-medium"
+                           th:if="${selectedCatcher}"
+                           target="_blank"
+                           th:href="'/review-order-redirect-to-chat/' + ${selectedCatcher.getId()} + '/' + ${author.getId()}"
+                           th:text="'Чат между ' + ${author.getUsername()} + ' и кетчером ' + ${selectedCatcher.getUsername()}"></a>
                     </div>
                 </li>
             </ul>

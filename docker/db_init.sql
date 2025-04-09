@@ -723,3 +723,7 @@ alter table forward_system.forward_order
 insert into forward_system.bot_type values ('CUSTOMER_TELEGRAM_BOT');
 
 create unique index chat_id_to_bot_type_idx on forward_system.bot_integration_data(bot_type, user_id, telegram_chat_id);
+
+alter table forward_system.forward_order
+    add column admin_notes varchar(8192) default 'Здесь вы можете оставить свои заметки!',
+    add column author_notes varchar(8192) default 'Здесь вы можете оставить свои заметки!'

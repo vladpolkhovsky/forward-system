@@ -67,6 +67,28 @@ public class ForwardOrderService {
 
     @SneakyThrows
     @Transactional
+    public void saveAuthorNote(Long forwardOrderId, String text) {
+        ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid forward order id: " + forwardOrderId));
+
+        forwardOrderEntity.setAuthorNotes(text);
+
+        forwardOrderRepository.save(forwardOrderEntity);
+    }
+
+    @SneakyThrows
+    @Transactional
+    public void saveAdminNote(Long forwardOrderId, String text) {
+        ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid forward order id: " + forwardOrderId));
+
+        forwardOrderEntity.setAdminNotes(text);
+
+        forwardOrderRepository.save(forwardOrderEntity);
+    }
+
+    @SneakyThrows
+    @Transactional
     public void saveReviewRequest(Long forwardOrderId, String userNote, Long fromUserId, MultipartFile file) {
         UserEntity fromUserEntity = userRepository.findById(fromUserId)
             .orElseThrow(() -> new RuntimeException("User not found id: " + fromUserId));
