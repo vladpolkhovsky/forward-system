@@ -34,14 +34,15 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     @Query(value = """
         select foe.id as id,
                foe.order.id as orderId,
-               foe.chat.id as chatId, 
-               foe.author.id as authorUserId, 
-               foe.author.username as authorUserUsername, 
-               foe.adminChat.id as adminChatId, 
+               foe.chat.id as chatId,
+               foe.author.id as authorUserId,
+               foe.author.username as authorUserUsername,
+               foe.adminChat.id as adminChatId,
                foe.order.techNumber as techNumber,
-               foe.isPaymentSend as isPaymentSend,
                foe.adminNotes as adminNotes,
-               foe.authorNotes as authorNotes
+               foe.authorNotes as authorNotes,
+               foe.isPaymentSend as isPaymentSend,
+               foe.code as code
         from ForwardOrderEntity foe
         """)
     List<ForwardOrderProjection> findAllProjections();
@@ -55,14 +56,16 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     @Query("""
         select foe.id as id,
                foe.order.id as orderId,
-               foe.chat.id as chatId, 
-               foe.author.id as authorUserId, 
-               foe.author.username as authorUserUsername, 
-               foe.adminChat.id as adminChatId, 
+               foe.chat.id as chatId,
+               foe.author.id as authorUserId,
+               foe.author.username as authorUserUsername,
+               foe.adminChat.id as adminChatId,
                foe.order.techNumber as techNumber,
                foe.adminNotes as adminNotes,
-               foe.authorNotes as authorNotes
-        from ForwardOrderEntity foe 
+               foe.authorNotes as authorNotes,
+               foe.isPaymentSend as isPaymentSend,
+               foe.code as code
+        from ForwardOrderEntity foe
         inner join CustomerTelegramToForwardOrderEntity customer on customer.forwardOrder = foe
         inner join BotIntegrationDataEntity integrationData on customer.botIntegrationData = integrationData
         where integrationData.id = :botIntegrationDataId

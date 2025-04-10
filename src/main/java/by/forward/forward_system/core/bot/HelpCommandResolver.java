@@ -20,7 +20,6 @@ public class HelpCommandResolver implements CommandResolver {
         /user_list - список всех зарегистрированных в боте пользователей
         /unsubscribe - отписаться от рассылки сообщений
         /help - помощь
-        /join <код> - присоединиться к чату
         /chats - получить список доступных чатов
         """;
 

@@ -11,4 +11,5 @@ public interface ForwardOrderProjection {
     String getTechNumber();
     String getAuthorNotes();
     String getAdminNotes();
+    String getCode();
 }

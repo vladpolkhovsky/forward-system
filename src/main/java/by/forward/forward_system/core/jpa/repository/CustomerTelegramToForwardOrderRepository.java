@@ -33,5 +33,11 @@ public interface CustomerTelegramToForwardOrderRepository extends JpaRepository<
         """)
     List<BotIntegrationDataEntity> findForwardOrderCustomers(Long forwardOrderId);
 
+    @Query("""
+        select count(customer.id) from CustomerTelegramToForwardOrderEntity customer
+            where customer.forwardOrder.id = :forwardOrderId
+        """)
+    Long countForwardOrderCustomers(Long forwardOrderId);
+
     List<CustomerTelegramToForwardOrderEntity> findAllByForwardOrder_Id(Long forwardOrderId);
 }

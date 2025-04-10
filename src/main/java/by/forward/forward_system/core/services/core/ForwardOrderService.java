@@ -45,9 +45,9 @@ public class ForwardOrderService {
     private final MessageService messageService;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final BotNotificationService botNotificationService;
-    private final ChatMetadataRepository chatMetadataRepository;
     private final TaskScheduler taskScheduler;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
     public Map<Long, Long> newMessageCount(Long currentUserId) {
         List<NewMessageCountProjection> newMessageCountProjections = forwardOrderRepository.calcNewMessageCount(currentUserId);
@@ -89,6 +89,53 @@ public class ForwardOrderService {
 
     @SneakyThrows
     @Transactional
+    public void deleteAllFromTelegramChat(Long forwardOrderId, Long currentUserId) {
+        String code = ChatNames.generateNewForwardOrderCode();
+
+        ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid forward order id: " + forwardOrderId));
+
+        forwardOrderEntity.setCode(code);
+
+        forwardOrderEntity = forwardOrderRepository.save(forwardOrderEntity);
+
+        List<CustomerTelegramToForwardOrderEntity> allCustomers = customerTelegramToForwardOrderRepository
+            .findAllByForwardOrder_Id(forwardOrderEntity.getId());
+
+        customerTelegramToForwardOrderRepository.deleteAll(allCustomers);
+
+        UserEntity fromUserEntity = userRepository.findById(currentUserId)
+            .orElseThrow(() -> new RuntimeException("User not found id: " + currentUserId));
+
+        ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
+            .orElseThrow(() -> new RuntimeException("Chat message type not found"));
+
+        ChatMessageEntity message = messageService.sendMessage(
+            null,
+            forwardOrderEntity.getChat(),
+            "Пользователь %s удалил всех участников телеграмм чата.".formatted(fromUserEntity.getUsername()),
+            true,
+            chatMessageTypeEntity,
+            List.of(),
+            List.of()
+        );
+
+        String joinMessageTest = "Создан новый код. Заказчику необходимо ввести команду: <br /> %s"
+            .formatted(ChatNames.JOIN_FORWARD_ORDER_HTML.formatted(code));
+
+        ChatMessageEntity messageToAdminChat = messageService.sendMessage(
+            null,
+            forwardOrderEntity.getAdminChat(),
+            "Пользователь %s удалил всех участников телеграмм чата. %s".formatted(fromUserEntity.getUsername(), joinMessageTest),
+            true,
+            chatMessageTypeEntity,
+            List.of(),
+            List.of()
+        );
+    }
+
+    @SneakyThrows
+    @Transactional
     public void saveReviewRequest(Long forwardOrderId, String userNote, Long fromUserId, MultipartFile file) {
         UserEntity fromUserEntity = userRepository.findById(fromUserId)
             .orElseThrow(() -> new RuntimeException("User not found id: " + fromUserId));
@@ -118,8 +165,7 @@ public class ForwardOrderService {
         ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
             .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
-        ChatMessageAttachmentEntity messageAttachmentEntity = new ChatMessageAttachmentEntity();
-        messageAttachmentEntity.setAttachment(attachmentEntity);
+        ChatMessageAttachmentEntity messageAttachmentEntity = ChatMessageAttachmentEntity.of(attachmentEntity);
 
         ChatMessageEntity message = messageService.sendMessage(
             null,

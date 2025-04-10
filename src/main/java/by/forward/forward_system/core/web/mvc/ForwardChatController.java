@@ -1,6 +1,8 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
+import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
+import by.forward.forward_system.core.jpa.repository.CustomerTelegramToForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewRequestProjection;
@@ -35,6 +37,7 @@ public class ForwardChatController {
     private final UserUiService userUiService;
     private final ForwardOrderRepository forwardOrderRepository;
     private final OrderService orderService;
+    private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
     @GetMapping("/forward/main")
     public String forwardChatsMenu(Model model,
@@ -77,6 +80,8 @@ public class ForwardChatController {
             .findAny()
             .get();
 
+        Long forwardOrderCustomersCount = customerTelegramToForwardOrderRepository.countForwardOrderCustomers(forwardOrderId);
+
         OrderDto order = orderService.getOrder(forwardOrder.getOrderId());
 
         boolean isEnabledFileSubmission = forwardOrderRepository.isEnabledFileSubmission(forwardOrderId);
@@ -84,6 +89,7 @@ public class ForwardChatController {
 
         model.addAttribute("forwardOrder", forwardOrder);
         model.addAttribute("forwardOrderId", forwardOrderId);
+        model.addAttribute("forwardOrderCustomersCount", forwardOrderCustomersCount);
         model.addAttribute("orderInfo", order);
 
         model.addAttribute("hasOptionWindow", true);
@@ -179,4 +185,14 @@ public class ForwardChatController {
         forwardOrderService.saveAdminNote(forwardOrderId, text);
         return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
     }
+
+    @PostMapping("/forward/delete-all-telegram-chat-customers/{forwardOrderId}")
+    public RedirectView saveAdminNote(@PathVariable Long forwardOrderId,
+                                      @RequestParam(value = "redirect-url") String redirectUrl) {
+        Long currentUserId = userUiService.getCurrentUserId();
+        forwardOrderService.deleteAllFromTelegramChat(forwardOrderId, currentUserId);
+        return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
+    }
+
+
 }

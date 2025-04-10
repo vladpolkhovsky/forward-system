@@ -1,6 +1,5 @@
 package by.forward.forward_system.core.bot;
 
-import by.forward.forward_system.core.jpa.repository.BotIntegrationDataRepository;
 import by.forward.forward_system.core.jpa.repository.CustomerTelegramToForwardOrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

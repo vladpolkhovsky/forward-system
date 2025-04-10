@@ -93,10 +93,22 @@ public class CustomerCommunicationProcessor {
 
     @SneakyThrows
     private void handleUserMessage(Message message, BotIntegrationDataEntity botIntegrationData) {
+        List<ForwardOrderProjection> customerOrdersByBotIntegrationDataId = forwardOrderRepository
+            .getCustomerOrdersByBotIntegrationDataId(botIntegrationData.getId());
+
+        if (CollectionUtils.isEmpty(customerOrdersByBotIntegrationDataId)) {
+            customerTelegramClient.execute(SendMessage.builder()
+                .chatId(message.getChatId())
+                .text("У вас нет доступных чатов.")
+                .build()
+            );
+            return;
+        }
+
         customerTelegramClient.execute(SendMessage.builder()
             .replyToMessageId(message.getMessageId())
             .text("В какой чат отправить данное сообщение?")
-            .replyMarkup(replyMarkupForChatSelection(botIntegrationData, message.getMessageId().longValue()))
+            .replyMarkup(replyMarkupForChatSelection(botIntegrationData, message.getMessageId().longValue(), customerOrdersByBotIntegrationDataId))
             .chatId(botIntegrationData.getTelegramChatId())
             .build()
         );
@@ -269,10 +281,7 @@ public class CustomerCommunicationProcessor {
         return Map.entry(fileIdToName.get(fileId), byteArray);
     }
 
-    public ReplyKeyboard replyMarkupForChatSelection(BotIntegrationDataEntity botIntegrationData, Long resendMessageId) {
-        List<ForwardOrderProjection> userForwardOrders = forwardOrderRepository
-            .getCustomerOrdersByBotIntegrationDataId(botIntegrationData.getId());
-
+    public ReplyKeyboard replyMarkupForChatSelection(BotIntegrationDataEntity botIntegrationData, Long resendMessageId, List<ForwardOrderProjection> userForwardOrders) {
         List<InlineKeyboardRow> rows = userForwardOrders.stream()
             .sorted(Comparator.comparing(ForwardOrderProjection::getTechNumber))
             .map(projection -> createSelectChatKeyboardRow(projection, resendMessageId))

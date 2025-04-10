@@ -1,7 +1,6 @@
 package by.forward.forward_system.core.dto.messenger;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter

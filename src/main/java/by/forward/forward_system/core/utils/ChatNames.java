@@ -2,6 +2,8 @@ package by.forward.forward_system.core.utils;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.UUID;
+
 @UtilityClass
 public class ChatNames {
     public static final String ORDER_REQUEST_CHAT = "Заказ №%s. Обсуждение с автором %s";
@@ -20,4 +22,8 @@ public class ChatNames {
     public static final Long ALWAYS_SHOW_NAME_ID_LIMIT = 0L;
 
     public static final String JOIN_FORWARD_ORDER_HTML = "<kbd>/join %s</kbd>";
+
+    public String generateNewForwardOrderCode() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    }
 }

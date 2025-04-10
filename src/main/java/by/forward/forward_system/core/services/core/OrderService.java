@@ -598,7 +598,7 @@ public class OrderService {
             return;
         }
 
-        String code = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        String code = ChatNames.generateNewForwardOrderCode();
 
         ChatTypeEntity forwardOrderChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_CHAT.getName()).get();
         ChatTypeEntity forwardOrderAdminChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_ADMIN_CHAT.getName()).get();
