@@ -14,6 +14,7 @@ import java.util.List;
 public class FastChatMessageDto {
     private long id;
     private long chatId;
+    private String chatName;
     private long createdAtTimestamp;
     private Long fromUserId;
     private String fromUserUsername;

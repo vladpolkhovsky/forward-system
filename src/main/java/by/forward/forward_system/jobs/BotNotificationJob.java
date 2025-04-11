@@ -58,7 +58,8 @@ public class BotNotificationJob {
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
         } finally {
-            log.info("Завершение отправки уведомлений для чата {}", event.chatId());;
+            log.info("Завершение отправки уведомлений для чата {}", event.chatId());
+            ;
         }
     }
 
@@ -71,7 +72,7 @@ public class BotNotificationJob {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @Retryable
+    @Retryable(label = "BotNotificationJob.process", listeners = "retryListenerHandler")
     public void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
         LocalDateTime startTime = LocalDateTime.now();
 
@@ -90,7 +91,11 @@ public class BotNotificationJob {
             }
         }
 
-        notificationOutboxRepository.deleteAll(allMessagesOlderThen);
+        List<Long> ids = allMessagesOlderThen.stream()
+            .map(NotificationOutboxEntity::getId)
+            .toList();
+
+        notificationOutboxRepository.deleteAllByIdIn(ids);
 
         long execTime = Duration.between(startTime, LocalDateTime.now()).getSeconds();
         log.info("Отправка оповещений завершена. Заняло {} сек. Отправлено {} сообщений.", execTime, sandedMessageCount);

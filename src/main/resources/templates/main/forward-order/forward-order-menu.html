@@ -79,14 +79,16 @@
                            th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
                         >Чат
                             <span class="ms-1 badge bg-danger"
-                                  th:if="${idToMessageCount.containsKey(forwardOrder.getChatId())}"
+                                  th:attr="chat-id-new-message-indicator=${forwardOrder.getChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}"
+                                  th:classappend="${!idToMessageCount.containsKey(forwardOrder.getChatId())} ? 'd-none'"
                                   th:text="${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}">12</span>
                         </a>
                         <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getAdminChatId()} +'#main-view'"
                            th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
                            th:if="${isAdmin}">Администрация
                             <span class="ms-1 badge bg-danger"
-                                  th:if="${idToMessageCount.containsKey(forwardOrder.getAdminChatId())}"
+                                  th:attr="chat-id-new-message-indicator=${forwardOrder.getAdminChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}"
+                                  th:classappend="${!idToMessageCount.containsKey(forwardOrder.getAdminChatId())} ? 'd-none'"
                                   th:text="${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}">22</span>
                         </a>
                     </div>
@@ -181,25 +183,33 @@
 
                 <form id="chat-customer-form" th:if="${isAdmin}"
                       th:action="'/forward/delete-all-telegram-chat-customers/' + ${forwardOrderId}"
+                      class="card mt-2"
                       enctype="multipart/form-data" method="post">
 
-                    <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+                    <div class="card-header">
+                        <label for="chat-customer-form" class="form-label m-0 fw-medium">Доступ к чату</label>
+                    </div>
 
-                    <label for="chat-customer-form" class="form-label m-0 mt-2 fw-medium">Заказчики:</label>
-                    <p class="m-0" th:if="${forwardOrderCustomersCount > 0}"
-                       th:text="'Кол-во участников чата в телеграмме: ' + ${forwardOrderCustomersCount}"></p>
-                    <p class="m-0" th:unless="${forwardOrderCustomersCount > 0}">Заказчик ещё не присоединился к
-                        чату.</p>
-                    <p class="m-0">Код для присоединения к чату:
-                        <kbd class="ms-2" th:text="'/join ' + ${forwardOrder.getCode()}"></kbd>
-                    </p>
+                    <div class="card-body">
+                        <p class="m-0" th:if="${forwardOrderCustomersCount > 0}">Кол-во участников чата в телеграмме: <span class="h5" th:text="${forwardOrderCustomersCount}"></span></p>
 
-                    <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
-                            onclick="return confirm('Вы уверены что хотите удалить всех участников чата?')">Удалить всех
-                        и заменить код.
-                    </button>
-                    <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
-                        чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
+                        <p class="m-0" th:unless="${forwardOrderCustomersCount > 0}">Заказчик ещё не присоединился к
+                            чату.</p>
+
+                        <p class="m-0">Код для присоединения к чату:
+                            <kbd class="ms-2 d-inline-block" th:text="'/join ' + ${forwardOrder.getCode()}"></kbd>
+                        </p>
+
+                        <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
+
+                        <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
+                                onclick="return confirm('Вы уверены что хотите удалить всех участников чата?')">Удалить всех
+                            и заменить код.
+                        </button>
+
+                        <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
+                            чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
+                        </div>
                     </div>
                 </form>
 
@@ -458,6 +468,8 @@
                     </div>
                 </div>
             </div>
+
+            <div class="toast-container position-fixed top-0 end-0 p-3" id="forward-order-notification-container"></div>
         </div>
         <div class="col-12 col-lg-2 mt-3 p-2" role="alert" th:unless="${hasForwardOrders}">
             <div class="alert alert-warning" role="alert">

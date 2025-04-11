@@ -246,6 +246,7 @@ public class FastChatService {
 
         fastChatMessageDto.setId(message.getId());
         fastChatMessageDto.setChatId(message.getChatId());
+        fastChatMessageDto.setChatName(message.getChatName());
         fastChatMessageDto.setText(message.getText());
         fastChatMessageDto.setFromUserId(message.getFromUserId());
         fastChatMessageDto.setFromUserUsername(message.getFromUserUsername());

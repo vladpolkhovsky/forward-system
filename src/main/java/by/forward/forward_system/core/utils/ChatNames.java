@@ -21,7 +21,7 @@ public class ChatNames {
     public static final Long ADMIN_USER_ID = -20L;
     public static final Long ALWAYS_SHOW_NAME_ID_LIMIT = 0L;
 
-    public static final String JOIN_FORWARD_ORDER_HTML = "<kbd>/join %s</kbd>";
+    public static final String JOIN_FORWARD_ORDER_HTML = "<kbd class=\"d-inline-block\">/join %s</kbd>";
 
     public String generateNewForwardOrderCode() {
         return UUID.randomUUID().toString().replace("-", "").substring(0, 8);

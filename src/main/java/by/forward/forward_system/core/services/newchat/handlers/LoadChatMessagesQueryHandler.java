@@ -25,7 +25,8 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
 
     @Language("SQL")
     private final static String QUERY = """
-        select distinct cm.id as id, cm.chat_id as chatId, cm.from_user_id as fromUserId, u.username as fromUserUsername, cm.is_system_message as isSystem, cm."content" as text, cm.chat_message_type as messageType, cm.created_at as date, cmtu.is_viewed as viewed, cm.is_hidden as isHidden from forward_system.chat_messages cm
+        select distinct cm.id as id, cm.chat_id as chatId, c.chat_name as chatName, cm.from_user_id as fromUserId, u.username as fromUserUsername, cm.is_system_message as isSystem, cm."content" as text, cm.chat_message_type as messageType, cm.created_at as date, cmtu.is_viewed as viewed, cm.is_hidden as isHidden from forward_system.chat_messages cm
+            left join forward_system.chats c on c.id = cm.chat_id
             left join forward_system.users u on u.id = cm.from_user_id
             left join forward_system.chat_message_to_user cmtu on cm.id = cmtu.message_id and cmtu.user_id = ?
             where cm.chat_id = ? :IN:
@@ -35,7 +36,8 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
 
     @Language("SQL")
     private final String QUERY_BY_IDS = """
-        select distinct cm.id as id, cm.chat_id as chatId, cm.from_user_id as fromUserId, u.username as fromUserUsername, cm.is_system_message as isSystem, cm."content" as text, cm.chat_message_type as messageType, cm.created_at as date, cmtu.is_viewed as viewed, cm.is_hidden as isHidden from forward_system.chat_messages cm
+        select distinct cm.id as id, cm.chat_id as chatId, c.chat_name as chatName, cm.from_user_id as fromUserId, u.username as fromUserUsername, cm.is_system_message as isSystem, cm."content" as text, cm.chat_message_type as messageType, cm.created_at as date, cmtu.is_viewed as viewed, cm.is_hidden as isHidden from forward_system.chat_messages cm
+            left join forward_system.chats c on c.id = cm.chat_id
             left join forward_system.users u on u.id = cm.from_user_id
             left join forward_system.chat_message_to_user cmtu on cm.id = cmtu.message_id and cmtu.user_id = ?
             where cm.id in :IN:
@@ -95,6 +97,7 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
 
             dto.setId(rs.getLong("id"));
             dto.setChatId(rs.getLong("chatId"));
+            dto.setChatName(rs.getString("chatName"));
             dto.setFromUserId(rs.getLong("fromUserId"));
             dto.setFromUserUsername(rs.getString("fromUserUsername"));
             dto.setSystem(rs.getBoolean("isSystem"));

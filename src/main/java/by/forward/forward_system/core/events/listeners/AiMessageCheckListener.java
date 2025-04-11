@@ -47,7 +47,7 @@ public class AiMessageCheckListener {
             .ifPresent(this::checkMessage);
     }
 
-    @Retryable
+    @Retryable(label = "AiMessageCheckListener.checkMessage", listeners = "retryListenerHandler")
     public void checkMessage(ChatMessageEntity message) {
         String checkingSubject = message.getChat()
             .getChatName();
@@ -63,7 +63,7 @@ public class AiMessageCheckListener {
         checkDataByAi(message.getId(), username.orElse("Заказчик"), authorId, targetText, checkingSubject);
     }
 
-    @Retryable
+    @Retryable(label = "AiMessageCheckListener.checkDataByAi", listeners = "retryListenerHandler")
     public void checkDataByAi(Long messageId, String authorName, Optional<Long> authorIdOpt, Optional<String> targetText, String checkingSubject) {
         log.info("AI: Проверяем сообщение [id={}] от {}[id={}] text={} subject={}", messageId, authorName, authorIdOpt, targetText, checkingSubject);
 

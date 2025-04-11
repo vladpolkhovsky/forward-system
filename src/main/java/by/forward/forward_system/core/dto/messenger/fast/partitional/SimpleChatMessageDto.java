@@ -12,6 +12,7 @@ import lombok.Setter;
 public class SimpleChatMessageDto {
     private long id;
     private long chatId;
+    private String chatName;
     private String text;
     private boolean isSystem;
     private String messageType;

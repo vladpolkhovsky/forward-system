@@ -5,7 +5,8 @@ const loadActivityUrl = "/activity/all/activity"
 
 const usersTable = {};
 const usersActivity = {};
-const loadedMessages = new Set();
+
+const loadedMessagesIds = new Set();
 const loadedMessagesTimestamp = {
     maxTime: 0
 }
@@ -76,6 +77,7 @@ function loadChatMessages() {
         .finally(() => {
             sendMessageViewed();
             postChatInitialization();
+            clearChatNewMessageIndicator(chatId);
         });
 }
 
@@ -111,10 +113,10 @@ function syncMessages() {
         .then((ids) => {
             let notLoadedIds = [];
             for (let id of ids) {
-                if (!loadedMessages.has(id)) {
+                if (!loadedMessagesIds.has(id)) {
                     notLoadedIds.push(id);
                 }
-                loadedMessages.add(id);
+                loadedMessagesIds.add(id);
             }
             return notLoadedIds;
         })
@@ -227,12 +229,15 @@ function initChat(chatJson) {
 
 function processNewLoadedMessages(messages, appendTo = "top") {
     for (let message of messages) {
-        loadedMessages.add(message.id);
+        loadedMessagesIds.add(message.id);
         loadedMessagesTimestamp.maxTime = Math.max(loadedMessagesTimestamp.maxTime, message.createdAtTimestamp);
     }
 
+    let hasNewMessageInOpenChat = false;
+
     for (let message of messages) {
         if (message.chatId !== chatId) {
+            processMessageThatNotInOpenChat(message)
             continue;
         }
 
@@ -250,9 +255,18 @@ function processNewLoadedMessages(messages, appendTo = "top") {
 
         if (appendTo === "top") $("#chat-message-box").append(messageRendered);
         if (appendTo === "bottom") $("#chat-message-box").prepend(messageRendered);
+
+        hasNewMessageInOpenChat = true;
     }
 
-    scrollChatWindowToEnd();
+    if (hasNewMessageInOpenChat) {
+        scrollChatWindowToEnd();
+    }
+}
+
+function processMessageThatNotInOpenChat(message) {
+    showNewMessageNotification(message.id, message.chatName, message.fromUserUsername, message.systemMessage, message.messageType, message.text);
+    incChatNewMessageIndicator(message.chatId);
 }
 
 function updateActivity(activityList) {
@@ -273,4 +287,57 @@ function createActivityStatus(userId) {
 function scrollChatWindowToEnd() {
     let chatMessageBox = document.getElementById("chat-message-box");
     chatMessageBox.scroll(0, chatMessageBox.scrollHeight)
+}
+
+function showNewMessageNotification(id, chatName, fromName, isSystem, messageType, content) {
+    if (isSystem && fromName == null) {
+        fromName = "Система";
+    }
+
+    if (messageType === "MESSAGE_FROM_CUSTOMER") {
+        fromName = "Заказчик";
+    }
+
+    if (content == null || content.trim().length === 0) {
+        content = "~~Сообщение без текста~~";
+    }
+
+    $("#forward-order-notification-container").append(createNewMessageNotificationBody(id, chatName, fromName, content));
+
+    let toastBootstrap = bootstrap.Toast.getOrCreateInstance(document.getElementById(id), {
+        delay: 2000
+    });
+
+    toastBootstrap.show();
+}
+
+function createNewMessageNotificationBody(id, chatName, fromName, content) {
+    return `<div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">${chatName}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">${fromName} : ${content}</div>
+    </div>`
+}
+
+
+function incChatNewMessageIndicator(chatId) {
+    let indicator = $(`[chat-id-new-message-indicator=${chatId}]`);
+
+    indicator.removeClass("d-none");
+
+    let newMessageCount = indicator.attr("new-message-count");
+
+    newMessageCount = parseInt(newMessageCount) + 1;
+
+    indicator.attr("new-message-count", newMessageCount);
+    indicator.text(newMessageCount);
+}
+
+function clearChatNewMessageIndicator(chatId) {
+    let indicator = $(`[chat-id-new-message-indicator=${chatId}]`);
+    indicator.addClass("d-none");
+    indicator.attr("new-message-count", 0);
+    indicator.text("");
 }
