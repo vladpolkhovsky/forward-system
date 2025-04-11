@@ -13,13 +13,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -40,26 +40,18 @@ public class BotNotificationJob {
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
 
-    private BotNotificationJob botNotificationJob;
-
-    @Autowired
-    public void setBotNotificationJob(BotNotificationJob notificationJob) {
-        this.botNotificationJob = notificationJob;
-    }
-
     @SneakyThrows
-    @EventListener(NotifyChatEvent.class)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @TransactionalEventListener(value = NotifyChatEvent.class, phase = TransactionPhase.AFTER_COMMIT)
     public void notifyByChatId(NotifyChatEvent event) {
         try {
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
             List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(event.chatId());
-            botNotificationJob.process(allMessagesOlderThen);
+            process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
         } finally {
             log.info("Завершение отправки уведомлений для чата {}", event.chatId());
-            ;
         }
     }
 
@@ -68,10 +60,10 @@ public class BotNotificationJob {
     public void notifyBot() {
         LocalDateTime time = LocalDateTime.now().minusMinutes(WAIT_MINS);
         List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesOlderThen(time);
-        botNotificationJob.process(allMessagesOlderThen);
+        process(allMessagesOlderThen);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional(propagation = Propagation.REQUIRED)
     @Retryable(label = "BotNotificationJob.process", listeners = "retryListenerHandler")
     public void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
         LocalDateTime startTime = LocalDateTime.now();
