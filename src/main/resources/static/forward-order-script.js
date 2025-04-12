@@ -305,7 +305,7 @@ function showNewMessageNotification(id, chatName, fromName, isSystem, messageTyp
     $("#forward-order-notification-container").append(createNewMessageNotificationBody(id, chatName, fromName, content));
 
     let toastBootstrap = bootstrap.Toast.getOrCreateInstance(document.getElementById(id), {
-        delay: 2000
+        delay: 9000
     });
 
     toastBootstrap.show();
