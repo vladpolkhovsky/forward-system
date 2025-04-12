@@ -106,7 +106,8 @@ public class ForwardChatController {
         List<ReviewRequestProjection> reviewRequestsBy = forwardOrderService.findReviewRequestsBy(forwardOrderId);
 
         long approved = reviewRequestsBy.stream()
-            .filter(ReviewRequestProjection::getDone)
+            .map(ReviewRequestProjection::getDone)
+            .filter(BooleanUtils::isTrue)
             .count();
 
         long reviewed = reviewRequestsBy.stream()
