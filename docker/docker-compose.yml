@@ -4,12 +4,21 @@ services:
     build:
       context: ../
       dockerfile: ./docker/Dockerfile
+    container_name: app-server
+    deploy:
+      resources:
+        limits:
+          cpus: '0.7'
+          memory: '4g'
+        reservations:
+          cpus: '0.5'
+          memory: '2g'
+    cpuset: "0-2"
     logging:
       driver: "json-file"
       options:
         max-size: "10m"
         max-file: "5"
-    container_name: app-server
     env_file:
       - .env
     restart: always

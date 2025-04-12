@@ -27,4 +27,4 @@ EXPOSE 8081/tcp
 
 RUN echo Run the forward-system
 
-CMD ["java", "-jar", "./build/libs/forward-system-0.1.0.jar"]
+CMD ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "./build/libs/forward-system-0.1.0.jar"]
