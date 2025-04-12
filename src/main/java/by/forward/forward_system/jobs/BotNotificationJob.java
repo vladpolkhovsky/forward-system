@@ -52,6 +52,7 @@ public class BotNotificationJob {
             process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
+            throw ex;
         } finally {
             log.info("Завершение отправки уведомлений для чата {}", event.chatId());
         }
