@@ -163,7 +163,7 @@ public class MessageService {
         try {
             taskScheduler.schedule(() -> {
                 applicationEventPublisher.publishEvent(new NotifyChatEvent(chatId));
-                notifyForwardOrderCustomersEvent.ifPresent(event -> applicationEventPublisher.publishEvent(event));
+                notifyForwardOrderCustomersEvent.ifPresent(applicationEventPublisher::publishEvent);
             }, plusSeconds(10));
         } catch (Exception e) {
             log.error("Ошибка создания задания на отправку уведомления: ", e);

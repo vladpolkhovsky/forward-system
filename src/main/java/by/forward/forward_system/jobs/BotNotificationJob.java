@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -42,7 +43,8 @@ public class BotNotificationJob {
 
     @SneakyThrows
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @TransactionalEventListener(value = NotifyChatEvent.class, phase = TransactionPhase.AFTER_COMMIT)
+    @Retryable(label = "BotNotificationJob.notifyByChatId", listeners = "retryListenerHandler")
+    @EventListener(NotifyChatEvent.class)
     public void notifyByChatId(NotifyChatEvent event) {
         try {
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
@@ -64,7 +66,6 @@ public class BotNotificationJob {
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    @Retryable(label = "BotNotificationJob.process", listeners = "retryListenerHandler")
     public void process(List<NotificationOutboxEntity> allMessagesOlderThen) {
         LocalDateTime startTime = LocalDateTime.now();
 
