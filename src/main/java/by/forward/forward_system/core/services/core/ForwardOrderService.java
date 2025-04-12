@@ -13,6 +13,7 @@ import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.TaskScheduler;
@@ -143,14 +144,17 @@ public class ForwardOrderService {
         ForwardOrderEntity forwardOrderEntity = forwardOrderRepository.findById(forwardOrderId)
             .orElseThrow(() -> new IllegalArgumentException("Invalid forward order id: " + forwardOrderId));
 
-        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(
-            "Запрос на проверку ТЗ %s От %s Файл %s".formatted(
-                forwardOrderEntity.getOrder().getTechNumber(),
-                LocalDateTime.now().format(outputDateTimeFormat),
-                StringUtils.abbreviateMiddle(file.getOriginalFilename(), "-", 10)
-            ),
-            file.getBytes()
+        String filename = FilenameUtils.getBaseName(file.getOriginalFilename());
+        String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+        String abbreviateFilename = StringUtils.abbreviateMiddle(filename, "-", 10) + "." + extension;
+
+        String attachmentFilename = "Запрос на проверку ТЗ %s От %s Файл %s".formatted(
+            forwardOrderEntity.getOrder().getTechNumber(),
+            LocalDateTime.now().format(outputDateTimeFormat),
+            abbreviateFilename
         );
+
+        AttachmentEntity attachmentEntity = attachmentService.saveAttachment(attachmentFilename, file.getBytes());
 
         ForwardOrderReviewRequestEntity requestEntity = new ForwardOrderReviewRequestEntity();
         requestEntity.setForwardOrder(forwardOrderEntity);
