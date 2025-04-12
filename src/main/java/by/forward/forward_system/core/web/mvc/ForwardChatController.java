@@ -60,7 +60,7 @@ public class ForwardChatController {
 
         List<ForwardOrderProjection> allProjections = forwardOrderService.findAllProjections(currentUserId, isCurrentUserAdmin);
         allProjections = allProjections.stream()
-            .sorted(Comparator.comparing(t -> getSumOfNewMessages(chatIdToMessageCount, t)))
+            .sorted(Comparator.comparing((ForwardOrderProjection t) -> getSumOfNewMessages(chatIdToMessageCount, t)).reversed())
             .toList();
 
         model.addAttribute("forwardOrders", allProjections);
