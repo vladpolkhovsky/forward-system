@@ -172,7 +172,7 @@ function createMessage(messageId, fromUserId, fromUserUsername, isSystem, messag
 
     let attachments = "";
     for (let file of messageFiles) {
-        attachments += `<a href="/load-file/${file.id}" target="_blank" class="me-2 d-inline-block line-break">${file.name}</a>`;
+        attachments += `<a href="/load-file/${file.id}" target="_blank" class="me-2 d-inline-block line-break text-break">${file.name}</a>`;
     }
 
     let activityStatus = "";
@@ -194,8 +194,8 @@ function createMessage(messageId, fromUserId, fromUserUsername, isSystem, messag
                 <div class="d-block">
                     ${attachments}
                 </div>
-                <div>
-                    <span>${createdAt}</span>
+                <div class="d-block">
+                    <span class="d-inline-block text-nowrap">${createdAt}</span>
                 </div>
             </div>
             ${newMessageBadge}

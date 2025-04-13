@@ -12,6 +12,8 @@ import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,6 +47,8 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
         """;
 
     private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM HH:mm");
+    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
     private final JdbcTemplate jdbcTemplate;
 
     @Override
@@ -103,7 +107,7 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
             dto.setSystem(rs.getBoolean("isSystem"));
             dto.setText(rs.getString("text"));
             dto.setMessageType(rs.getString("messageType"));
-            dto.setDate(rs.getTimestamp("date").toLocalDateTime().format(dateTimeFormatter));
+            dto.setDate(formatDateToString(rs.getTimestamp("date").toLocalDateTime()));
             dto.setCreatedAtTimestamp(rs.getTimestamp("date").toInstant().toEpochMilli());
             dto.setViewed(isViewed == null ? true : BooleanUtils.toBoolean(isViewed));
             dto.setHidden(rs.getBoolean("isHidden"));
@@ -112,4 +116,11 @@ public class LoadChatMessagesQueryHandler implements QueryHandler<LoadChatMessag
         };
     }
 
+    private String formatDateToString(LocalDateTime date) {
+        LocalDateTime dayStart = LocalDate.now().atStartOfDay();
+        if (date.isAfter(dayStart)) {
+            return date.format(timeFormatter);
+        }
+        return date.format(dateTimeFormatter);
+    }
 }
