@@ -312,6 +312,9 @@ function showNewMessageNotification(id, chatName, fromName, isSystem, messageTyp
 }
 
 function createNewMessageNotificationBody(id, chatName, fromName, content) {
+    if (content !== null && content !== undefined) {
+        content = content.substring(0, 200)
+    }
     return `<div id="${id}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <strong class="me-auto">${chatName}</strong>

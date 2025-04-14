@@ -75,22 +75,28 @@
                         </h6>
                         <h6 class="card-subtitle mb-2 text-body-secondary fs-7"
                             th:text="'Автор: ' + ${forwardOrder.getAuthorUserUsername()}"></h6>
-                        <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
-                           th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
-                        >Чат
-                            <span class="ms-1 badge bg-danger"
-                                  th:attr="chat-id-new-message-indicator=${forwardOrder.getChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}"
-                                  th:classappend="${!idToMessageCount.containsKey(forwardOrder.getChatId())} ? 'd-none'"
-                                  th:text="${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}">12</span>
-                        </a>
-                        <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getAdminChatId()} +'#main-view'"
-                           th:class="'d-inline-block m-1 ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
-                           th:if="${isAdmin}">Администрация
-                            <span class="ms-1 badge bg-danger"
-                                  th:attr="chat-id-new-message-indicator=${forwardOrder.getAdminChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}"
-                                  th:classappend="${!idToMessageCount.containsKey(forwardOrder.getAdminChatId())} ? 'd-none'"
-                                  th:text="${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}">22</span>
-                        </a>
+                        <div class="d-block mt-1">
+                            <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getChatId()} +'#main-view'"
+                               th:class="'d-inline-block mt-1 me-1 ' + ${chatId eq forwardOrder.getChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                            >Чат
+                                <span class="ms-1 badge bg-danger"
+                                      th:attr="chat-id-new-message-indicator=${forwardOrder.getChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}"
+                                      th:classappend="${!idToMessageCount.containsKey(forwardOrder.getChatId())} ? 'd-none'"
+                                      th:text="${idToMessageCount.getOrDefault(forwardOrder.getChatId(), 0)}">12</span>
+                            </a>
+                            <a th:href="'/forward/main?forwardOrderId=' + ${forwardOrder.getId()} + '&chatId=' + ${forwardOrder.getAdminChatId()} +'#main-view'"
+                               th:class="'d-inline-block mt-1 ' + ${chatId eq forwardOrder.getAdminChatId() ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}"
+                               th:if="${isAdmin}">Администрация
+                                <span class="ms-1 badge bg-danger"
+                                      th:attr="chat-id-new-message-indicator=${forwardOrder.getAdminChatId()},new-message-count=${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}"
+                                      th:classappend="${!idToMessageCount.containsKey(forwardOrder.getAdminChatId())} ? 'd-none'"
+                                      th:text="${idToMessageCount.getOrDefault(forwardOrder.getAdminChatId(), 0)}">22</span>
+                            </a>
+                        </div>
+                        <div class="d-block mt-1">
+                            <p class="m-0 mt-1 d-inline-block me-2 fs-7" th:text="${#temporals.format(idToLastMessageDate.get(forwardOrder.getChatId()), 'dd-MM HH:mm')}"></p>
+                            <p class="m-0 mt-1 d-inline-block fs-7" th:if="${isAdmin}" th:text="'Админ чат: ' + ${#temporals.format(idToLastMessageDate.get(forwardOrder.getAdminChatId()), 'dd-MM HH:mm')}"></p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -191,7 +197,8 @@
                     </div>
 
                     <div class="card-body">
-                        <p class="m-0" th:if="${forwardOrderCustomersCount > 0}">Кол-во участников чата в телеграмме: <span class="h5" th:text="${forwardOrderCustomersCount}"></span></p>
+                        <p class="m-0" th:if="${forwardOrderCustomersCount > 0}">Кол-во участников чата в телеграмме:
+                            <span class="h5" th:text="${forwardOrderCustomersCount}"></span></p>
 
                         <p class="m-0" th:unless="${forwardOrderCustomersCount > 0}">Заказчик ещё не присоединился к
                             чату.</p>
@@ -203,7 +210,8 @@
                         <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
 
                         <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
-                                onclick="return confirm('Вы уверены что хотите удалить всех участников чата?')">Удалить всех
+                                onclick="return confirm('Вы уверены что хотите удалить всех участников чата?')">Удалить
+                            всех
                             и заменить код.
                         </button>
 
@@ -228,9 +236,8 @@
                                   enctype="multipart/form-data" method="post">
                                 <div class="form-floating mb-2 p-1">
                                     <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
-                                    <textarea class="form-control" id="admin-note-text" name="text" rows="5"
-                                              th:text="${forwardOrder.getAdminNotes()}"
-                                              style="min-height: 100px"></textarea>
+                                    <textarea class="form-control h-auto" id="admin-note-text" name="text" th:rows="${#strings.defaultString(forwardOrder.getAdminNotes(), '').lines().count() + 1}"
+                                              th:text="${forwardOrder.getAdminNotes()}"></textarea>
                                     <label for="author-note-text">Текст заметки</label>
                                     <div class="form-text text-danger d-none" id="admin-note-text-help-text">Сохраните
                                         изменения!
@@ -262,9 +269,8 @@
                                   enctype="multipart/form-data" method="post">
                                 <div class="form-floating mb-2 p-1">
                                     <input th:value="${redirectUrl}" name="redirect-url" class="d-none">
-                                    <textarea class="form-control" id="author-note-text" name="text" rows="5"
-                                              th:text="${forwardOrder.getAuthorNotes()}"
-                                              style="min-height: 100px"></textarea>
+                                    <textarea class="form-control h-auto" id="author-note-text" name="text" th:rows="${#strings.defaultString(forwardOrder.getAuthorNotes(), '').lines().count() + 1}"
+                                              th:text="${forwardOrder.getAuthorNotes()}"></textarea>
                                     <label for="author-note-text">Текст заметки</label>
                                     <div class="form-text text-danger d-none" id="author-note-text-help-text">Сохраните
                                         изменения!

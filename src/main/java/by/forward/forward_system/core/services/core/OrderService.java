@@ -556,7 +556,9 @@ public class OrderService {
     }
 
     private void makeDefaultChat(ArrayList<UserEntity> withAdmins, OrderEntity orderEntity) {
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName()).orElseThrow(() -> new RuntimeException("Chat type not found"));
+        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName())
+            .orElseThrow(() -> new RuntimeException("Chat type not found"));
+
         chatService.createChat(
             withAdmins,
             ChatNames.ORDER_CHAT.formatted(orderEntity.getTechNumber()),
@@ -639,6 +641,8 @@ public class OrderService {
         forwardOrderEntity.setAdminChat(forwardOrderAdminChat);
         forwardOrderEntity.setCode(code);
         forwardOrderEntity.setIsPaymentSend(false);
+        forwardOrderEntity.setAdminNotes("Заметки администратора...");
+        forwardOrderEntity.setAuthorNotes("Заметки автора...");
         forwardOrderEntity.setCreatedAt(LocalDateTime.now());
 
         forwardOrderRepository.save(forwardOrderEntity);

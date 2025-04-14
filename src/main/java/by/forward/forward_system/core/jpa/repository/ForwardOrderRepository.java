@@ -3,6 +3,7 @@ package by.forward.forward_system.core.jpa.repository;
 import by.forward.forward_system.core.jpa.model.ChatEntity;
 import by.forward.forward_system.core.jpa.model.ForwardOrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
+import by.forward.forward_system.core.jpa.repository.projections.LastMessageDateByChatIdProjection;
 import by.forward.forward_system.core.jpa.repository.projections.NewMessageCountProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,6 +18,12 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     Optional<ForwardOrderEntity> findByOrder_Id(Long orderId);
 
     Optional<ForwardOrderEntity> findByCode(String code);
+
+    @Query(value = """
+        select distinct c.id as chatId, c.lastMessageDate as lastMessageDate from ChatEntity c
+            where c.id in :chatIds
+        """)
+    List<LastMessageDateByChatIdProjection> findLastMessageDateByChatId(List<Long> chatIds);
 
     @Query(value = """
         select foe.chat.id as id, count(*) as count from ForwardOrderEntity foe
@@ -42,7 +49,8 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
                foe.adminNotes as adminNotes,
                foe.authorNotes as authorNotes,
                foe.isPaymentSend as isPaymentSend,
-               foe.code as code
+               foe.code as code,
+               foe.createdAt as createdAt
         from ForwardOrderEntity foe
         """)
     List<ForwardOrderProjection> findAllProjections();
@@ -64,7 +72,8 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
                foe.adminNotes as adminNotes,
                foe.authorNotes as authorNotes,
                foe.isPaymentSend as isPaymentSend,
-               foe.code as code
+               foe.code as code,
+               foe.createdAt as createdAt
         from ForwardOrderEntity foe
         inner join CustomerTelegramToForwardOrderEntity customer on customer.forwardOrder = foe
         inner join BotIntegrationDataEntity integrationData on customer.botIntegrationData = integrationData

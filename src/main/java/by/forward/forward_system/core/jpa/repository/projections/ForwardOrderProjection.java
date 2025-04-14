@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.jpa.repository.projections;
 
+import java.time.LocalDateTime;
+
 public interface ForwardOrderProjection {
     Long getId();
     Long getOrderId();
@@ -12,4 +14,5 @@ public interface ForwardOrderProjection {
     String getAuthorNotes();
     String getAdminNotes();
     String getCode();
+    LocalDateTime getCreatedAt();
 }

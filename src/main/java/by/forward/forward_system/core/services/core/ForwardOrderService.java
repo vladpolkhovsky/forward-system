@@ -5,6 +5,7 @@ import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
+import by.forward.forward_system.core.jpa.repository.projections.LastMessageDateByChatIdProjection;
 import by.forward.forward_system.core.jpa.repository.projections.NewMessageCountProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewRequestProjection;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @AllArgsConstructor
@@ -56,15 +58,48 @@ public class ForwardOrderService {
             .collect(Collectors.toMap(NewMessageCountProjection::getId, NewMessageCountProjection::getCount));
     }
 
-    public List<ForwardOrderProjection> findAllProjections(Long currentUserId, Boolean isAdmin) {
+    public ForwardOrderData findAllProjections(Long currentUserId, Boolean isAdmin) {
         List<ForwardOrderProjection> allProjections = forwardOrderRepository.findAllProjections();
+
+        List<Long> chatIds = allProjections.stream().map(ForwardOrderProjection::getChatId).toList();
+        List<Long> adminChatIds = allProjections.stream().map(ForwardOrderProjection::getAdminChatId).toList();
+
+        List<Long> combinedChatIds = Stream.concat(chatIds.stream(), adminChatIds.stream())
+            .distinct()
+            .toList();
+
+        Map<Long, Long> chatIdToMessageCount = newMessageCount(currentUserId);
+        Map<Long, LocalDateTime> chatIdToLastMessage = lastMessageCount(combinedChatIds);
+
         if (isAdmin) {
-            return allProjections;
+            return new ForwardOrderData(
+                allProjections,
+                chatIdToMessageCount,
+                chatIdToLastMessage
+            );
         }
-        return allProjections.stream()
+
+        List<ForwardOrderProjection> userForwardOrders = allProjections.stream()
             .filter(t -> Objects.equals(t.getAuthorUserId(), currentUserId))
             .toList();
+
+        return new ForwardOrderData(
+            userForwardOrders,
+            chatIdToMessageCount,
+            chatIdToLastMessage
+        );
     }
+
+    private Map<Long, LocalDateTime> lastMessageCount(List<Long> chatIds) {
+        return forwardOrderRepository.findLastMessageDateByChatId(chatIds).stream()
+            .collect(Collectors.toMap(LastMessageDateByChatIdProjection::getChatId, LastMessageDateByChatIdProjection::getLastMessageDate));
+    }
+
+    public record ForwardOrderData(
+        List<ForwardOrderProjection> projections,
+        Map<Long, Long> chatIdToMessageCount,
+        Map<Long, LocalDateTime> chatLastMessageDate
+    ) {}
 
     @SneakyThrows
     @Transactional
@@ -367,5 +402,9 @@ public class ForwardOrderService {
             .plusSeconds(seconds)
             .atZone(ZoneId.of("Europe/Moscow"))
             .toInstant();
+    }
+
+    public boolean isEnabledFileSubmission(Long forwardOrderId) {
+        return forwardOrderRepository.isEnabledFileSubmission(forwardOrderId);
     }
 }

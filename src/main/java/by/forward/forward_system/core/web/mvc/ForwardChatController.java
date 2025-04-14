@@ -1,17 +1,18 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
-import by.forward.forward_system.core.jpa.model.BotIntegrationDataEntity;
 import by.forward.forward_system.core.jpa.repository.CustomerTelegramToForwardOrderRepository;
-import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewRequestProjection;
 import by.forward.forward_system.core.services.core.ForwardOrderService;
+import by.forward.forward_system.core.services.core.ForwardOrderService.ForwardOrderData;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,10 +25,9 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.function.Function;
 
 @Controller
 @AllArgsConstructor
@@ -35,7 +35,6 @@ public class ForwardChatController {
 
     private final ForwardOrderService forwardOrderService;
     private final UserUiService userUiService;
-    private final ForwardOrderRepository forwardOrderRepository;
     private final OrderService orderService;
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
 
@@ -56,18 +55,25 @@ public class ForwardChatController {
         model.addAttribute("isAdmin", isCurrentUserAdmin);
         model.addAttribute("redirectUrl", redirectUrl);
 
-        Map<Long, Long> chatIdToMessageCount = forwardOrderService.newMessageCount(currentUserId);
+        ForwardOrderData userForwardOrderData = forwardOrderService.findAllProjections(currentUserId, isCurrentUserAdmin);
 
-        List<ForwardOrderProjection> allProjections = forwardOrderService.findAllProjections(currentUserId, isCurrentUserAdmin);
-        allProjections = allProjections.stream()
-            .sorted(Comparator.comparing((ForwardOrderProjection t) -> getSumOfNewMessages(chatIdToMessageCount, t)).reversed())
+        Map<Long, LocalDateTime> chatIdToLastMessageDate = userForwardOrderData.chatLastMessageDate();
+        Map<Long, Long> chatIdToMessageCount = userForwardOrderData.chatIdToMessageCount();
+
+        List<ForwardOrderProjection> allProjections = userForwardOrderData.projections().stream()
+            .sorted(createForwardOrderComparator(chatIdToLastMessageDate, chatIdToMessageCount))
             .toList();
 
         model.addAttribute("forwardOrders", allProjections);
         model.addAttribute("hasForwardOrders", !allProjections.isEmpty());
         model.addAttribute("idToMessageCount", chatIdToMessageCount);
+        model.addAttribute("idToLastMessageDate", chatIdToLastMessageDate);
 
-        if (forwardOrderId == null || chatId == null) {
+        Optional<ForwardOrderProjection> selectedForwardOrder = allProjections.stream()
+            .filter(t -> Objects.equals(t.getId(), forwardOrderId))
+            .findAny();
+
+        if (forwardOrderId == null || chatId == null || selectedForwardOrder.isEmpty()) {
 
             model.addAttribute("hasOptionWindow", false);
             model.addAttribute("hasChatWindow", false);
@@ -75,16 +81,13 @@ public class ForwardChatController {
             return "main/forward-order/forward-order-menu";
         }
 
-        ForwardOrderProjection forwardOrder = allProjections.stream()
-            .filter(t -> Objects.equals(t.getId(), forwardOrderId))
-            .findAny()
-            .get();
+        ForwardOrderProjection forwardOrder = selectedForwardOrder.get();
 
         Long forwardOrderCustomersCount = customerTelegramToForwardOrderRepository.countForwardOrderCustomers(forwardOrderId);
 
         OrderDto order = orderService.getOrder(forwardOrder.getOrderId());
 
-        boolean isEnabledFileSubmission = forwardOrderRepository.isEnabledFileSubmission(forwardOrderId);
+        boolean isEnabledFileSubmission = forwardOrderService.isEnabledFileSubmission(forwardOrderId);
         boolean isPaymentSend = forwardOrder.getIsPaymentSend();
 
         model.addAttribute("forwardOrder", forwardOrder);
@@ -120,6 +123,24 @@ public class ForwardChatController {
         model.addAttribute("reviewRequestsReviewed", reviewed);
 
         return "main/forward-order/forward-order-menu";
+    }
+
+    @NotNull
+    private Comparator<ForwardOrderProjection> createForwardOrderComparator(Map<Long, LocalDateTime> chatIdToLastMessageDate, Map<Long, Long> chatIdToMessageCount) {
+        Function<ForwardOrderProjection, LocalDateTime> getMaxDate = t -> ObjectUtils.max(
+            chatIdToLastMessageDate.getOrDefault(t.getChatId(), t.getCreatedAt()),
+            chatIdToLastMessageDate.getOrDefault(t.getAdminChatId(), t.getCreatedAt())
+        );
+
+        return Comparator
+            .<ForwardOrderProjection>comparingLong(t -> getSumOfNewMessages(chatIdToMessageCount, t))
+            .thenComparing(getMaxDate)
+            .reversed();
+    }
+
+    private Long getSumOfNewMessages(Map<Long, Long> idToCount, ForwardOrderProjection projection) {
+        return idToCount.getOrDefault(projection.getChatId(), 0L)
+               + idToCount.getOrDefault(projection.getAdminChatId(), 0L);
     }
 
     @PostMapping("/forward/save-forward-order-review-request/{forwardOrderId}")
@@ -164,11 +185,6 @@ public class ForwardChatController {
                                             @RequestParam(value = "redirect-url") String redirectUrl) {
         forwardOrderService.sendRequestResultToChat(forwardOrderReviewRequestId);
         return new RedirectView(URLDecoder.decode(redirectUrl, StandardCharsets.UTF_8));
-    }
-
-    private Long getSumOfNewMessages(Map<Long, Long> idToCount, ForwardOrderProjection projection) {
-        return idToCount.getOrDefault(projection.getChatId(), 0L)
-               + idToCount.getOrDefault(projection.getAdminChatId(), 0L);
     }
 
     @PostMapping("/forward/save-author-note/{forwardOrderId}")
