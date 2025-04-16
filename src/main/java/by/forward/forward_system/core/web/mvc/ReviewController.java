@@ -111,9 +111,7 @@ public class ReviewController {
             .toList();
 
         Optional<UserSelectionUiDto> first = selection.stream().findFirst();
-        if (first.isPresent()) {
-            first.get().setChecked(true);
-        }
+        first.ifPresent(userSelectionUiDto -> userSelectionUiDto.setChecked(true));
 
         boolean isOkStatus = Arrays.asList(OrderStatus.IN_PROGRESS, OrderStatus.FINALIZATION)
             .contains(OrderStatus.byName(order.getOrderStatus()));
@@ -210,8 +208,8 @@ public class ReviewController {
 
         List<ChatAttachmentProjectionDto> chatAttachments = orderUiService.getOrderMainChatAttachments(orderId).stream()
             .map(t -> new ChatAttachmentProjectionDto(
-                t.getFirstname() + " " + t.getLastname().substring(0, 1),
-                t.getUsername(),
+                "ФИО",
+                Optional.ofNullable(t.getUsername()).orElse("Система / Заказчик"),
                 t.getAttachmentFileId(),
                 t.getAttachmentFilename(),
                 t.getAttachmentTime(),
