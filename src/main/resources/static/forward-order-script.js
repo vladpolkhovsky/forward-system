@@ -211,6 +211,9 @@ function clearChatWindow() {
 function showChatWindow() {
     $("#chat-window-loader").addClass("d-none")
     $("#chat-window").removeClass("d-none")
+
+    let chatWidow = document.getElementById("chat-window");
+    window.scrollTo(0, chatWidow.offsetTop)
 }
 
 function initChat(chatJson) {

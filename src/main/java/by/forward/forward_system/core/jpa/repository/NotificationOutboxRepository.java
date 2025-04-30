@@ -18,8 +18,8 @@ public interface NotificationOutboxRepository extends JpaRepository<Notification
     @Query(nativeQuery = true, value = "select * from forward_system.notification_outbox no where no.created_at < :time order by no.id limit 500")
     List<NotificationOutboxEntity> getAllMessagesOlderThen(LocalDateTime time);
 
-    @Query(nativeQuery = true, value = "select * from forward_system.notification_outbox no where no.chat_id = :chatId")
-    List<NotificationOutboxEntity> getAllMessagesByChatId(Long chatId);
+    @Query(nativeQuery = true, value = "select * from forward_system.notification_outbox no where no.chat_id = :chatId and no.created_at < :time")
+    List<NotificationOutboxEntity> getAllMessagesByChatIdAndOlderThen(Long chatId, LocalDateTime time);
 
     @Query(nativeQuery = true, value = "delete from forward_system.notification_outbox no where no.user_id = :userId")
     @Modifying

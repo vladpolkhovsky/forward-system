@@ -48,7 +48,8 @@ public class BotNotificationJob {
     public void notifyByChatId(NotifyChatEvent event) {
         try {
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
-            List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository.getAllMessagesByChatId(event.chatId());
+            List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository
+                .getAllMessagesByChatIdAndOlderThen(event.chatId(), LocalDateTime.now().minusSeconds(7));
             process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
