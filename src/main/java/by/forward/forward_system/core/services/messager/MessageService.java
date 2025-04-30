@@ -77,6 +77,20 @@ public class MessageService {
                                          List<ChatMessageAttachmentEntity> attachments,
                                          List<ChatMessageOptionEntity> options,
                                          boolean markMessagesAsNew) {
+        return sendMessage(fromUserEntity, chatEntity, message, isSystemMessage, chatMessageTypeEntity, attachments, options, markMessagesAsNew, true);
+    }
+
+    @Transactional
+    public ChatMessageEntity sendMessage(UserEntity fromUserEntity,
+                                         ChatEntity chatEntity,
+                                         String message,
+                                         Boolean isSystemMessage,
+                                         ChatMessageTypeEntity chatMessageTypeEntity,
+                                         List<ChatMessageAttachmentEntity> attachments,
+                                         List<ChatMessageOptionEntity> options,
+                                         boolean markMessagesAsNew,
+                                         boolean triggerSendNotification
+    ) {
         Long chatId = chatEntity.getId();
 
         LocalDateTime now = LocalDateTime.now();
@@ -158,11 +172,15 @@ public class MessageService {
         lastMessageRepository.save(lastMessageEntity);
 
         Optional<NotifyForwardOrderCustomersEvent> notifyForwardOrderCustomersEvent = forwardOrderRepository.findForwardOrderIdByChatId(chatId)
-            .map(id -> new NotifyForwardOrderCustomersEvent(id, chatMessageId));
+            .map(id -> new NotifyForwardOrderCustomersEvent(id, chatMessageId))
+            .filter(t -> triggerSendNotification);
+
+        Optional<NotifyChatEvent> notifyChatEvent = Optional.of(new NotifyChatEvent(chatId))
+            .filter(t -> triggerSendNotification);
 
         try {
             taskScheduler.schedule(() -> {
-                applicationEventPublisher.publishEvent(new NotifyChatEvent(chatId));
+                notifyChatEvent.ifPresent(applicationEventPublisher::publishEvent);
                 notifyForwardOrderCustomersEvent.ifPresent(applicationEventPublisher::publishEvent);
             }, plusSeconds(10));
         } catch (Exception e) {

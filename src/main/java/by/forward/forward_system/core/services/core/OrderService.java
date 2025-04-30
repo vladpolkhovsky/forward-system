@@ -367,7 +367,9 @@ public class OrderService {
                     false,
                     chatMessageType.get(),
                     Collections.emptyList(),
-                    Collections.emptyList()
+                    Collections.emptyList(),
+                    true,
+                    false
                 );
                 MessageDto addMessageDto = messageService.convertChatMessage(additionalMessage);
                 List<Long> addList = addMessageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
