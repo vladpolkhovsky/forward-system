@@ -11,7 +11,6 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
-import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.utils.Constants;
@@ -21,10 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -125,7 +121,8 @@ public class ReviewService {
         return reviewDto;
     }
 
-    public List<ReviewProjectionDto> getNotReviewed(int page) {;
+    public List<ReviewProjectionDto> getNotReviewed(int page) {
+        ;
         return reviewRepository.findAllNotReviewed((page - 1) * Constants.REVIEWS_PAGE_SIZE, Constants.REVIEWS_PAGE_SIZE);
     }
 
@@ -202,12 +199,19 @@ public class ReviewService {
             Map<ParticipantType, List<OrderParticipantEntity>> typeToUser = reviewEntity.getOrder().getOrderParticipants().stream()
                 .collect(Collectors.groupingBy(op -> op.getParticipantsType().getType()));
 
-            String authorUsername = typeToUser.get(ParticipantType.MAIN_AUTHOR).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
-            String hostUsername = typeToUser.get(ParticipantType.HOST).stream().findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse("Не найден.");
+            String authorUsername = Optional.ofNullable(typeToUser.get(ParticipantType.MAIN_AUTHOR)).stream()
+                .flatMap(Collection::stream)
+                .findAny()
+                .map(OrderParticipantEntity::getUser)
+                .map(UserEntity::getUsername)
+                .orElse("Не найден.");
 
-            List<Long> userIds = userRepository.findByRolesContainsAndDeletedIsFalse(Authority.ADMIN.getAuthority()).stream()
-                .map(UserEntity::getId)
-                .toList();
+            String hostUsername = Optional.ofNullable(typeToUser.get(ParticipantType.HOST)).stream()
+                .flatMap(Collection::stream)
+                .findAny()
+                .map(OrderParticipantEntity::getUser)
+                .map(UserEntity::getUsername)
+                .orElse("Не найден.");
 
             String text = """
                 По заказу №%s поставлена оценка "2" от эксперта %s.
@@ -216,9 +220,7 @@ public class ReviewService {
                 Менеджер, который ведёт заказ -> %s
                 """.formatted(techNumber, expertUsername, authorUsername, hostUsername);
 
-            for (Long userId : userIds) {
-                botNotificationService.sendBotNotification(userId, text);
-            }
+            botNotificationService.sendBotNotificationToAdmins(text);
         }
     }
 
