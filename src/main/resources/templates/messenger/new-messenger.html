@@ -151,8 +151,10 @@
                             id="additional-intermediate-deadline"></span></div>
                     <div class="col-12 col-sm-12 mt-2"><span class="fw-bold">Дополнительные этапы сдачи:</span> <span
                             id="additional-dates"></span></div>
-                    <div class="col-12 col-sm-12 mt-1 mb-0"><a class="fw-bold" id="send-to-review">Отправить на
+                    <div class="col-12 col-sm-6 mt-1 mb-0"><a class="fw-bold" id="send-to-review">Отправить на
                         проверку</a>
+                    </div>
+                    <div class="col-12 col-sm-6 mt-1 mb-0"><a class="fw-bold" id="open-edit-window">Редактировать</a>
                     </div>
                 </div>
                 <hr class="mt-0"/>
@@ -274,6 +276,7 @@
     const userId = [[${userId}]];
     const isAdmin = [[${isAdmin}]];
     const isOwner = [[${isOwner}]];
+    const isAuthor = [[${isAuthor}]];
 
     const context = {
         userId: userId,
@@ -281,7 +284,13 @@
         chatId: null,
         isAdmin: isAdmin,
         isOwner: isOwner,
+        isAuthor: isAuthor,
         loadUsersReadMessageCache: {}
+    }
+
+    if (isAuthor) {
+        $("send-to-review").addClass("d-none")
+        $("open-edit-window").addClass("d-none")
     }
 </script>
 <script src="/static/new-chat-script.js"></script>

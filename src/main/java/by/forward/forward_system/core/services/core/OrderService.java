@@ -549,6 +549,13 @@ public class OrderService {
         withAdmins.addAll(usersWithRoleAdmin);
 
         if (update.getIsForwardOrder()) {
+            List<UserEntity> additionalUsers = orderEntity.getOrderParticipants().stream()
+                .filter(t -> t.getParticipantsType().getType() == ParticipantType.CATCHER)
+                .map(OrderParticipantEntity::getUser)
+                .toList();
+
+            withAdmins.addAll(additionalUsers);
+
             makeForwardChats(usersWithRoleAdmin, withAdmins, orderEntity);
         } else {
             makeDefaultChat(withAdmins, orderEntity);

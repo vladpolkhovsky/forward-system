@@ -22,7 +22,7 @@ public interface PlanRepository extends JpaRepository<PlanEntity, Long> {
     @Query(value = """
             select new by.forward.forward_system.core.jpa.repository.projections.UserPlanProjectionDto(p, u) from PlanEntity p
                     inner join UserEntity u on p.userId = u.id
-                    where p.userId in :userIds order by p.start
+                    where p.userId in :userIds order by p.start limit 100
         """)
     List<UserPlanProjectionDto> loadUsersPlans(List<Long> userIds);
 

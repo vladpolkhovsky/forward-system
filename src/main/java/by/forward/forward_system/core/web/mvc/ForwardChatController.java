@@ -48,11 +48,13 @@ public class ForwardChatController {
         String redirectUrl = URLEncoder.encode(contextPath, StandardCharsets.UTF_8);
 
         boolean isCurrentUserAdmin = userUiService.isCurrentUserAdmin();
+        boolean isCurrentUserAuthor = userUiService.isCurrentUserAuthor();
         long currentUserId = userUiService.getCurrentUserId();
 
         model.addAttribute("userShort", userUiService.getCurrentUser());
 
         model.addAttribute("isAdmin", isCurrentUserAdmin);
+        model.addAttribute("isAuthor", isCurrentUserAuthor);
         model.addAttribute("redirectUrl", redirectUrl);
 
         ForwardOrderData userForwardOrderData = forwardOrderService.findAllProjections(currentUserId, isCurrentUserAdmin);

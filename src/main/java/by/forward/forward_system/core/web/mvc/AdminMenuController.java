@@ -22,7 +22,10 @@ import org.springframework.web.servlet.view.RedirectView;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
@@ -120,11 +123,11 @@ public class AdminMenuController {
         userUiService.checkAccessAdmin();
 
         List<UserSimpleProjectionDto> managers = planService.getAllManagers();
+        List<Long> managerIds = managers.stream()
+            .map(UserSimpleProjectionDto::getId)
+            .toList();
 
-        Map<Long, List<UserPlanProjectionDto>> plansByManager = planService.getAllUsersPlans(managers.stream()
-                .map(UserSimpleProjectionDto::getId)
-                .toList()
-            ).stream()
+        Map<Long, List<UserPlanProjectionDto>> plansByManager = planService.getAllUsersPlans(managerIds).stream()
             .collect(Collectors.groupingBy(UserPlanProjectionDto::getUserId))
             .entrySet().stream()
             .map(e -> {

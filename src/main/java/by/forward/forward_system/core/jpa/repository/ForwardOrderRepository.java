@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity, Long> {
@@ -98,4 +99,10 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
         """)
     Optional<ChatEntity> findForwardOrderChatByChatId(Long chatId);
 
+    @Query("""
+        select distinct cme.chat.id from ForwardOrderEntity foe
+             inner join ChatMemberEntity cme on cme.chat.id = foe.chat.id
+             where foe.chat.id in :chatIds and cme.user.id = :userId
+        """)
+    Set<Long> findChatParticipants(Long userId, List<Long> chatIds);
 }

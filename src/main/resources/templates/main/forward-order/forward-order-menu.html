@@ -139,7 +139,7 @@
 
                     </div>
                 </div>
-                <div class="row border-top pt-3" style="min-height: 15vh; max-height: 15vh">
+                <div class="row border-top pt-3" style="min-height: 15vh; max-height: 15vh" th:if="${isAdmin || isAuthor}">
                     <div class="col-8">
                         <textarea id="message-box" class="form-control h-75"></textarea>
                     </div>
@@ -158,7 +158,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12 col-lg-4" th:if="${hasOptionWindow}">
+        <div class="col-12 col-lg-4" th:if="${hasOptionWindow && (isAdmin || isAuthor)}">
             <div style="min-height: 90vh; max-height: 90vh" class="overflow-scroll">
                 <a th:href="'/order-info/' + ${forwardOrder.getOrderId()}" target="_blank" class="h5 m-0 mt-1 me-1"
                    th:text="'ТЗ № ' + ${forwardOrder.getTechNumber()}">ТЗ №100500</a>
@@ -489,6 +489,26 @@
         </div>
     </div>
 </div>
+<script>
+    function onSearchBarClearBtnClick() {
+        document.getElementById("search-input").value = "";
+
+        document.querySelectorAll("[searchable=true]").forEach(el => {
+            el.classList.remove("d-none");
+        })
+    }
+
+    function onSearchBarBtnClick() {
+        let target = document.getElementById("search-input").value.toLowerCase();
+
+        document.querySelectorAll("[searchable=true]").forEach(el => {
+            let text = el.getAttribute("search-text");
+            if (!text.toLowerCase().includes(target)) {
+                el.classList.add("d-none");
+            }
+        })
+    }
+</script>
 <script th:inline="javascript" th:if="${initJavascript}">
     //setTimeout(() => showChatWindow(), 1000);
 
@@ -590,26 +610,7 @@
     const selectedBox = document.querySelector('[selected=true]');
     const selectedBoxTopPos = selectedBox.offsetTop;
 
-    document.getElementById('forward-orders-box').scrollTop = selectedBoxTopPos;
-
-    function onSearchBarClearBtnClick() {
-        document.getElementById("search-input").value = "";
-
-        document.querySelectorAll("[searchable=true]").forEach(el => {
-            el.classList.remove("d-none");
-        })
-    }
-
-    function onSearchBarBtnClick() {
-        let target = document.getElementById("search-input").value.toLowerCase();
-
-        document.querySelectorAll("[searchable=true]").forEach(el => {
-            let text = el.getAttribute("search-text");
-            if (!text.toLowerCase().includes(target)) {
-                el.classList.add("d-none");
-            }
-        })
-    }
+    document.getElementById('forward-orders-box').scrollTop = selectedBoxTopPos
 </script>
 </body>
 </html>

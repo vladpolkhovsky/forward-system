@@ -44,6 +44,7 @@ public class MessengerController {
         model.addAttribute("userId", userUiService.getCurrentUserId());
         model.addAttribute("isAdmin", userUiService.isCurrentUserAdmin());
         model.addAttribute("isOwner", userUiService.isCurrentUserOwner());
+        model.addAttribute("isAuthor", userUiService.isCurrentUserAuthor());
         return "messenger/new-messenger";
     }
 

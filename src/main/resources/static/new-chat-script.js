@@ -35,6 +35,7 @@ const deadline = document.getElementById("additional-deadline");
 const intermediateDeadline = document.getElementById("additional-intermediate-deadline");
 const additionalDates = document.getElementById("additional-dates");
 const sendToReview = document.getElementById("send-to-review");
+const openToEdit = document.getElementById("open-edit-window");
 const additionalViewFull = document.getElementById("additional-view-full");
 
 const chatWindow = document.getElementById("scroll-window");
@@ -625,6 +626,7 @@ function formatChatHeader(chatId, chatName, orderInfo) {
         status.innerHTML = createStatus(orderInfo.orderStatus, orderInfo.id);
         intermediateDeadline.innerText = orderInfo.intermediateDeadline;
         sendToReview.setAttribute("href", `/expert-review-order/${orderInfo.id}`)
+        openToEdit.setAttribute("href", `/update-order/${orderInfo.id}`)
         additionalDates.innerHTML = createDates(JSON.parse(orderInfo.dates));
 
         additionalViewFull.setAttribute("href", `/order-info/${orderInfo.id}`)

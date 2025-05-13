@@ -29,6 +29,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -79,8 +80,10 @@ public class ForwardOrderService {
             );
         }
 
+        Set<Long> userChatIds = forwardOrderRepository.findChatParticipants(currentUserId, chatIds);
+
         List<ForwardOrderProjection> userForwardOrders = allProjections.stream()
-            .filter(t -> Objects.equals(t.getAuthorUserId(), currentUserId))
+            .filter(t -> userChatIds.contains(t.getChatId()))
             .toList();
 
         return new ForwardOrderData(

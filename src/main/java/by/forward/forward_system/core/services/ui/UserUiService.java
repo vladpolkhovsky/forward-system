@@ -108,6 +108,12 @@ public class UserUiService {
         return byUsername.get().hasAuthority(Authority.ADMIN);
     }
 
+    public Boolean isCurrentUserAuthor() {
+        UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
+        Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
+        return byUsername.get().hasAuthority(Authority.AUTHOR);
+    }
+
     public Boolean isCurrentUserOwner() {
         UserDetails currentUserDetails = AuthUtils.getCurrentUserDetails();
         Optional<UserEntity> byUsername = userService.getByUsername(currentUserDetails.getUsername());
