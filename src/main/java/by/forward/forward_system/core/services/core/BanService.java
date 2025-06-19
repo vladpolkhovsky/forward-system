@@ -95,7 +95,7 @@ public class BanService {
                 securityBlockEntity.setReason(reason);
                 securityBlockRepository.save(securityBlockEntity);
 
-                sendNotificationToAdmins(userEntity);
+                sendNotificationToAdmins(userEntity, reason);
             }
 
             return true;
@@ -212,7 +212,8 @@ public class BanService {
         }
     }
 
-    private void sendNotificationToAdmins(UserEntity userEntity) {
+    private void sendNotificationToAdmins(UserEntity userEntity, String reason) {
+        String reasonText = StringUtils.abbreviate(Optional.ofNullable(StringUtils.trimToNull(reason)).orElse("<Не указана>"), 512);
         String text = """
             СРОЧНО!
             
@@ -220,11 +221,15 @@ public class BanService {
             Система заблокировала пользователя: %s.
             Проверьте правильность блокировки пользователя.
             
+            ---
+            Причина блокировки: %s
+            ---
+            
             СРОЧНО!
             """;
         List<UserEntity> allUserWithoutRole = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allUserWithoutRole) {
-            botNotificationService.sendBotNotification(admin.getId(), text.formatted(admin.getUsername(), userEntity.getUsername()));
+            botNotificationService.sendBotNotification(admin.getId(), text.formatted(admin.getUsername(), userEntity.getUsername(), reasonText));
         }
     }
 }
