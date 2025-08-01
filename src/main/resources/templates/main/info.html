@@ -11,24 +11,8 @@
 <body>
 <div th:insert="~{main/header :: header-div}"></div>
 <div class="container">
-    <div class="mb-3">
-        <label class="mt-3 form-label" for="full-name">ФИО</label>
-        <input class="form-control" id="full-name" readonly th:value="${user.getLastname()} + | | + ${user.getFirstname()} + | | + ${user.getSurname()}"
-               type="text">
-        <label class="mt-3 form-label" for="username">Имя пользователя</label>
-        <input class="form-control" id="username" readonly th:value="${user.getUsername()}" type="text">
-        <label class="mt-3 form-label" for="roles">Ваши роли</label>
-        <ul class="mt-0 list-group" id="roles">
-            <li class="list-group-item" th:if="${user.getIsAdmin()}">Администратор</li>
-            <li class="list-group-item" th:if="${user.getIsAuthor()}">Автор/Эксперт</li>
-            <li class="list-group-item" th:if="${user.getIsHr()}">HR</li>
-            <li class="list-group-item" th:if="${user.getIsManager()}">Менеджер</li>
-            <li class="list-group-item" th:if="${user.getIsOwner()}">Владелец</li>
-            <li class="list-group-item" th:if="${user.getIsAccountant()}">Бухгалтер</li>
-        </ul>
-        <label class="mt-3 form-label" for="id">Системный идентификатор</label>
-        <input class="form-control" id="id" readonly th:value="${user.getId()}" type="text">
-    </div>
+    <div data-vue-component="view/UserDetailedView" class="container"></div>
+    <script src="/static/vue/components.js"></script>
 </div>
 </body>
 </html>

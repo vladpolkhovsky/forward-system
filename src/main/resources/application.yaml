@@ -22,7 +22,7 @@ spring:
 
   datasource:
     hikari:
-      maximum-pool-size: 30
+      maximum-pool-size: 4
       max-lifetime: 60000
       validationTimeout: 3000
     driver-class-name: org.postgresql.Driver
@@ -35,7 +35,7 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         jdbc:
@@ -43,6 +43,7 @@ spring:
         order_updates: true
         order_inserts: true
         generate_statistics: false
+        format_sql: true
 
   main:
     allow-circular-references: true

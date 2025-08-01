@@ -1,0 +1,12 @@
+plugins {
+    id("com.github.node-gradle.node") version "7.1.0"
+}
+
+task install(type: NpmTask) {
+    args = ['install']
+}
+
+task build(type: NpmTask) {
+    dependsOn install
+    args = ['run', 'build']
+}

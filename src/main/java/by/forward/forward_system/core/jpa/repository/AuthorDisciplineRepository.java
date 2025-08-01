@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.AuthorDisciplineEntity;
+import by.forward.forward_system.core.jpa.model.DisciplineEntity;
 import by.forward.forward_system.core.jpa.repository.projections.DisciplineProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,12 @@ public interface AuthorDisciplineRepository extends JpaRepository<AuthorDiscipli
         	    inner join forward_system.disciplines d on ad.discipline_id = d.id
         """)
     List<DisciplineProjection> getAllDisciplines();
+
+    @Query("""
+        select de from AuthorDisciplineEntity de
+            join fetch de.discipline
+            join fetch de.disciplineQuality
+            where de.author.id = :userId
+        """)
+    List<AuthorDisciplineEntity> findUserDisciplinesByUserId(Long userId);
 }

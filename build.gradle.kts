@@ -31,7 +31,7 @@ dependencies {
 	implementation("org.springframework.retry:spring-retry:2.0.11")
 	implementation("org.springframework:spring-aspects:6.2.5")
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	//implementation("org.springframework.session:spring-session-jdbc")
+
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
 	implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
@@ -40,6 +40,7 @@ dependencies {
 	implementation("org.apache.commons:commons-lang3:3.12.0")
 	implementation("org.apache.commons:commons-collections4:4.4")
 	implementation("nl.martijndwars:web-push:5.1.1")
+	implementation("org.mapstruct:mapstruct:1.6.3")
 	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 
 	implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.2.1")
@@ -53,12 +54,20 @@ dependencies {
 	runtimeOnly("com.h2database:h2")
 
 	compileOnly("org.projectlombok:lombok")
-	annotationProcessor("org.projectlombok:lombok")
+
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
+
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	annotationProcessor("org.projectlombok:lombok")
+	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 }
 
 tasks.withType<Test> {
-	useJUnitPlatform()
+	//useJUnitPlatform()
+}
+
+tasks.build {
+	dependsOn(project("forward-system-frontend").tasks.build)
 }

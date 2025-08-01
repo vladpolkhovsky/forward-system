@@ -225,7 +225,9 @@ public class CreateOrderController {
     public String viewMyOrderAuthor(Model model,
                                     @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                     @RequestParam(value = "techNumber", required = false) String techNumber) {
-        loadPage(model, page, techNumber, "/view-my-order-author");
+
+        model.addAttribute("menuName", "Выберите заказ для просмотра");
+        model.addAttribute("userShort", userUiService.getCurrentUser());
         return "main/view-order-author-selector";
     }
 

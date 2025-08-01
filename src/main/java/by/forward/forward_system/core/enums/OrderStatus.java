@@ -32,4 +32,14 @@ public enum OrderStatus {
         }
         return null;
     }
+
+    public int getOrdinal() {
+        OrderStatus[] values = OrderStatus.values();
+        for (int i = 0; i < values.length; i++) {
+            if (this == values[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
 }
