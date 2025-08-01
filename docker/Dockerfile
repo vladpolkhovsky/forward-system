@@ -1,10 +1,16 @@
-FROM openjdk:17
+FROM openjdk:17-alpine
 
 USER root
 
-RUN wget -fsSL https://deb.nodesource.com/setup_22.x | bash -
-RUN microdnf install -y --nodocs wget findutils nodejs
-RUN npm install
+# Установка Node.js 22 из edge-репозитория
+RUN apk add --update --no-cache \
+    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
+    nodejs npm
+
+# Проверка версий
+RUN node -v && npm -v
+
+#Подготовка сертификата yandex
 RUN keytool -importkeystore -srckeystore forward-system.jks -destkeystore forward-system.p12 -deststoretype pkcs12
 RUN mkdir -p /root/.postgresql && \
     wget "https://storage.yandexcloud.net/cloud-certs/CA.pem" \
@@ -14,10 +20,11 @@ RUN mkdir -p /root/.postgresql && \
 COPY . /usr/src/forward-system
 WORKDIR /usr/src/forward-system
 
-RUN ls
-RUN sed -i -e 's/\r$//' ./gradlew
-RUN chmod +x ./gradlew
 RUN echo Build starts
+RUN ls
+RUN node -v
+RUN npm -v
+RUN chmod +x ./gradlew
 RUN ./gradlew build -x test
 
 EXPOSE 8081/tcp
