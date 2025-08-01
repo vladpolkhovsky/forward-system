@@ -31,6 +31,8 @@ RUN echo Build starts
 RUN ls
 RUN node -v
 RUN npm -v
+RUN gradle :forward-system-frontend:install
+RUN gradle :forward-system-frontend:build
 RUN gradle clean build -x test
 
 EXPOSE 8081/tcp
