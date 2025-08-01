@@ -48,7 +48,7 @@ public class BotNotificationService {
             long newCode = 0L;
 
             while (codeExists) {
-                newCode = 100_000 + (new Random().nextLong(100_000, 800_000));
+                newCode = 100_000 + (new Random().nextLong(100_000L, 800_000L));
                 codeExists = botNotificationCodeRepository.existsByCode(Long.toString(newCode));
             }
 

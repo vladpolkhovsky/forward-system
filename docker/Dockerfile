@@ -1,13 +1,17 @@
-FROM openjdk:17-alpine
+# Стадия с Node.js
+FROM node:22-alpine AS nodejs
 
-USER root
+# Финальная стадия с JDK
+FROM gradle:jdk21-alpine
 
-# Установка Node.js 22 из edge-репозитория
-RUN apk add --update --no-cache \
-    --repository=https://dl-cdn.alpinelinux.org/alpine/edge/main \
-    nodejs npm
+# Копируем всю среду Node.js
+COPY --from=nodejs /usr/local /usr/local
 
-# Проверка версий
+# Копируем зависимости C++
+COPY --from=nodejs /lib/ /lib/
+COPY --from=nodejs /usr/lib/ /usr/lib/
+
+# Проверка версии
 RUN node -v && npm -v
 
 #Подготовка сертификата yandex
@@ -17,6 +21,9 @@ RUN mkdir -p /root/.postgresql && \
       --output-document /root/.postgresql/root.crt && \
     chmod 0600 /root/.postgresql/root.crt
 
+# Установка необходимых библиотек
+RUN apk add --no-cache libc6-compat gcompat
+
 COPY . /usr/src/forward-system
 WORKDIR /usr/src/forward-system
 
@@ -24,8 +31,7 @@ RUN echo Build starts
 RUN ls
 RUN node -v
 RUN npm -v
-RUN chmod +x ./gradlew
-RUN ./gradlew build -x test
+RUN gradle clean build -x test
 
 EXPOSE 8081/tcp
 ENV TZ="Europe/Moscow"
