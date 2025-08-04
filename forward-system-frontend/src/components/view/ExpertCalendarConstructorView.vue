@@ -5,7 +5,6 @@ import type {AuthorShortDto} from "@/core/dto/AuthorShortDto.ts";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 import type {CalendarGroupDto} from "@/core/dto/CalendarGroupDto.ts";
 import ExpertCalendarGridConstructor from "@/components/elements/ExpertCalendarGridConstructor.vue";
-import ExpertCalendarView from "@/components/view/ExpertCalendarView.vue";
 
 interface CalendarGroup {
   id: number
