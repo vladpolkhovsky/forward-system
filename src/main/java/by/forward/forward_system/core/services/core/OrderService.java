@@ -23,6 +23,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,6 +119,8 @@ public class OrderService {
         orderEntity.setDeadline(order.getDeadline());
         orderEntity.setOther(order.getOther());
         orderEntity.setViolationsInformation(order.getViolationsInformation());
+        orderEntity.setOrderSource(order.getOrderSource());
+        orderEntity.setVerifyPlanOnAccept(BooleanUtils.toBoolean(order.getVerifyPlanOnAccept()));
         orderEntity.setAuthorCost(order.getAuthorCost());
         orderEntity.setTakingCost(order.getTakingCost());
 
@@ -159,6 +162,9 @@ public class OrderService {
         }
         if (!Objects.equals(oldData.getIntermediateDeadline(), newData.getIntermediateDeadline())) {
             changes.put("Промежуточный срок сдачи", Arrays.asList(dateToString(oldData.getIntermediateDeadline()), dateToString(newData.getIntermediateDeadline())));
+        }
+        if (!Objects.equals(oldData.getVerifyPlanOnAccept(), newData.getVerifyPlanOnAccept())) {
+            changes.put("Согласование плана", Arrays.asList(Objects.toString(oldData.getVerifyPlanOnAccept()), Objects.toString(newData.getVerifyPlanOnAccept())));
         }
         if (!oldData.getDeadline().equals(newData.getDeadline())) {
             changes.put("Окончательный срок сдачи", Arrays.asList(dateToString(oldData.getDeadline()), dateToString(newData.getDeadline())));
@@ -451,6 +457,8 @@ public class OrderService {
         orderDto.setDeadline(orderEntity.getDeadline());
         orderDto.setOther(orderEntity.getOther());
         orderDto.setViolationsInformation(orderEntity.getViolationsInformation());
+        orderDto.setOrderSource(orderEntity.getOrderSource());
+        orderDto.setVerifyPlanOnAccept(orderEntity.getVerifyPlanOnAccept());
         orderDto.setAuthorCost(orderEntity.getAuthorCost());
         orderDto.setTakingCost(orderEntity.getTakingCost());
         orderDto.setCreatedAt(orderEntity.getCreatedAt());

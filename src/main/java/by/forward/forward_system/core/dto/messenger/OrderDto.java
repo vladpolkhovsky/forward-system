@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.dto.messenger;
 
+import by.forward.forward_system.core.enums.OrderSourceType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,12 +21,14 @@ public class OrderDto {
     private String subject;
     private String amount;
     private String verificationSystem;
+    private Boolean verifyPlanOnAccept;
     private String additionalDates;
     private Integer originality;
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;
     private String other;
     private String violationsInformation;
+    private OrderSourceType orderSource;
     private Integer authorCost;
     private Integer takingCost;
     private LocalDateTime createdAt;

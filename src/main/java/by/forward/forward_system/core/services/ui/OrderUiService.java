@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -298,11 +299,13 @@ public class OrderUiService {
             orderEntity.getOrderStatus().getStatus().getName(),
             orderEntity.getOrderStatus().getStatus().getRusName(),
             orderEntity.getVerificationSystem(),
+            orderEntity.getVerifyPlanOnAccept(),
             orderEntity.getAdditionalDates(),
             orderEntity.getIntermediateDeadline(),
             orderEntity.getDeadline(),
             orderEntity.getOther(),
             orderEntity.getViolationsInformation(),
+            orderEntity.getOrderSource(),
             orderEntity.getTakingCost(),
             orderEntity.getAuthorCost(),
             orderEntity.getCreatedAt(),
@@ -361,6 +364,8 @@ public class OrderUiService {
         orderEntity.setDeadline(orderUiDto.getDeadline());
         orderEntity.setOther(orderUiDto.getOther());
         orderEntity.setViolationsInformation(orderUiDto.getViolationsInformation());
+        orderEntity.setOrderSource(orderUiDto.getOrderSource());
+        orderEntity.setVerifyPlanOnAccept(BooleanUtils.toBoolean(orderUiDto.getVerifyPlanOnAccept()));
         orderEntity.setTakingCost(orderUiDto.getTakingCost());
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
         orderEntity.setCreatedAt(orderUiDto.getCreatedAt());

@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.model;
 
+import by.forward.forward_system.core.enums.OrderSourceType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -44,6 +45,13 @@ public class OrderEntity {
 
     @Column(name = "verification_system")
     private String verificationSystem;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "order_source")
+    private OrderSourceType orderSource;
+
+    @Column(name = "verify_plan")
+    private Boolean verifyPlanOnAccept;
 
     @Column(name = "amount", length = 2048)
     private String amount;

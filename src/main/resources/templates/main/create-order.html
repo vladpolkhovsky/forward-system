@@ -105,6 +105,14 @@
                     </div>
                 </div>
                 <div class="mb-3 mt-3 row">
+                    <label class="col-sm-2 col-form-label" for="verifyPlanOnAccept">Согласование плана:</label>
+                    <div class="col-sm-10 my-auto">
+                        <div class="form-check form-switch align-items-sm-center d-flex">
+                            <input class="form-check-input" type="checkbox" role="switch" id="verifyPlanOnAccept" th:field="*{verifyPlanOnAccept}">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3 mt-3 row">
                     <label class="col-sm-2 col-form-label" for="additionalDates">Дополнительный этапы сдачи</label>
                     <input hidden id="additionalDates" th:field="*{additionalDates}" type="text">
                     <div class="col-sm-9" id="additionalDatesDiv">
@@ -129,6 +137,16 @@
                         пожелания</label>
                     <div class="col-sm-10">
                         <textarea class="form-control" id="other" rows="5" th:field="*{other}"></textarea>
+                    </div>
+                </div>
+
+                <div class="mb-3 mt-3 row">
+                    <label class="col-sm-2 col-form-label" for="orderSource">Аккаунт<strong
+                            class="text-danger">*</strong></label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="orderSource" th:field="*{orderSource}" required>
+                            <option th:each="orderSource : ${orderSources}" th:value="${orderSource}" th:text="${orderSource.getRusName()}"></option>
+                        </select>
                     </div>
                 </div>
 

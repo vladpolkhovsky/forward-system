@@ -92,6 +92,15 @@
         </div>
     </div>
     <div class="mb-3 mt-3 row">
+        <label class="col-sm-2 col-form-label" for="verifyPlanOnAccept">Согласование плана:</label>
+        <div class="col-sm-10">
+            <input th:if="${order.getVerifyPlanOnAccept()}" class="form-control-plaintext" id="verifyPlanOnAccept" readonly value="В день получения ТЗ (заказа)"
+                   type="text">
+            <input th:unless="${order.getVerifyPlanOnAccept()}" class="form-control-plaintext" id="verifyPlanOnAccept" readonly value="Нет"
+                   type="text">
+        </div>
+    </div>
+    <div class="mb-3 mt-3 row">
         <label class="col-sm-2 col-form-label" for="additionalDates">Дополнительный этапы сдачи</label>
         <input hidden id="additionalDates" th:value="${order.getAdditionalDates()}" type="text">
         <div class="col-sm-9" id="additionalDatesDiv">
@@ -126,6 +135,13 @@
         <div class="col-sm-10">
             <textarea class="form-control-plaintext" id="violationsInformation" readonly rows="7"
                       th:text="${order.getViolationsInformation()}"></textarea>
+        </div>
+    </div>
+    <div class="row mb-3 mt-3">
+        <label class="col-sm-2 col-form-label" for="orderSource">Аккаунт</label>
+        <div class="col-sm-10">
+            <input class="form-control-plaintext" id="orderSource" readonly th:value="${order.getOrderSource().getRusName()}"
+                   type="text">
         </div>
     </div>
     <div class="row mb-3 mt-3">

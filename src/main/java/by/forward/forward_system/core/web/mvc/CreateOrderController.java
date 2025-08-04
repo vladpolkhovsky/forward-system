@@ -2,6 +2,7 @@ package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
 import by.forward.forward_system.core.dto.ui.*;
+import by.forward.forward_system.core.enums.OrderSourceType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
@@ -53,6 +54,7 @@ public class CreateOrderController {
         model.addAttribute("actionUrl", "/create-order");
         model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         model.addAttribute("disciplines", disciplineService.allDisciplines());
+        model.addAttribute("orderSources", OrderSourceType.values());
 
         return "main/create-order";
     }
@@ -102,6 +104,7 @@ public class CreateOrderController {
         model.addAttribute("order", orderUiService.getOrder(id));
         model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         model.addAttribute("actionUrl", "/update-order/" + id);
+        model.addAttribute("orderSources", OrderSourceType.values());
 
         return "main/create-order";
     }

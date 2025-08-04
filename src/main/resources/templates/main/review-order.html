@@ -29,7 +29,7 @@
                         <input class="form-check-input" name="catcher" th:checked="${catcher.getChecked()}"
                                th:id="|catcher-| + ${catcher.getId()}" th:value="${catcher.getId()}" type="radio">
                         <label class="form-check-label" th:for="|catcher-| + ${catcher.getId()}"
-                               th:text="${catcher.getFio()} + | (| + ${catcher.getUsername()} + |)|"></label>
+                               th:text="${catcher.getUsername()}"></label>
                     </div>
                 </li>
             </ul>
@@ -67,7 +67,7 @@
                         <input class="form-check-input" name="host" th:checked="${host.getChecked()}" input-group="host"
                                th:id="|host-| + ${host.getId()}" th:value="${host.getId()}" type="radio" th:disabled="${isForwardOrder}">
                         <label class="form-check-label" th:for="|host-| + ${host.getId()}"
-                               th:text="${host.getFio()} + | (| + ${host.getUsername()} + |)|"></label>
+                               th:text="${host.getUsername()}"></label>
                     </div>
                 </li>
             </ul>

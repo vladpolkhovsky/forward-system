@@ -751,3 +751,6 @@ create table forward_system.calendar_group_participant_status
     foreign key (user_id, group_id) references forward_system.calendar_group_participant(user_id, group_id),
     primary key (user_id, group_id, day)
 );
+
+alter table forward_system.orders add column order_source varchar(50) not null default 'Unknown';
+alter table forward_system.orders add column verify_plan boolean not null default false;

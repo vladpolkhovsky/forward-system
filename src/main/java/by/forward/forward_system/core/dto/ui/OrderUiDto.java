@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.dto.ui;
 
+import by.forward.forward_system.core.enums.OrderSourceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,11 +26,13 @@ public class OrderUiDto {
     private String orderStatus;
     private String orderStatusRus;
     private String verificationSystem;
+    private Boolean verifyPlanOnAccept;
     private String additionalDates;
     private LocalDateTime intermediateDeadline;
     private LocalDateTime deadline;
     private String other;
     private String violationsInformation;
+    private OrderSourceType orderSource;
     private Integer takingCost;
     private Integer authorCost;
     private LocalDateTime createdAt;

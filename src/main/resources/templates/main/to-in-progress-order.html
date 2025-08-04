@@ -25,7 +25,7 @@
                         <input class="form-check-input" name="catcher" th:checked="${catcher.getChecked()}"
                                th:id="|catcher-| + ${catcher.getId()}" th:value="${catcher.getId()}" type="radio">
                         <label class="form-check-label" th:for="|catcher-| + ${catcher.getId()}"
-                               th:text="${catcher.getFio()} + | (| + ${catcher.getUsername()} + |)|"></label>
+                               th:text="${catcher.getUsername()}"></label>
                     </div>
                 </li>
             </ul>
@@ -38,7 +38,7 @@
                         <input class="form-check-input" name="author" th:checked="${author.getChecked()}"
                                th:id="|author-| + ${author.getId()}" th:value="${author.getId()}" type="checkbox">
                         <label class="form-check-label" th:for="|author-| + ${author.getId()}"
-                               th:text="${author.getFio()} + | (| + ${author.getUsername()} + |)|"></label>
+                               th:text="${author.getUsername()}"></label>
                     </div>
                 </li>
             </ul>
@@ -58,7 +58,7 @@
                         <input class="form-check-input" input-group="host" name="host" th:checked="${host.getChecked()}"
                                th:id="|host-| + ${host.getId()}" th:value="${host.getId()}" type="radio">
                         <label class="form-check-label" th:for="|host-| + ${host.getId()}"
-                               th:text="${host.getFio()} + | (| + ${host.getUsername()} + |)|"></label>
+                               th:text="${host.getUsername()}"></label>
                     </div>
                 </li>
             </ul>

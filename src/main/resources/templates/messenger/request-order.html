@@ -20,12 +20,6 @@
 </div>
 <div class="container">
     <div class="row mb-3 mt-3">
-        <label class="col-sm-2 col-form-label" for="name">Название заказа</label>
-        <div class="col-sm-10">
-            <input class="form-control-plaintext" id="name" readonly th:value="${order.getName()}" type="text">
-        </div>
-    </div>
-    <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="techNumber">Номер ТЗ</label>
         <div class="col-sm-10">
             <input class="form-control-plaintext" id="techNumber" readonly th:value="${order.getTechNumber()}"
@@ -66,11 +60,17 @@
                    type="text">
         </div>
     </div>
-
     <div class="mb-3 mt-3 row">
         <label class="col-sm-2 col-form-label" for="amount">Объем работы (страниц)</label>
         <div class="col-sm-10">
             <input class="form-control-plaintext" id="amount" readonly th:value="${order.getAmount()}"
+                   type="text">
+        </div>
+    </div>
+    <div class="mb-3 mt-3 row" th:if="${order.getVerifyPlanOnAccept()}">
+        <label class="col-sm-2 col-form-label" for="verifyPlanOnAccept">Согласование плана:</label>
+        <div class="col-sm-10">
+            <input class="form-control-plaintext" id="verifyPlanOnAccept" readonly value="В день получения ТЗ (заказа)"
                    type="text">
         </div>
     </div>
