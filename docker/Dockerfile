@@ -28,12 +28,15 @@ COPY . /usr/src/forward-system
 WORKDIR /usr/src/forward-system
 
 RUN echo Build starts
+
 RUN ls
 RUN node -v
 RUN npm -v
+
 RUN gradle :forward-system-frontend:install
 RUN gradle :forward-system-frontend:build
-RUN gradle clean build -x test
+
+RUN gradle clean build -x test -x :forward-system-frontend:build -x :forward-system-frontend:install
 
 EXPOSE 8081/tcp
 ENV TZ="Europe/Moscow"

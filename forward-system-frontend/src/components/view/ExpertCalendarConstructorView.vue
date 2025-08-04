@@ -224,7 +224,6 @@ async function handelDeleteGroup() {
     </div>
   </div>
   <ExpertCalendarGridConstructor :group-id="selectedGroup.id" v-if="selectedGroup" ref="calendarConstructorRef"/>
-  <ExpertCalendarView />
 </template>
 
 <style scoped>
