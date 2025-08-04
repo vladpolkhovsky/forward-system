@@ -6,6 +6,7 @@ import AuthorDisciplines from "@/components/elements/AuthorDisciplines.vue";
 import {AuthorityEnum, hasAuthority} from "@/core/enum/AuthorityEnum.ts";
 import AuthorRating from "@/components/elements/AuthorRating.vue";
 import AuthorMedals from "@/components/elements/AuthorMedals.vue";
+import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 
 interface Props {
   fetchAutomatically: boolean,
@@ -33,13 +34,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container" v-if="loading">
-    <div class="d-flex">
-      <div class="spinner-border m-auto" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  </div>
+  <LoadingSpinner v-if="loading"/>
   <div v-else class="container">
     <div class="row">
       <div class="col-12">

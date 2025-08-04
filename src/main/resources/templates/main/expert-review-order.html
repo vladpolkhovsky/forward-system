@@ -48,7 +48,10 @@
                 </label>
             </div>
 
-            <label class="form-label mt-3" for="select-expert">Выберите эксперта:</label>
+            <div data-vue-component="view/ExpertCalendarView"></div>
+            <script src="/static/vue/components.js"></script>
+
+            <label class="form-label mt-1" for="select-expert">Выберите эксперта (расписание работы выше):</label>
             <select aria-label="Size 3 select example" class="form-select" id="select-expert" name="expertId" required
                     size="15">
                 <option th:each="expert : ${experts}" th:selected="${expert.getChecked()}"

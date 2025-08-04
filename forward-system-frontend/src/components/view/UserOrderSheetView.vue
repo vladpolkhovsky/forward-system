@@ -5,6 +5,7 @@ import type {AuthorOrdersDto} from "@/core/dto/AuthorOrdersDto.ts";
 import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
 import AdditionalDatesDisplay from "@/components/elements/AdditionalDatesDisplay.vue";
 import {OrderStatusEnum} from "@/core/enum/OrderStatusEnum.ts";
+import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 
 const loading = ref(true)
 const filterType = ref("all")
@@ -32,13 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container" v-if="loading">
-    <div class="d-flex">
-      <div class="spinner-border m-auto" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  </div>
+  <LoadingSpinner v-if="loading"/>
   <div v-else class="container">
     <select class="form-select mb-2 mt-2" aria-label="Фильтр по статусам" v-model="filterType" @change="onFilterChange">
       <option selected value="all">Фильтр по статусам</option>

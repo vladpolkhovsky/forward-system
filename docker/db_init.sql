@@ -720,10 +720,33 @@ create unique index customer_telegram_to_forward_order_idx on forward_system.cus
 alter table forward_system.forward_order
     add column is_payment_send bool not null default false;
 
-insert into forward_system.bot_type values ('CUSTOMER_TELEGRAM_BOT');
+insert into forward_system.bot_type
+values ('CUSTOMER_TELEGRAM_BOT');
 
-create unique index chat_id_to_bot_type_idx on forward_system.bot_integration_data(bot_type, user_id, telegram_chat_id);
+create unique index chat_id_to_bot_type_idx on forward_system.bot_integration_data (bot_type, user_id, telegram_chat_id);
 
 alter table forward_system.forward_order
-    add column admin_notes varchar(8192) default 'Здесь вы можете оставить свои заметки!',
-    add column author_notes varchar(8192) default 'Здесь вы можете оставить свои заметки!'
+    add column admin_notes  varchar(8192) default 'Здесь вы можете оставить свои заметки!',
+    add column author_notes varchar(8192) default 'Здесь вы можете оставить свои заметки!';
+
+create table forward_system.calendar_group
+(
+    id         bigint primary key,
+    name       varchar(512) not null,
+    created_at timestamp    not null default now()
+);
+
+create table forward_system.calendar_group_participant
+(
+    user_id  bigint not null references forward_system.users (id),
+    group_id bigint not null references forward_system.calendar_group (id),
+    primary key (user_id, group_id)
+);
+
+create table forward_system.calendar_group_participant_status
+(
+    user_id  bigint not null references forward_system.calendar_group_participant (user_id),
+    group_id bigint not null references forward_system.calendar_group_participant (group_id),
+    day timestamp not null,
+    primary key (user_id, group_id)
+);

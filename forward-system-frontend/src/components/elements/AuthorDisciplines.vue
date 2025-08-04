@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import type {AuthorDisciplinesDto} from "@/core/dto/AuthorDisciplinesDto.ts";
+import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 
 interface Props {
   userId: number
@@ -21,13 +22,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container" v-if="loading">
-    <div class="d-flex">
-      <div class="spinner-border m-auto" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
-  </div>
+  <LoadingSpinner v-if="loading"/>
   <div class="mb-3" v-else>
     <p class="h4">Дисциплины пользователя</p>
     <div class="row">

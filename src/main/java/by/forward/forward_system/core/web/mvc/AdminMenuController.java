@@ -118,6 +118,13 @@ public class AdminMenuController {
         return new RedirectView("/main");
     }
 
+    @GetMapping(value = "/calendar-constructor")
+    public String getCalendarConstructor(Model model) {
+        userUiService.checkAccessAdmin();
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/calendar/calendar-constructor";
+    }
+
     @GetMapping(value = "/view-plan")
     public String planRemove(Model model) {
         userUiService.checkAccessAdmin();
