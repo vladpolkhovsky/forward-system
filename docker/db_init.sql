@@ -745,8 +745,9 @@ create table forward_system.calendar_group_participant
 
 create table forward_system.calendar_group_participant_status
 (
-    user_id  bigint not null references forward_system.calendar_group_participant (user_id),
-    group_id bigint not null references forward_system.calendar_group_participant (group_id),
+    user_id  bigint not null,
+    group_id bigint not null,
     day timestamp not null,
-    primary key (user_id, group_id)
+    foreign key (user_id, group_id) references forward_system.calendar_group_participant(user_id, group_id),
+    primary key (user_id, group_id, day)
 );
