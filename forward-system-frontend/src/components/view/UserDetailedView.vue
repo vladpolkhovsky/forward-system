@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 import {onMounted, ref} from "vue";
 import type {UserDto} from "@/core/dto/UserDto.ts";
 import UserAccountInfo from "@/components/elements/UserAccountInfo.vue";

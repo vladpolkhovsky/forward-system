@@ -30,6 +30,13 @@ public class AccountantController {
 
     private final PaymentService paymentService;
 
+    @GetMapping(value = "/accountant/create-author-payment")
+    private String createAuthorPayment(Model model) {
+        userUiService.checkAccessAccountant();
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/accountant/payment/payment-creation";
+    }
+
     @GetMapping(value = "/create-payment")
     public String createPayment(Model model) {
         userUiService.checkAccessAccountant();
@@ -37,7 +44,7 @@ public class AccountantController {
         model.addAttribute("userShort", userUiService.getCurrentUser());
         model.addAttribute("users", authorUiService.getAllAuthorsFast());
 
-        return "main/accountant/create-payment";
+        return "main/accountant/bill/create-payment";
     }
 
     @PostMapping(value = "/create-payment")
@@ -82,7 +89,7 @@ public class AccountantController {
         model.addAttribute("type", type);
         model.addAttribute("payments", payments);
 
-        return "main/accountant/payment-selector";
+        return "main/accountant/bill/payment-selector";
     }
 
     @GetMapping(value = "/payment/{paymentId}")
@@ -140,7 +147,7 @@ public class AccountantController {
         model.addAttribute("signedFileId", signedFileId);
         model.addAttribute("fileCheckId", fileCheckId);
 
-        return "main/accountant/payment";
+        return "main/accountant/bill/payment";
     }
 
     @PostMapping(value = "/send-signed-payment/{paymentId}")
