@@ -2,7 +2,7 @@
 FROM node:22-alpine AS nodejs
 
 # Финальная стадия с JDK
-FROM gradle:jdk21-alpine
+FROM gradle:8.8.0-jdk21-alpine
 
 # Копируем всю среду Node.js
 COPY --from=nodejs /usr/local /usr/local
@@ -36,7 +36,7 @@ RUN npm -v
 RUN gradle :forward-system-frontend:install
 RUN gradle :forward-system-frontend:build
 
-RUN gradle clean build -x test -x :forward-system-frontend:build -x :forward-system-frontend:install
+RUN gradle clean build -x test -x :forward-system-frontend:build -x :forward-system-frontend:install --refresh-dependencies
 
 EXPOSE 8081/tcp
 ENV TZ="Europe/Moscow"
