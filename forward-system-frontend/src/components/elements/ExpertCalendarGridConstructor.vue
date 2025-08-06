@@ -134,7 +134,7 @@ function switchState(day: DateState, userId: number) {
 
 <template>
   <LoadingSpinner v-if="loading"/>
-  <div class="container" v-else>
+  <div class="container shadow-sm p-3 mb-3 bg-body rounded" v-else>
     <p class="fw-bold fs-5">Расписание группы {{ group.name }}</p>
     <div class="row">
       <div class="col-12 col-xl-6 mb-3" v-for="(weekLine, index) in dateGrid" :key="index">

@@ -4,6 +4,8 @@ import by.forward.forward_system.core.dto.messenger.MessageAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageOptionDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
+import by.forward.forward_system.core.dto.rest.payment.CreateOrderPaymentStatusRequest;
+import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.events.events.NotifyChatEvent;
 import by.forward.forward_system.core.events.events.NotifyForwardOrderCustomersEvent;
@@ -12,6 +14,7 @@ import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -322,5 +326,17 @@ public class MessageService {
         ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Chat message type not found for id " + ChatMessageType.MESSAGE.getName()));
 
         sendMessage(null, userAdminChat, message, true, chatMessageTypeEntity, List.of(), List.of());
+    }
+
+    @Transactional
+    public void sendPaymentStatusNotification(List<OrderPaymentStatusDto> request) {
+        var byUser = request.stream().collect(Collectors.groupingBy(OrderPaymentStatusDto::getUser));
+        byUser.forEach((user, statuses) -> {
+            var message = statuses.stream().map(t -> "Заказ №%s - %s руб. Статус: %s."
+                    .formatted(t.getOrder().getOrderTechNumber(), Objects.toString(t.getPaymentValue(), "-"), t.getStatus().getRusName()))
+                    .collect(Collectors.joining("\n"));
+            message = "Здравствуйте, вам были оплачены заказы:\n" + message;
+            sendMessageToAdminChat(user.getId(), message);
+        });
     }
 }

@@ -37,6 +37,12 @@ public class AccountantController {
         return "main/accountant/payment/payment-creation";
     }
 
+    @GetMapping(value = "/accountant/order-payment-status")
+    private String getOrderPaymentStatus(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/accountant/payment/payment-view";
+    }
+
     @GetMapping(value = "/create-payment")
     public String createPayment(Model model) {
         userUiService.checkAccessAccountant();

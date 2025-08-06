@@ -21,8 +21,9 @@ public class AccountantMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Создать выплату", "/create-payment", false, null),
-            new MenuEntry.MenuItem("Просмотр выплат", "/acc-view-payment", false, null)
+                new MenuEntry.MenuItem("Создать выплату", "/create-payment", false, null),
+                new MenuEntry.MenuItem("Просмотр выплат", "/acc-view-payment", false, null),
+                new MenuEntry.MenuItem("Статус выплат (Создание / Просмотр)", "/accountant/create-author-payment", false, null)
         );
 
         return new MenuEntry("Бухгалтер", list, 3);

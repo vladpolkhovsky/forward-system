@@ -6,6 +6,7 @@ import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
 import AdditionalDatesDisplay from "@/components/elements/AdditionalDatesDisplay.vue";
 import {OrderStatusEnum} from "@/core/enum/OrderStatusEnum.ts";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
+import {OrderPaymentStatusEnum, paymentStatusToRusName} from "@/core/enum/OrderPaymentStatusEnum.ts";
 
 const loading = ref(true)
 const filterType = ref("all")
@@ -69,7 +70,12 @@ onMounted(() => {
         <td class="align-content-center">
           <AdditionalDatesDisplay :dates="item.additionalDates"/>
         </td>
-        <td class="text-center align-content-center"><span class="text-nowrap">{{ item.paymentStatus }}</span></td>
+        <td class="text-center align-content-center"><span :class="['badge', {
+                    'text-bg-danger': (item.paymentStatus == OrderPaymentStatusEnum.NO_PAYMENT),
+                    'text-bg-warning': (item.paymentStatus == OrderPaymentStatusEnum.PARTITIONAL_PAYMENT),
+                    'text-bg-success': (item.paymentStatus == OrderPaymentStatusEnum.FULL_PAYMENT),
+                    'text-bg-secondary': (item.paymentStatus == null),
+                  }]">{{ paymentStatusToRusName(item.paymentStatus) }}</span></td>
         <td class="text-center align-content-center">{{ item.deadline }}</td>
       </tr>
       </tbody>

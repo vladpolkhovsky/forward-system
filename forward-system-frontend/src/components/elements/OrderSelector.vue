@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from "vue";
-import {AuthorService} from "@/core/AuthorService.ts";
-import type {AuthorShortDto} from "@/core/dto/AuthorShortDto.ts";
+import type {AuthorOrdersDto} from "@/core/dto/AuthorOrdersDto.ts";
+import {computed, onMounted, ref, watch} from "vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
+import {AuthorOrderService} from "@/core/AuthorOrderService.ts";
 
 interface Props {
+  authorId?: number
   size?: number
 }
 
@@ -13,33 +14,52 @@ let props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  (e: 'select', value: AuthorShortDto): void,
-  (e: 'ready', value: AuthorShortDto[]): void
+  (e: 'select', value: AuthorOrdersDto): void,
+  (e: 'ready', value: AuthorOrdersDto[]): void
 }>()
 
 const selectorSizes = ref(Array.from(new Set([10, 15, 30, 40, 50, 60, 100, props.size])).sort((a, b) => a - b))
 const selectorSize = ref(props.size);
-const selectedAuthor = ref<AuthorShortDto>();
+const selectedOrder = ref<AuthorOrdersDto>();
+const propsAuthorId = computed(() => props.authorId);
 
-watch(selectedAuthor, (newValue) => {
+watch(selectedOrder, (newValue) => {
   emit('select', newValue)
 });
 
+watch(propsAuthorId, () => {
+  refresh();
+});
+
 const loading = ref(true);
-const authors = ref<AuthorShortDto[]>();
+const orders = ref<AuthorOrdersDto[]>();
 
 const refresh = () => {
   loading.value = true;
 
-  AuthorService.fetchAuthors(fetched => {
-    authors.value = fetched;
+  if (propsAuthorId.value) {
+    AuthorOrderService.fetchAuthorOrdersById(propsAuthorId.value, fetched => {
+      orders.value = fetched;
+      loading.value = false;
+      emit("ready", fetched);
+    })
+
+    selectedOrder.value = undefined
+    emit("select", undefined)
+
+    return;
+  }
+
+  AuthorOrderService.fetchAuthorOrders(fetched => {
+    orders.value = fetched;
     loading.value = false;
     emit("ready", fetched);
   })
 
-  selectedAuthor.value = undefined
+  selectedOrder.value = undefined
   emit("select", undefined)
 }
+
 
 defineExpose({
   refresh
@@ -56,14 +76,17 @@ onMounted(() => {
   <div class="container shadow-sm p-3 mb-3 bg-body rounded" v-else>
     <div class="row">
       <div class="col-12">
-        <h4 class="m-0">Авторы</h4>
+        <h4 class="m-0">Заказы</h4>
       </div>
     </div>
     <div class="row mt-2 mb-2">
-      <div class="col-12">
-        <select class="form-select" v-model="selectedAuthor" :size="selectorSize">
-          <option v-for="author in authors" :value="author">{{ author.username }}</option>
+      <div class="col-12" v-if="orders?.length > 0">
+        <select class="form-select" v-model="selectedOrder" :size="selectorSize">
+          <option v-for="order in orders" :value="order">{{ order.orderTechNumber }}</option>
         </select>
+      </div>
+      <div v-else>
+        <p class="mt-0 mb-0">Нет заказов.</p>
       </div>
     </div>
     <div class="row">

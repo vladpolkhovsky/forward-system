@@ -10,7 +10,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 
 // Импортируем все компоненты автоматически
-const components = import.meta.glob('./**/*.(vue|ts|js|d.ts|scss|css)', { eager: true })
+const components = import.meta.glob('./**/*.vue', { eager: true })
 
 // Функция для регистрации компонентов
 window.registerVueComponents = () => {

@@ -30,6 +30,12 @@ public class AuthorRestController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping(value = "/get-author-orders/{authorId}")
+    public ResponseEntity<List<AuthorOrderDto>> getAuthorOrdersById(@PathVariable Long authorId) {
+        var orders = newOrderService.getAuthorOrders(authorId);
+        return ResponseEntity.ok(orders);
+    }
+
     @GetMapping(value = "/get-author-disciplines/{userId}")
     public ResponseEntity<AuthorDisciplinesDto> getAuthorDiscipline(@PathVariable Long userId) {
         var disciplines = newAuthorService.getAuthorDisciplines(userId);

@@ -27,12 +27,12 @@ public abstract class OrderMapper {
 
     @Mapping(target = "orderId", source = "id")
     @Mapping(target = "orderTechNumber", source = "techNumber")
-    @Mapping(target = "deadline", source = "deadline", qualifiedByName = "localDataTimeToMMDDYY")
-    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", qualifiedByName = "localDataTimeToMMDDYY")
+    @Mapping(target = "deadline", source = "deadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", dateFormat = "dd.MM.yyyy HH:mm")
     @Mapping(target = "additionalDates", source = "additionalDates", qualifiedByName = "additionalDatesMapper")
     @Mapping(target = "orderStatus", source = "orderStatus.status.name")
     @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
-    @Mapping(target = "paymentStatus", constant = "<В разработке>")
+    @Mapping(target = "paymentStatus", ignore = true)
     public abstract AuthorOrderDto map(OrderEntity orderEntity);
 
     public abstract List<AuthorOrderDto> map(List<OrderEntity> orderEntities);

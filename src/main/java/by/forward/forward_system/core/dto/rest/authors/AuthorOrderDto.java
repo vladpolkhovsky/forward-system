@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.dto.rest.authors;
 
+import by.forward.forward_system.core.enums.OrderPaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.With;
@@ -17,7 +18,7 @@ public class AuthorOrderDto {
     private String intermediateDeadline;
     private String orderStatus;
     private String orderStatusRus;
-    private String paymentStatus;
+    private OrderPaymentStatus paymentStatus;
 
     @Data
     @AllArgsConstructor

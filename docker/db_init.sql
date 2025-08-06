@@ -745,12 +745,25 @@ create table forward_system.calendar_group_participant
 
 create table forward_system.calendar_group_participant_status
 (
-    user_id  bigint not null,
-    group_id bigint not null,
-    day timestamp not null,
-    foreign key (user_id, group_id) references forward_system.calendar_group_participant(user_id, group_id),
+    user_id  bigint    not null,
+    group_id bigint    not null,
+    day      timestamp not null,
+    foreign key (user_id, group_id) references forward_system.calendar_group_participant (user_id, group_id),
     primary key (user_id, group_id, day)
 );
 
-alter table forward_system.orders add column order_source varchar(50) not null default 'Unknown';
-alter table forward_system.orders add column verify_plan boolean not null default false;
+alter table forward_system.orders
+    add column order_source varchar(50) not null default 'Unknown';
+alter table forward_system.orders
+    add column verify_plan boolean not null default false;
+
+create table forward_system.order_payment_status
+(
+    id         bigint primary key,
+    user_id    bigint      not null references forward_system.authors (id),
+    order_id   bigint      not null references forward_system.orders (id),
+    status     varchar(75) not null,
+    amount     float,
+    created_by bigint      not null references forward_system.users (id),
+    created_at timestamp   not null
+);

@@ -1,4 +1,5 @@
 import type {OrderStatusType} from "@/core/type/OrderStatusType.ts";
+import type {OrderPaymentStatusType} from "@/core/type/OrderPaymentStatusType.ts";
 
 export type AdditionalDate = {
     text: string,
@@ -15,5 +16,5 @@ export interface AuthorOrdersDto {
     intermediateDeadline: string,
     orderStatus: OrderStatusType,
     orderStatusRus: string
-    paymentStatus: string
+    paymentStatus: OrderPaymentStatusType
 }
