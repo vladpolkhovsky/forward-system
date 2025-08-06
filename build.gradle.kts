@@ -53,14 +53,14 @@ dependencies {
 	runtimeOnly("org.postgresql:postgresql")
 	runtimeOnly("com.h2database:h2")
 
-	compileOnly("org.projectlombok:lombok")
-
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.security:spring-security-test")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
-	annotationProcessor("org.projectlombok:lombok")
+	compileOnly("org.projectlombok:lombok:1.18.36")
+
+	annotationProcessor("org.projectlombok:lombok:1.18.36")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
 }
 
