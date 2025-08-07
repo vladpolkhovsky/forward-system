@@ -40,5 +40,5 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             cd /usr/src/forward-system/docker
-            docker compose down
-            docker compose --profile yandex up -d --build
+            docker compose --profile yandex down
+            docker compose --profile yandex up -d
