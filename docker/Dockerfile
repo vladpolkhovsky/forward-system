@@ -24,7 +24,11 @@ RUN mkdir -p /root/.postgresql && \
 # Установка необходимых библиотек
 RUN apk add --no-cache libc6-compat gcompat
 
-COPY . /usr/src/forward-system
+COPY ./forward-system-frontend /usr/src/forward-system/forward-system-frontend
+COPY ./src /usr/src/forward-system/src
+COPY ./build.gradle.kts /usr/src/forward-system/build.gradle.kts
+COPY ./settings.gradle.kts /usr/src/forward-system/settings.gradle.kts
+
 WORKDIR /usr/src/forward-system
 
 RUN echo Build starts

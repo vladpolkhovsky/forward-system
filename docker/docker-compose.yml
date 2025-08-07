@@ -1,9 +1,7 @@
 services:
 
   app-server:
-    build:
-      context: ../
-      dockerfile: ./docker/Dockerfile
+    image: forward-system:latest
     container_name: app-server
     deploy:
       resources:
