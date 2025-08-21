@@ -35,7 +35,7 @@ public class V3ChatRestController {
     }
 
     @GetMapping(value = "/message", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
-    public ResponseEntity<Page<V3MessageDto>> search(@RequestParam("chatId") Long chatId, @RequestParam("after") LocalDateTime after, @PageableDefault(size = 50, page = 0) Pageable pageable) {
+    public ResponseEntity<Page<V3MessageDto>> search(@RequestParam("chatId") Long chatId, @RequestParam("after") LocalDateTime after, @PageableDefault(size = 25, page = 0) Pageable pageable) {
         var criteria = V3MessageSearchCriteria.builder().chatId(chatId);
         Optional.ofNullable(after).ifPresent(criteria::afterTime);
         return ResponseEntity.ok(v3ChatMessageLoadService.search(criteria.build(), pageable));

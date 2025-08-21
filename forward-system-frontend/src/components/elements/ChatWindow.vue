@@ -152,7 +152,7 @@ defineExpose({
     <div class="card-header fs-5 fw-bold">{{ props.chat.displayName }}</div>
     <div class="card-body overflow-auto flex-grow-1" ref="bodyRef">
       <div class="text-center" v-if="!waitNewMessages">
-        <button class="btn btn-outline-primary mb-2" v-if="hasMoreMessages"><i class="bi bi-box-arrow-in-down me-1"></i>Загрузить
+        <button class="btn btn-outline-primary mb-2" v-if="hasMoreMessages" @click="requestMoreMessages"><i class="bi bi-box-arrow-in-down me-1"></i>Загрузить
           ещё
         </button>
       </div>

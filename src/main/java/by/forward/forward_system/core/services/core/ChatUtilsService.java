@@ -152,7 +152,7 @@ public class ChatUtilsService {
         ChatTagDto adminChatTag = ChatTagDto.builder()
             .name("Администрация")
             .metadata(ChatTagMetadataDto.builder()
-                .type(TagType.SIMPLE)
+                .type(TagType.ADMINISTRATION)
                 .isPersonalTag(false)
                 .cssColorName(TagCssColor.secondary)
                 .isVisible(true)
