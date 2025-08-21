@@ -30,7 +30,7 @@ public class V3ChatRestController {
     private final MessageService messageService;
 
     @PostMapping(value = "/search", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
-    public ResponseEntity<Page<V3ChatDto>> search(@RequestBody V3ChatSearchCriteria criteria, @PageableDefault(size = 2, page = 0) Pageable pageable) {
+    public ResponseEntity<Page<V3ChatDto>> search(@RequestBody V3ChatSearchCriteria criteria, @PageableDefault(size = 50, page = 0) Pageable pageable) {
         return ResponseEntity.ok(v3ChatLoadService.search(criteria, pageable));
     }
 
