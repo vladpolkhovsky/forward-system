@@ -23,4 +23,10 @@ public class AttachmentEntity {
 
     @Column(name = "object_key", nullable = false, length = 512)
     private String objectKey;
+
+    public static AttachmentEntity of(Long id) {
+        AttachmentEntity attachment = new AttachmentEntity();
+        attachment.setId(id);
+        return attachment;
+    }
 }

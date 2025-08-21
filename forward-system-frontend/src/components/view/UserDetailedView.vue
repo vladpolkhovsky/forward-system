@@ -8,6 +8,7 @@ import {AuthorityEnum, hasAuthority} from "@/core/enum/AuthorityEnum.ts";
 import AuthorRating from "@/components/elements/AuthorRating.vue";
 import AuthorMedals from "@/components/elements/AuthorMedals.vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
+import {UserService} from "@/core/UserService.ts";
 
 interface Props {
   fetchAutomatically: boolean,
@@ -23,13 +24,10 @@ const loading = ref(true);
 const userData = ref<UserDto>(null);
 
 onMounted(() => {
-  const fetchUrl = props.fetchAutomatically ? '/api/user/info' : `/api/user/info/${props.userId}`;
-  fetch(fetchUrl, {method: "GET"})
-      .then(value => value.json())
-      .then(value => {
-        userData.value = value as UserDto;
-        loading.value = false;
-      })
+  UserService.fetchUserData(props.fetchAutomatically, props.userId, user => {
+    userData.value = user;
+    loading.value = false;
+  });
 })
 
 </script>

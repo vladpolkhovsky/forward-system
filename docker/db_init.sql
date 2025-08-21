@@ -767,3 +767,63 @@ create table forward_system.order_payment_status
     created_by bigint      not null references forward_system.users (id),
     created_at timestamp   not null
 );
+
+alter table forward_system.chat_members
+    drop column id;
+
+alter table forward_system.chat_members
+    add primary key (user_id, chat_id);
+
+INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
+                                  other, payment, password, created_at, is_deleted)
+VALUES (-30, 'Система', 'Система', 'Система', 'Система', '', '---', '---',
+        '---', '---', '---', '###',
+        '2024-07-31 13:50:46.688700', true);
+
+INSERT INTO forward_system.users (id, username, firstname, lastname, surname, roles, contact, contact_telegram, email,
+                                  other, payment, password, created_at, is_deleted)
+VALUES (-40, 'Заказчик', 'Заказчик', 'Заказчик', 'Заказчик', '', '---', '---',
+        '---', '---', '---', '###',
+        '2024-07-31 13:50:46.688700', true);
+
+insert into forward_system.chat_message_types
+values ('SYSTEM_MESSAGE');
+
+create table if not exists forward_system.tags
+(
+    id               bigint primary key,
+    name             varchar(150) not null,
+    type             varchar(75)  not null,
+    is_primary       bool         not null default false,
+    is_visible       bool         not null default true,
+    is_personal      bool         not null default false,
+    personal_user_id bigint references forward_system.users (id),
+    css_color_name   varchar(75),
+    unique (name, type)
+);
+
+create table if not exists forward_system.chat_to_tag
+(
+    tag_id  bigint not null references forward_system.tags (id),
+    chat_id bigint not null references forward_system.chats (id),
+    primary key (tag_id, chat_id)
+);
+
+alter table forward_system.tags
+    add column tsvector_tag_name tsvector generated always as (to_tsvector('pg_catalog.russian', name)) stored;
+
+alter table forward_system.chats
+    add column tsvector_chat_name tsvector generated always as (to_tsvector('pg_catalog.russian', chat_name)) stored;
+
+CREATE INDEX idx_tags_tsvector ON forward_system.tags USING gin (tsvector_tag_name);
+
+CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_chat_name);
+
+insert into forward_system.tags (id, name, type, is_primary, css_color_name)
+values (-10, 'Администрация', 'ADMINISTRATION', true, 'success'),
+       (-20, 'Новости', 'SIMPLE', true, 'primary');
+
+insert into forward_system.chat_to_tag(tag_id, chat_id)
+values (-10, 0),
+       (-20, 0),
+       (-10, -1);

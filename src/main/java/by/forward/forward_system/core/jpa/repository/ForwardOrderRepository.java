@@ -100,9 +100,9 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
     Optional<ChatEntity> findForwardOrderChatByChatId(Long chatId);
 
     @Query("""
-        select distinct cme.chat.id from ForwardOrderEntity foe
-             inner join ChatMemberEntity cme on cme.chat.id = foe.chat.id
-             where foe.chat.id in :chatIds and cme.user.id = :userId
+        select distinct foe.chat.id from ForwardOrderEntity foe
+             join foe.chat.participants p
+             where foe.chat.id in :chatIds and p.id = :userId
         """)
     Set<Long> findChatParticipants(Long userId, List<Long> chatIds);
 }

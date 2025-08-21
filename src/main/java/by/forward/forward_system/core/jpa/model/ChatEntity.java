@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -30,7 +29,7 @@ public class ChatEntity {
     @Column(name = "last_message_date", nullable = false)
     private LocalDateTime lastMessageDate;
 
-    @OneToOne(fetch = FetchType.EAGER, mappedBy = "chat")
+    @OneToOne(fetch = FetchType.EAGER, mappedBy = "chat", cascade = CascadeType.PERSIST)
     private ChatMetadataEntity chatMetadata;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
@@ -40,14 +39,28 @@ public class ChatEntity {
     @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMessageEntity> chatMassages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
-    private List<ChatMemberEntity> chatMembers = new ArrayList<>();
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(schema = "forward_system", name = "chat_members",
+            joinColumns = @JoinColumn(name = "chat_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<UserEntity> participants = new LinkedHashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(schema = "forward_system", name = "chat_to_tag",
+        joinColumns = @JoinColumn(name = "chat_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    private Set<TagEntity> tags = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "chat", fetch = FetchType.LAZY)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
 
+    public static ChatEntity of(Long chatId) {
+        ChatEntity chatEntity = new ChatEntity();
+        chatEntity.setId(chatId);
+        return chatEntity;
+    }
+
     public boolean isChatTypeIs(ChatType type) {
         return getChatType().getType().equals(type);
     }
-
 }

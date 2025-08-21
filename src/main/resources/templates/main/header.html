@@ -20,8 +20,9 @@
                 <li><a class="nav-link px-2 link-primary fw-medium text-dark" th:href="@{/main}">Главное меню</a></li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold text-dark"><a class="nav-link px-2 text-dark text-decoration-underline"
-                                                          href="/new-messenger?tab=new-orders">Мессенджер</a>
+                        <div class="fw-bold text-dark">
+                            <a class="nav-link px-2 text-dark text-decoration-underline"
+                               href="/new-messenger-v3?tab=all#center">Мессенджер (v3)</a>
                         </div>
                     </div>
                     <span class="badge text-bg-dark rounded-pill"
@@ -136,8 +137,8 @@
                 })
         }
 
-        ping();
-        setInterval(() => { ping(); }, 5000);
+        // ping();
+        // setInterval(() => { ping(); }, 5000);
 
     </script>
 </div>

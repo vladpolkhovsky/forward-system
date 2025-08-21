@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Мессенджер</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <link href="/static/fonts.css" rel="stylesheet">
+
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <script src="/static/popper.min.js"></script>
+
+    <script src="/static/bootstrap/bootstrap.min.js"></script>
+</head>
+<body>
+<div th:insert="~{main/header :: header-div}"></div>
+<div data-vue-component="view/MessengerView"></div>
+<script src="/static/vue/components.js"></script>
+</body>
+</html>

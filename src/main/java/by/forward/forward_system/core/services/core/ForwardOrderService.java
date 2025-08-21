@@ -28,7 +28,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -102,7 +101,8 @@ public class ForwardOrderService {
         List<ForwardOrderProjection> projections,
         Map<Long, Long> chatIdToMessageCount,
         Map<Long, LocalDateTime> chatLastMessageDate
-    ) {}
+    ) {
+    }
 
     @SneakyThrows
     @Transactional
@@ -150,7 +150,7 @@ public class ForwardOrderService {
             .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getChat(),
             "Пользователь %s удалил всех участников телеграмм чата.".formatted(fromUserEntity.getUsername()),
             true,
@@ -163,7 +163,7 @@ public class ForwardOrderService {
             .formatted(ChatNames.JOIN_FORWARD_ORDER_HTML.formatted(code));
 
         ChatMessageEntity messageToAdminChat = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getAdminChat(),
             "Пользователь %s удалил всех участников телеграмм чата. %s".formatted(fromUserEntity.getUsername(), joinMessageTest),
             true,
@@ -210,7 +210,7 @@ public class ForwardOrderService {
         ChatMessageAttachmentEntity messageAttachmentEntity = ChatMessageAttachmentEntity.of(attachmentEntity);
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getChat(),
             "Пользователь %s создал запрос на проверку файла.".formatted(fromUserEntity.getUsername()),
             true,
@@ -243,7 +243,7 @@ public class ForwardOrderService {
             .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getChat(),
             "Пользователь %s удалил запрос на проверку.".formatted(fromUserEntity.getUsername()),
             true,
@@ -271,7 +271,7 @@ public class ForwardOrderService {
         chatMetadata.setAuthorCanSubmitFiles(allowSendFile);
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getChat(),
             "Пользователь %s %s отправку в чат файлов.".formatted(fromUserEntity.getUsername(), allowText),
             true,
@@ -300,7 +300,7 @@ public class ForwardOrderService {
         forwardOrderRepository.save(forwardOrderEntity);
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrderEntity.getChat(),
             "Пользователь %s изменил статус оплаты на: %s".formatted(fromUserEntity.getUsername(), allowText),
             true,
@@ -344,7 +344,7 @@ public class ForwardOrderService {
             .orElseThrow(() -> new RuntimeException("Chat message type not found"));
 
         messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrder.getChat(),
             """
                 Заказчик присоединился к чату.
@@ -359,7 +359,7 @@ public class ForwardOrderService {
         );
 
         messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             forwardOrder.getAdminChat(),
             """
                 Заказчик присоединился к чату.
@@ -386,7 +386,7 @@ public class ForwardOrderService {
             .toList();
 
         ChatMessageEntity message = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.CUSTOMER_USER_ID),
             chatEntity,
             text,
             false,

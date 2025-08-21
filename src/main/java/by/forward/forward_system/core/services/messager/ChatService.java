@@ -10,6 +10,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageP
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.newchat.ChatTabToChatTypeService;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -40,11 +41,7 @@ public class ChatService {
 
     private final ChatMessageTypeRepository chatMessageTypeRepository;
 
-    private final WebsocketMassageService websocketMassageService;
-
     private final UserRepository userRepository;
-
-    private final ChatMemberRepository chatMemberRepository;
 
     private final ChatTypeRepository chatTypeRepository;
 
@@ -71,6 +68,7 @@ public class ChatService {
     private final TaskScheduler taskScheduler;
 
     @Transactional
+    @Deprecated
     public ChatEntity createChat(List<UserEntity> chatMembers, String chatName, OrderEntity orderEntity, String initMessage, ChatTypeEntity chatTypeEntity) {
         ChatEntity chatEntity = new ChatEntity();
 
@@ -81,10 +79,6 @@ public class ChatService {
 
         chatEntity = chatRepository.save(chatEntity);
 
-        for (UserEntity chatMember : chatMembers) {
-            ChatMemberEntity chatMemberEntity = chatMemberService.addMemberToChat(chatMember, chatEntity);
-            chatEntity.getChatMembers().add(chatMemberEntity);
-        }
 
 //        List<UserEntity> admins = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
 //        for (UserEntity chatMember : admins) {
@@ -98,7 +92,7 @@ public class ChatService {
             ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Message type not found"));
 
             messageService.sendMessage(
-                null,
+                UserEntity.of(ChatNames.SYSTEM_USER_ID),
                 chatEntity,
                 initMessage,
                 true,
@@ -110,11 +104,6 @@ public class ChatService {
         }
 
         ChatEntity save = chatRepository.save(chatEntity);
-
-        websocketMassageService.notifyNewChatCreated(
-            chatEntity.getChatMembers().stream().map(ChatMemberEntity::getUser).map(UserEntity::getId).toList(),
-            save.getId()
-        );
 
         return save;
     }
@@ -128,9 +117,7 @@ public class ChatService {
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
 
         HashSet<Long> ids = new HashSet<>();
-        for (ChatMemberEntity chatMember : chatEntity.getChatMembers()) {
-            ids.add(chatMember.getUser().getId());
-        }
+
 
         return ids;
     }
@@ -201,8 +188,7 @@ public class ChatService {
 
     public void addUserToChats(List<Long> chatIds, Long userId) {
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found with id " + userId));
-        List<ChatEntity> chats = chatRepository
-            .findAllById(chatIds);
+        List<ChatEntity> chats = chatRepository.findAllById(chatIds);
         for (ChatEntity chat : chats) {
             chatMemberService.addMemberToChat(userEntity, chat);
         }
@@ -212,12 +198,7 @@ public class ChatService {
     public void delUserFromChats(List<Long> chatIds, Long userId) {
         List<ChatEntity> allById = chatRepository.findAllById(chatIds);
         for (ChatEntity chatEntity : allById) {
-            for (ChatMemberEntity chatMember : chatEntity.getChatMembers()) {
-                if (chatMember.getUser().getId().equals(userId)) {
-                    chatMemberRepository.delete(chatMember);
-                    break;
-                }
-            }
+
         }
     }
 
@@ -247,8 +228,8 @@ public class ChatService {
     @Transactional
     public void updateChat(Long chatId, String chatName, List<Long> chatMembers) {
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
-        chatMemberRepository.deleteAll(chatEntity.getChatMembers());
-        chatEntity.getChatMembers().clear();
+
+        chatEntity.getParticipants().clear();
 
         chatEntity.setChatName(chatName);
         chatRepository.save(chatEntity);
@@ -285,8 +266,7 @@ public class ChatService {
 
         ChatEntity chatEntity = byId.get();
 
-        chatMemberRepository.deleteByChatId(chatEntity.getId());
-        chatEntity.getChatMembers().clear();
+        chatEntity.getParticipants().clear();
 
         savedChatRepository.deleteByChatId(chatEntity.getId());
         chatNoteRepository.deleteByChatId(chatEntity.getId());

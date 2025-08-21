@@ -2,6 +2,7 @@ package by.forward.forward_system.core.web.rest;
 
 import by.forward.forward_system.core.jpa.repository.projections.UserActivityDto;
 import by.forward.forward_system.core.services.core.UserActivityService;
+import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +27,17 @@ public class ActivityController {
     @GetMapping(value = "/ping/{userId}", consumes = JSON_MEDIA_TYPE, produces = TEXT_HTML)
     public ResponseEntity<String> ping(@PathVariable Long userId) {
         userActivityService.updateUserActivity(userId);
+        return ResponseEntity.status(HttpStatus.OK)
+            .body("""
+                <h4>Вы не должны открывать эту страницу!</h4>
+                <p>Эта страница запрашивается при обновлении вашего статуса в чате. Тут делать нечего.</p>
+                <a href="/main">Вернуться на главную<a>
+                """);
+    }
+
+    @GetMapping(value = "/ping", produces = TEXT_HTML)
+    public ResponseEntity<String> pingAuth() {
+        userActivityService.updateUserActivity(AuthUtils.getCurrentUserId());
         return ResponseEntity.status(HttpStatus.OK)
             .body("""
                 <h4>Вы не должны открывать эту страницу!</h4>

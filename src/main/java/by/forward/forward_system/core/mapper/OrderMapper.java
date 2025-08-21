@@ -1,11 +1,16 @@
 package by.forward.forward_system.core.mapper;
 
+import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
+import by.forward.forward_system.core.dto.rest.AdditionalDateDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
-import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto.AuthorAdditionalDatesDto;
+import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
+import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
+import by.forward.forward_system.core.jpa.model.UserEntity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,7 +25,7 @@ import java.util.List;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class OrderMapper {
 
-    private static final TypeReference<List<AuthorAdditionalDatesDto>> typedReference = new TypeReference<>() {};
+    private static final TypeReference<List<AdditionalDateDto>> typedReference = new TypeReference<>() {};
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -35,6 +40,19 @@ public abstract class OrderMapper {
     @Mapping(target = "paymentStatus", ignore = true)
     public abstract AuthorOrderDto map(OrderEntity orderEntity);
 
+    @Mapping(target = "managerUsername", source = "orderEntity", qualifiedByName = "getManager")
+    @Mapping(target = "authorUsername", source = "orderEntity", qualifiedByName = "getAuthor")
+    @Mapping(target = "disciplineName", source = "discipline.name")
+    @Mapping(target = "disciplineId", source = "discipline.id")
+    @Mapping(target = "subject", source = "subject")
+    @Mapping(target = "techNumber", source = "techNumber")
+    @Mapping(target = "deadline", source = "deadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "additionalDates", source = "additionalDates", qualifiedByName = "additionalDatesMapper")
+    @Mapping(target = "status", source = "orderStatus.status.name")
+    @Mapping(target = "statusRusName", source = "orderStatus.status.rusName")
+    public abstract V3ChatOrderInfoDto mapToChatOrderInfo(OrderEntity orderEntity);
+
     public abstract List<AuthorOrderDto> map(List<OrderEntity> orderEntities);
 
     @Named("localDataTimeToMMDDYY")
@@ -48,12 +66,30 @@ public abstract class OrderMapper {
 
     @SneakyThrows
     @Named("additionalDatesMapper")
-    public List<AuthorAdditionalDatesDto> additionalDatesMapper(String date) {
+    public List<AdditionalDateDto> additionalDatesMapper(String date) {
         if (StringUtils.isBlank(date)) {
             return List.of();
         }
         return objectMapper.readValue(date, typedReference).stream()
                 .map(dto -> dto.withTime(localDataTimeToMMDDYY(LocalDateTime.parse(dto.getTime()))))
                 .toList();
+    }
+
+    @Named("getAuthor")
+    public String getAuthor(OrderEntity orderEntity) {
+        return findByRole(orderEntity.getOrderParticipants(), ParticipantType.MAIN_AUTHOR);
+    }
+
+    @Named("getManager")
+    public String getManager(OrderEntity orderEntity) {
+        return findByRole(orderEntity.getOrderParticipants(), ParticipantType.HOST);
+    }
+
+    private static String findByRole(List<OrderParticipantEntity> participants, ParticipantType participantType) {
+        if (CollectionUtils.isEmpty(participants)) {
+            return null;
+        }
+        return participants.stream().filter(t -> t.getParticipantsType().getType() == participantType)
+            .findAny().map(OrderParticipantEntity::getUser).map(UserEntity::getUsername).orElse(null);
     }
 }

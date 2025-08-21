@@ -4,7 +4,9 @@ import by.forward.forward_system.core.jpa.model.ChatEntity;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatNewMessageProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatProjection;
+import by.forward.forward_system.core.jpa.repository.projections.NewMessageCountProjection;
 import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -80,4 +82,41 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
             	group by c.order_id, c.id
         """)
     List<OrderChatDataProjection> findOrderChatNewMessagesForUser(List<Long> orderIds, Long userId);
+
+    @EntityGraph(attributePaths = {
+        "order",
+        "tags",
+        "chatType",
+        "chatMetadata",
+        "chatMetadata.user",
+        "chatMetadata.manager"
+    })
+    @Query("FROM ChatEntity WHERE id in :ids order by lastMessageDate desc")
+    List<ChatEntity> fetchDataToChatResponse(List<Long> ids);
+
+    @Query("""
+            select chat.id as chatId, count(cmtu.id) as newMessageCount from ChatEntity chat
+                left join ChatMessageToUserEntity cmtu on cmtu.chat = chat and cmtu.user.id = :userId
+                where chat.id in :chatIds and cmtu.isViewed is false
+                group by chat.id
+        """)
+    List<NewMessageCountProjection> findNewMessageCount(List<Long> chatIds, Long userId);
+
+    interface NewMessageCountProjection {
+        Long getChatId();
+        Integer getNewMessageCount();
+    }
+
+    @Query(value = """
+        select chat.chatType.name as type, count(distinct chat.id) as count from ChatEntity chat
+            inner join ChatMessageToUserEntity messageToUser on messageToUser.chat = chat
+            where messageToUser.isViewed is false and messageToUser.user.id = :userId
+            group by chat.chatType
+        """)
+    List<ChatTypeToChatsWithNewMessageCount> findChatTypeToChatsWithNewMessageCount(Long userId);
+
+    interface ChatTypeToChatsWithNewMessageCount {
+        String getType();
+        Integer getCount();
+    }
 }

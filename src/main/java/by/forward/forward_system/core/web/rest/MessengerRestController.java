@@ -9,6 +9,7 @@ import by.forward.forward_system.core.services.core.AttachmentService;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.core.UserService;
 import by.forward.forward_system.core.services.messager.ChatService;
+import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.http.MediaType;
@@ -19,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -69,6 +71,12 @@ public class MessengerRestController {
     public ResponseEntity<Boolean> viewMessage(@PathVariable Long chatId, @PathVariable Long userId) {
         chatService.setMessageViewed(chatId, userId);
         return ResponseEntity.ok(true);
+    }
+
+    @PostMapping(value = "/message-viewed/{chatId}")
+    public ResponseEntity<Map<String, Boolean>> viewMessage(@PathVariable Long chatId) {
+        chatService.setMessageViewed(chatId, AuthUtils.getCurrentUserId());
+        return ResponseEntity.ok(Map.of("status", true));
     }
 
     @Deprecated

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Optional;
+
 @Getter
 @Setter
 @Entity
@@ -33,4 +35,15 @@ public class ChatMetadataEntity {
     @Column(name = "author_can_submit_files")
     private Boolean authorCanSubmitFiles;
 
+    public Long getManagerId() {
+        return Optional.ofNullable(getManager())
+            .map(UserEntity::getId)
+            .orElse(null);
+    }
+
+    public Long getAuthorId() {
+        return Optional.ofNullable(getUser())
+            .map(UserEntity::getId)
+            .orElse(null);
+    }
 }

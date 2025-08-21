@@ -39,6 +39,13 @@ export function authorityToRusName(authority: AuthorityType): string {
     return authority;
 }
 
+export function hasAuthorityManager(authorities: AuthorityType[]): boolean {
+    return authorities
+        ?.map(value => AuthorityEnum[value])
+        ?.filter(value => AuthorityEnum.ADMIN == value || AuthorityEnum.MANAGER == value || AuthorityEnum.OWNER == value)
+        ?.length > 0;
+}
+
 export function hasAuthority(authorities: AuthorityType[], targetAuthority: AuthorityEnum): boolean {
     return authorities
         ?.map(value => AuthorityEnum[value])

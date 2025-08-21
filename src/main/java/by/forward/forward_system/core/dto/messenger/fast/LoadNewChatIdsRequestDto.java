@@ -12,4 +12,5 @@ import lombok.Setter;
 public class LoadNewChatIdsRequestDto {
     private Long userId;
     private Long chatId;
+    private String after;
 }

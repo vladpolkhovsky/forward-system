@@ -1,6 +1,10 @@
 package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.dto.messenger.*;
+import by.forward.forward_system.core.dto.messenger.v3.ChatCreationDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatMetadataDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatTagDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatTagMetadataDto;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
 import by.forward.forward_system.core.dto.ui.UpdateOrderRequestDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
@@ -12,7 +16,10 @@ import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
+import by.forward.forward_system.core.mapper.TagMapper;
+import by.forward.forward_system.core.services.TagService;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
+import by.forward.forward_system.core.services.messager.ChatCreatorService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
@@ -63,10 +70,13 @@ public class OrderService {
     private final ReviewRepository reviewRepository;
     private final OrderRequestStatisticRepository orderRequestStatisticRepository;
     private final ForwardOrderRepository forwardOrderRepository;
-    private final ChatMemberRepository chatMemberRepository;
     private final ChatMetadataRepository chatMetadataRepository;
     private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
+    private final ChatCreatorService chatCreatorService;
+    private final ChatUtilsService chatUtilsService;
+    private final TagMapper tagMapper;
+    private final TagService tagService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -207,7 +217,8 @@ public class OrderService {
         ChatMessageTypeEntity messageType = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
             .orElseThrow(() -> new RuntimeException("Message type not found"));
 
-        messageService.sendMessage(null, chatEntity, changesString, true, messageType, Collections.emptyList(), Collections.emptyList());
+        messageService.sendMessage(UserEntity.of(ChatNames.SYSTEM_USER_ID), chatEntity, changesString, true,
+            messageType, Collections.emptyList(), Collections.emptyList());
     }
 
     public void addParticipant(Long orderId, AddParticipantRequestDto addParticipantRequestDto) {
@@ -282,7 +293,7 @@ public class OrderService {
 
     private boolean isAssignedAuthor(OrderParticipantEntity orderParticipant) {
         return orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
-               || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
+            || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
     private void sendDeclineMessage(Long userId, Long managerId, String techNumber) {
@@ -305,7 +316,7 @@ public class OrderService {
             .orElseThrow(() -> new RuntimeException("Chat message type not found " + managerId));
 
         ChatMessageEntity chatMessageEntity = messageService.sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             newOrdersChatByUser.get(),
             "Заказ №%s уже распределен другому автору. Ожидайте новых заказов!".formatted(techNumber),
             true,
@@ -340,7 +351,7 @@ public class OrderService {
 
         if (newOrdersChatByUser.isPresent() && chatMessageType.isPresent()) {
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(
-                null,
+                UserEntity.of(ChatNames.SYSTEM_USER_ID),
                 newOrdersChatByUser.get(),
                 "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
                 true,
@@ -566,23 +577,24 @@ public class OrderService {
 
             makeForwardChats(usersWithRoleAdmin, withAdmins, orderEntity);
         } else {
-            makeDefaultChat(withAdmins, orderEntity);
+            makeDefaultChat(orderParticipants, orderEntity);
         }
 
         changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
     }
 
-    private void makeDefaultChat(ArrayList<UserEntity> withAdmins, OrderEntity orderEntity) {
-        ChatTypeEntity chatTypeEntity = chatTypeRepository.findById(ChatType.ORDER_CHAT.getName())
-            .orElseThrow(() -> new RuntimeException("Chat type not found"));
+    private void makeDefaultChat(List<UserEntity> participants, OrderEntity orderEntity) {
+        List<ChatTagDto> tags = chatUtilsService.createOrderChatTags(orderEntity);
 
-        chatService.createChat(
-            withAdmins,
-            ChatNames.ORDER_CHAT.formatted(orderEntity.getTechNumber()),
-            orderEntity,
-            "Заказ одобрен администратором. Можете начинать работу.",
-            chatTypeEntity
-        );
+        ChatCreationDto creationChatDto = ChatCreationDto.builder()
+            .chatName(ChatNames.ORDER_CHAT.formatted(orderEntity.getTechNumber()))
+            .chatType(ChatType.ORDER_CHAT)
+            .tags(tags)
+            .members(participants.stream().map(UserEntity::getId).toList())
+            .orderId(orderEntity.getId())
+            .build();
+
+        chatCreatorService.createChat(creationChatDto, "Заказ одобрен администратором. Можете начинать работу.", true);
     }
 
     private void makeForwardChats(List<UserEntity> admins, ArrayList<UserEntity> userAndAdmins, OrderEntity orderEntity) {
@@ -594,11 +606,23 @@ public class OrderService {
 
         Optional<ForwardOrderEntity> oldForwardOrder = forwardOrderRepository.findByOrder_Id(orderEntity.getId());
 
+        List<ChatTagDto> forwardOrderChatTags = ListUtils.union(List.of(
+            ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build()),
+            chatUtilsService.createOrderChatTags(orderEntity));
+
+        List<ChatTagDto> forwardOrderAdminChatTags = ListUtils.union(List.of(
+            ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build(),
+            ChatTagDto.builder().name("Администрация").metadata(ChatTagMetadataDto.builder().build()).build()),
+            chatUtilsService.createOrderChatTags(orderEntity));
+
         if (oldForwardOrder.isPresent()) {
             ForwardOrderEntity forwardOrder = oldForwardOrder.get();
 
-            replaceChatMembers(admins, forwardOrder.getAdminChat());
-            replaceChatMembers(userAndAdmins, forwardOrder.getChat());
+            List<TagEntity> forwardOrderChatTagEntities = tagService.crateMany(forwardOrderChatTags.stream().map(tagMapper::mapChatTagDto).toList());
+            List<TagEntity> forwardOrderAdminChatTagEntities = tagService.crateMany(forwardOrderAdminChatTags.stream().map(tagMapper::mapChatTagDto).toList());
+
+            replaceChatMembers(admins, forwardOrder.getAdminChat(), forwardOrderChatTagEntities);
+            replaceChatMembers(userAndAdmins, forwardOrder.getChat(), forwardOrderAdminChatTagEntities);
 
             ChatMetadataEntity chatMetadata = chatMetadataRepository.findById(forwardOrder.getChat().getId()).get();
             chatMetadata.setUser(mainAuthorUser);
@@ -612,44 +636,39 @@ public class OrderService {
             forwardOrderRepository.save(forwardOrder);
 
             ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).get();
-            messageService.sendMessage(null, forwardOrder.getChat(), "Автор заменён на " + mainAuthorUser.getUsername(), true, chatMessageTypeEntity, List.of(), List.of(), false);
+            messageService.sendMessage(UserEntity.of(ChatNames.SYSTEM_USER_ID), forwardOrder.getChat(), "Автор заменён на " + mainAuthorUser.getUsername(), true, chatMessageTypeEntity, List.of(), List.of(), false);
 
             return;
         }
 
         String code = ChatNames.generateNewForwardOrderCode();
 
-        ChatTypeEntity forwardOrderChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_CHAT.getName()).get();
-        ChatTypeEntity forwardOrderAdminChatType = chatTypeRepository.findById(ChatType.FORWARD_ORDER_ADMIN_CHAT.getName()).get();
-
-        String message = "Созданы чаты по заказу. Заказчику необходимо ввести команду: <br /> %s"
+        String message = "Созданы чаты по заказу. Заказчику необходимо ввести команду: %s"
             .formatted(ChatNames.JOIN_FORWARD_ORDER_HTML.formatted(code));
 
-        ChatEntity forwardOrderAdminChat = chatService.createChat(
-            admins,
-            ChatNames.ADMIN_FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()),
-            orderEntity,
-            message,
-            forwardOrderAdminChatType
-        );
+        ChatCreationDto creationForwardOrderChatDto = ChatCreationDto.builder()
+            .chatName(ChatNames.FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()))
+            .chatType(ChatType.FORWARD_ORDER_CHAT)
+            .orderId(orderEntity.getId())
+            .tags(forwardOrderChatTags)
+            .members(List.of(mainAuthorUser.getId()))
+            .metadata(ChatMetadataDto.builder()
+                .authorCanSubmitFiles(false)
+                .authorId(mainAuthorUser.getId())
+                .build())
+            .build();
 
-        ChatEntity forwardOrderChat = chatService.createChat(
-            userAndAdmins,
-            ChatNames.FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()),
-            orderEntity,
-            "Заказ одобрен.",
-            forwardOrderChatType
-        );
+        ChatEntity forwardOrderChat = chatCreatorService.createChat(creationForwardOrderChatDto, null, true);
 
-        forwardOrderAdminChat = chatRepository.save(forwardOrderAdminChat);
-        forwardOrderChat = chatRepository.save(forwardOrderChat);
+        ChatCreationDto creationForwardOrderAdminChatDto = ChatCreationDto.builder()
+            .chatName(ChatNames.ADMIN_FORWARD_ORDER_CHAT.formatted(orderEntity.getTechNumber()))
+            .chatType(ChatType.FORWARD_ORDER_ADMIN_CHAT)
+            .orderId(orderEntity.getId())
+            .tags(forwardOrderAdminChatTags)
+            .members(List.of())
+            .build();
 
-        ChatMetadataEntity chatMetadataEntity = new ChatMetadataEntity();
-        chatMetadataEntity.setChat(forwardOrderChat);
-        chatMetadataEntity.setAuthorCanSubmitFiles(false);
-        chatMetadataEntity.setUser(mainAuthorUser);
-
-        chatMetadataRepository.save(chatMetadataEntity);
+        ChatEntity forwardOrderAdminChat = chatCreatorService.createChat(creationForwardOrderAdminChatDto, message, true);
 
         ForwardOrderEntity forwardOrderEntity = new ForwardOrderEntity();
         forwardOrderEntity.setOrder(orderEntity);
@@ -665,22 +684,11 @@ public class OrderService {
         forwardOrderRepository.save(forwardOrderEntity);
     }
 
-    private List<ChatMemberEntity> replaceChatMembers(List<UserEntity> participants, ChatEntity chat) {
-        chatMemberRepository.deleteAll(chat.getChatMembers());
-        chat.getChatMembers().clear();
-
-        List<ChatMemberEntity> chatMembers = new ArrayList<>();
-        for (UserEntity user : participants) {
-            ChatMemberEntity chatMemberEntity = new ChatMemberEntity();
-            chatMemberEntity.setChat(chat);
-            chatMemberEntity.setUser(user);
-            chatMembers.add(chatMemberEntity);
-        }
-
-        chatMembers = chatMemberRepository.saveAll(chatMembers);
-        chat.getChatMembers().addAll(chatMembers);
-
-        return chatMembers;
+    private void replaceChatMembers(List<UserEntity> participants, ChatEntity chat, List<TagEntity> tags) {
+        chat.getParticipants().clear();
+        chat.getParticipants().addAll(participants);
+        chat.getTags().clear();
+        chat.getTags().addAll(tags);
     }
 
     public List<ChatAttachmentProjection> getOrderMainChatAttachments(Long orderId) {
@@ -993,7 +1001,7 @@ public class OrderService {
 
         List<CompletableFuture<Void>> wait = new ArrayList<>();
 
-        HashSet<Long> deletedChatIds  = new HashSet<>();
+        HashSet<Long> deletedChatIds = new HashSet<>();
 
         if (forwardOrder.isPresent()) {
             ForwardOrderEntity forwardOrderEntity = forwardOrder.get();

@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.ReviewEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -52,4 +53,13 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
             order by CAST(o.techNumber AS Double) desc, r.reviewDate desc, r.createdAt desc
         """)
     List<ReviewProjectionDto> findAllByExpertAndReviewStatusIs(Long userId, boolean isReviewed);
+
+    @EntityGraph(attributePaths = {
+        "order",
+        "attachment",
+        "reviewAttachment",
+        "reviewedBy"
+    })
+    @Query("FROM ReviewEntity where order.id = :orderId order by id desc")
+    List<ReviewEntity> fetchReviewByOrderId(Long orderId);
 }

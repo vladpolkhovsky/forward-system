@@ -1,10 +1,14 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.ChatDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatCreationDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatTagDto;
+import by.forward.forward_system.core.dto.messenger.v3.ChatTagMetadataDto;
 import by.forward.forward_system.core.dto.ui.AuthorUiDto;
 import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
 import by.forward.forward_system.core.dto.ui.UserUiDto;
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.services.messager.ChatCreatorService;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.ui.AuthorUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
@@ -31,6 +35,7 @@ public class CreateChatController {
     private final UserUiService userUiService;
     private final ChatService chatService;
     private final AuthorUiService authorUiService;
+    private final ChatCreatorService chatCreatorService;
 
     @GetMapping(value = "/create-chat")
     public String createChat(Model model) {
@@ -112,7 +117,15 @@ public class CreateChatController {
             .stream().map(Long::valueOf).toList();
 
         if (StringUtils.isBlank(chatId)) {
-            chatService.createChat(chatName, chatMembers);
+            List<ChatTagDto> tags = List.of(ChatTagDto.builder().name("Специальный чат")
+                .metadata(ChatTagMetadataDto.builder().isPrimaryTag(true).build()).build());
+            ChatCreationDto creationDto = ChatCreationDto.builder()
+                .chatName(chatName)
+                .chatType(ChatType.SPECIAL_CHAT)
+                .tags(tags)
+                .members(chatMembers)
+                .build();
+            chatCreatorService.createChat(creationDto, null, false);
         } else {
             chatService.updateChat(Long.valueOf(chatId), chatName, chatMembers);
         }

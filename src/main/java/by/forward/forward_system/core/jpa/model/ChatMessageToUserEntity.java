@@ -24,7 +24,7 @@ public class ChatMessageToUserEntity {
     @JoinColumn(name = "message_id", nullable = false)
     private ChatMessageEntity message;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 

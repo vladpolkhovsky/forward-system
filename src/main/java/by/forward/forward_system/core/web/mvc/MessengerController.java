@@ -23,9 +23,7 @@ import java.util.List;
 public class MessengerController {
 
     private final UserUiService userUiService;
-
     private final ChatService chatService;
-
     private final OrderService orderService;
     private final OrderUiService orderUiService;
 
@@ -46,6 +44,12 @@ public class MessengerController {
         model.addAttribute("isOwner", userUiService.isCurrentUserOwner());
         model.addAttribute("isAuthor", userUiService.isCurrentUserAuthor());
         return "messenger/new-messenger";
+    }
+
+    @GetMapping(value = "/new-messenger-v3")
+    public String newMessengerV3(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "messenger-v3/messenger-v3";
     }
 
     @GetMapping(value = "/messenger-all-viewed")

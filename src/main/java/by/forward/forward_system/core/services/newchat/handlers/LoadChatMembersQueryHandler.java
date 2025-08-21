@@ -14,7 +14,7 @@ public class LoadChatMembersQueryHandler implements QueryHandler<Long, FastChatM
 
     @Language("SQL")
     private final static String QUERY = """
-        select cm.id as id, u.id as userId, u.username as username from forward_system.chat_members cm\s
+        select u.id as userId, u.username as username from forward_system.chat_members cm\s
         	inner join forward_system.users u on cm.user_id = u.id
         	where cm.chat_id = ?
         """;

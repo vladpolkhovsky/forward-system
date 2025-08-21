@@ -1,11 +1,15 @@
 package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -40,4 +44,27 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
     @Modifying
     @Query("delete from ChatMessageEntity where chat.id = :chatId")
     void deleteByChatId(Long chatId);
+
+    @EntityGraph(attributePaths = {
+        "chat",
+        "chat.order",
+        "chat.participants",
+        "chat.chatMetadata",
+        "chatMessageType",
+        "fromUser"
+    })
+    @Query("from ChatMessageEntity where chat.id = :chatId and createdAt < :afterTime order by createdAt")
+    Page<ChatMessageEntity> search(Long chatId, LocalDateTime afterTime, Pageable pageable);
+
+
+    @EntityGraph(attributePaths = {
+        "chat",
+        "chat.order",
+        "chat.participants",
+        "chat.chatMetadata",
+        "chatMessageType",
+        "fromUser"
+    })
+    @Query("from ChatMessageEntity where id = :id")
+    ChatMessageEntity findByIdAndFetch(Long id);
 }

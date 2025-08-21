@@ -3,6 +3,7 @@ import type {OrderPaymentStatusType} from "@/core/type/OrderPaymentStatusType.ts
 export enum OrderPaymentStatusEnum {
     FULL_PAYMENT = "FULL_PAYMENT",
     PARTITIONAL_PAYMENT = "PARTITIONAL_PAYMENT",
+    REFUND = "REFUND",
     NO_PAYMENT = "NO_PAYMENT"
 }
 
@@ -15,6 +16,9 @@ export function paymentStatusToRusName(payment: OrderPaymentStatusType): string 
     }
     if (payment == OrderPaymentStatusEnum.NO_PAYMENT) {
         return "Не оплачен"
+    }
+    if (payment == OrderPaymentStatusEnum.REFUND) {
+        return "Возврат д. с."
     }
     return "Нет данных";
 }

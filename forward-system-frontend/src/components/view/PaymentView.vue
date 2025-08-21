@@ -101,7 +101,8 @@ watch(propsAuthorId, () => {
                 <td class="text-center align-content-center">{{ item.createdAt }}</td>
                 <td class="text-center align-content-center">
                 <span :class="['badge', {
-                    'text-bg-danger': (item.status == OrderPaymentStatusEnum.NO_PAYMENT),
+                    'text-bg-secondary': (item.status == OrderPaymentStatusEnum.NO_PAYMENT),
+                    'text-bg-danger': (item.status == OrderPaymentStatusEnum.REFUND),
                     'text-bg-warning': (item.status == OrderPaymentStatusEnum.PARTITIONAL_PAYMENT),
                     'text-bg-success': (item.status == OrderPaymentStatusEnum.FULL_PAYMENT)
                   }]">{{ paymentStatusToRusName(item.status) }}</span>

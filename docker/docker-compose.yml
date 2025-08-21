@@ -1,5 +1,4 @@
 services:
-
   app-server:
     image: forward-system:latest
     container_name: app-server
@@ -91,6 +90,79 @@ services:
     profiles:
       - yandex
       - production
+
+  broker-dev:
+    image: apache/kafka:latest
+    container_name: broker-dev
+    hostname: "kafka"
+    restart: always
+    networks:
+      - nginx-net
+    volumes:
+      - ./kafka_data:/tmp/kafka-logs
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,INTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_RETENTION_BYTES: 1048576
+      KAFKA_NUM_PARTITIONS: 3
+    profiles:
+      - dependency
+
+  broker-prod:
+    image: apache/kafka:latest
+    container_name: broker
+    hostname: "kafka"
+    restart: always
+    networks:
+      - nginx-net
+    volumes:
+      - ./kafka_data:/tmp/kafka-logs
+    environment:
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_LOG_RETENTION_BYTES: 1048576
+      KAFKA_NUM_PARTITIONS: 3
+    profiles:
+      - production
+      - yandex
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports:
+      - "9090:8080"
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092  # Используем внутренний порт
+    networks:
+      - nginx-net
+    profiles:
+      - production
+      - yandex
+      - dependency
 
   adminer:
     image: adminer

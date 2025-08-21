@@ -71,10 +71,10 @@ onMounted(() => {
           <AdditionalDatesDisplay :dates="item.additionalDates"/>
         </td>
         <td class="text-center align-content-center"><span :class="['badge', {
-                    'text-bg-danger': (item.paymentStatus == OrderPaymentStatusEnum.NO_PAYMENT),
+                    'text-bg-secondary': (item.paymentStatus == OrderPaymentStatusEnum.NO_PAYMENT || item.paymentStatus == null),
                     'text-bg-warning': (item.paymentStatus == OrderPaymentStatusEnum.PARTITIONAL_PAYMENT),
-                    'text-bg-success': (item.paymentStatus == OrderPaymentStatusEnum.FULL_PAYMENT),
-                    'text-bg-secondary': (item.paymentStatus == null),
+                    'text-bg-danger': (item.paymentStatus == OrderPaymentStatusEnum.REFUND),
+                    'text-bg-success': (item.paymentStatus == OrderPaymentStatusEnum.FULL_PAYMENT)
                   }]">{{ paymentStatusToRusName(item.paymentStatus) }}</span></td>
         <td class="text-center align-content-center">{{ item.deadline }}</td>
       </tr>

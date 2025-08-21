@@ -38,9 +38,9 @@ public class SecurityConfig {
                     "/api/messenger/file-save-form",
                     "/load-file/**",
                     "/emergency/**",
-                    "/download-file/**"
-                )
-                .permitAll()
+                    "/download-file/**",
+                    "/api/v3/**"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
             .logout(t -> t.logoutUrl("/logout").permitAll())

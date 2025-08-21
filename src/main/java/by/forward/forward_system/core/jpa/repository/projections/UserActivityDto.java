@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.repository.projections;
 
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -16,6 +17,12 @@ public class UserActivityDto {
 
     public UserActivityDto(Long id, String username, LocalDateTime lastSeenDate) {
         this.id = id;
+
+        if (ChatNames.SYSTEM_USERS.contains(id)) {
+            this.online = true;
+            this.lastOnlineAt = "Онлайн";
+            return;
+        }
 
         this.username = "hashcode: " + username.hashCode();
         LocalDateTime now = LocalDateTime.now();

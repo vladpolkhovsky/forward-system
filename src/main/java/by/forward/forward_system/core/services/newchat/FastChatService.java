@@ -414,7 +414,7 @@ public class FastChatService {
         return list == null ? Collections.emptyList() : list;
     }
 
-    public List<Long> newMessageIdsByHttp(Long chatId, Long userId) {
-        return lastMessageRepository.newMessageToUserAndForChat(userId, chatId);
+    public List<Long> newMessageIdsByHttp(Long chatId, Long userId, LocalDateTime after) {
+        return lastMessageRepository.newMessageToUserAndForChat(userId, chatId, after);
     }
 }

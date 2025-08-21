@@ -28,6 +28,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.security:spring-security-messaging")
 	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+	implementation("org.springframework.kafka:spring-kafka")
 	implementation("org.springframework.retry:spring-retry:2.0.11")
 	implementation("org.springframework:spring-aspects:6.2.5")
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -42,6 +43,7 @@ dependencies {
 	implementation("nl.martijndwars:web-push:5.1.1")
 	implementation("org.mapstruct:mapstruct:1.6.3")
 	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
+	implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.10.3")
 
 	implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.2.1")
 	implementation("org.telegram:telegrambots-longpolling:7.10.0")

@@ -30,6 +30,11 @@ spring:
     password: ${DB_PASSWORD:localPS}
     url: ${DB_URL:jdbc:postgresql://host.docker.internal:5432/local}
 
+  kafka:
+    bootstrap-servers: ${KAFKA_URL:localhost:9092}
+    consumer:
+      group-id: spring-boot-node
+
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: false
@@ -82,3 +87,6 @@ secret:
 
 site:
   domain: ${SITE_MAIN_DOMAIN}
+
+topic:
+  create-chat-topic: "create-chat"

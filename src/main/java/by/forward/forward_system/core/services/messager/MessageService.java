@@ -4,7 +4,6 @@ import by.forward.forward_system.core.dto.messenger.MessageAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.MessageOptionDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
-import by.forward.forward_system.core.dto.rest.payment.CreateOrderPaymentStatusRequest;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.events.events.NotifyChatEvent;
@@ -14,6 +13,7 @@ import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.TaskScheduler;
@@ -46,11 +46,28 @@ public class MessageService {
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
+    public Long sendMessage(Long fromUserId, Long chatId, String message, List<Long> attachmentIds) {
+        attachmentIds = ListUtils.emptyIfNull(attachmentIds);
+        message = StringUtils.trimToNull(message);
+
+        UserEntity from = UserEntity.of(fromUserId);
+        ChatEntity chat = ChatEntity.of(chatId);
+
+        List<ChatMessageAttachmentEntity> attachments = attachmentIds.stream().map(AttachmentEntity::of)
+            .map(ChatMessageAttachmentEntity::of)
+            .toList();
+
+        ChatMessageTypeEntity messageType = ChatMessageType.MESSAGE.entity();
+
+        return sendMessage(from, chat, message, false, messageType, attachments, List.of()).getId();
+    }
+
+    @Transactional
     public void sendMessageToErrorChat(String text) {
         Optional<ChatEntity> chatEntity = chatRepository.findById(ChatNames.ERRORS_CHAT_ID);
         Optional<ChatMessageTypeEntity> chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName());
         sendMessage(
-            null,
+            UserEntity.of(ChatNames.SYSTEM_USER_ID),
             chatEntity.get(),
             text,
             true,
@@ -58,6 +75,16 @@ public class MessageService {
             List.of(),
             List.of()
         );
+    }
+
+    @Transactional
+    public ChatMessageEntity sendMessage(UserEntity fromUserEntity,
+                                         ChatEntity chatEntity,
+                                         String message,
+                                         Boolean isSystemMessage,
+                                         ChatMessageTypeEntity chatMessageTypeEntity
+    ) {
+        return sendMessage(fromUserEntity, chatEntity, message, isSystemMessage, chatMessageTypeEntity, List.of(), List.of(), true);
     }
 
     @Transactional
@@ -95,6 +122,8 @@ public class MessageService {
                                          boolean markMessagesAsNew,
                                          boolean triggerSendNotification
     ) {
+        chatEntity = chatRepository.findById(chatEntity.getId()).get();
+
         Long chatId = chatEntity.getId();
 
         LocalDateTime now = LocalDateTime.now();
@@ -136,13 +165,13 @@ public class MessageService {
         }
 
         List<ChatMessageToUserEntity> chatMessageToUserEntities = new ArrayList<>();
-        for (ChatMemberEntity chatMember : chatMessageEntity.getChat().getChatMembers()) {
-            if (fromUserEntity != null && Objects.equals(chatMember.getUser().getId(), fromUserEntity.getId())) {
+        for (UserEntity chatMember : chatMessageEntity.getChat().getParticipants()) {
+            if (fromUserEntity != null && Objects.equals(chatMember.getId(), fromUserEntity.getId())) {
                 continue;
             }
 
             ChatMessageToUserEntity chatMessageToUserEntity = new ChatMessageToUserEntity();
-            chatMessageToUserEntity.setUser(chatMember.getUser());
+            chatMessageToUserEntity.setUser(chatMember);
             chatMessageToUserEntity.setChat(chatEntity);
             chatMessageToUserEntity.setMessage(chatMessageEntity);
             chatMessageToUserEntity.setIsViewed(false);
@@ -325,7 +354,7 @@ public class MessageService {
         ChatEntity userAdminChat = chatRepository.findUserAdminChat(userId).orElseThrow(() -> new RuntimeException("Admin chat not found"));
         ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName()).orElseThrow(() -> new RuntimeException("Chat message type not found for id " + ChatMessageType.MESSAGE.getName()));
 
-        sendMessage(null, userAdminChat, message, true, chatMessageTypeEntity, List.of(), List.of());
+        sendMessage(UserEntity.of(ChatNames.SYSTEM_USER_ID), userAdminChat, message, true, chatMessageTypeEntity, List.of(), List.of());
     }
 
     @Transactional
@@ -334,7 +363,7 @@ public class MessageService {
         byUser.forEach((user, statuses) -> {
             var message = statuses.stream().map(t -> "Заказ №%s - %s руб. Статус: %s."
                     .formatted(t.getOrder().getOrderTechNumber(), Objects.toString(t.getPaymentValue(), "-"), t.getStatus().getRusName()))
-                    .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining("\n"));
             message = "Здравствуйте, вам были оплачены заказы:\n" + message;
             sendMessageToAdminChat(user.getId(), message);
         });

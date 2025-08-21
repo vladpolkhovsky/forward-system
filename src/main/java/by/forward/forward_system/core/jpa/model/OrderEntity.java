@@ -4,6 +4,7 @@ import by.forward.forward_system.core.enums.OrderSourceType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -93,4 +94,9 @@ public class OrderEntity {
     @OneToMany(mappedBy = "order")
     private List<ChatEntity> chats = new ArrayList<>();
 
+    public static OrderEntity of(@NotNull Long id) {
+        OrderEntity orderEntity = new OrderEntity();
+        orderEntity.setId(id);
+        return orderEntity;
+    }
 }

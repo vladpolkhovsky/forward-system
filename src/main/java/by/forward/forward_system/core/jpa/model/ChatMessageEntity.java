@@ -3,6 +3,9 @@ package by.forward.forward_system.core.jpa.model;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -43,13 +46,16 @@ public class ChatMessageEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
+    @BatchSize(size = 15)
     private List<ChatMessageAttachmentEntity> chatMessageAttachments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
+    @BatchSize(size = 5)
     private List<ChatMessageOptionEntity> chatMessageOptions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "message", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
+    @BatchSize(size = 500)
     private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
 
 }

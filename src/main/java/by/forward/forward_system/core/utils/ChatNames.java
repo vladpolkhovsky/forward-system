@@ -2,6 +2,7 @@ package by.forward.forward_system.core.utils;
 
 import lombok.experimental.UtilityClass;
 
+import java.util.List;
 import java.util.UUID;
 
 @UtilityClass
@@ -19,7 +20,16 @@ public class ChatNames {
     public static final Long ERRORS_CHAT_ID = -1L;
     public static final Long EXPERT_USER_ID = -10L;
     public static final Long ADMIN_USER_ID = -20L;
+    public static final Long CUSTOMER_USER_ID = -40L;
+    public static final Long SYSTEM_USER_ID = -30L;
     public static final Long ALWAYS_SHOW_NAME_ID_LIMIT = 0L;
+
+    public static final List<Long> SYSTEM_USERS = List.of(
+        EXPERT_USER_ID,
+        ADMIN_USER_ID,
+        CUSTOMER_USER_ID,
+        SYSTEM_USER_ID
+    );
 
     public static final String JOIN_FORWARD_ORDER_HTML = "<kbd class=\"d-inline-block\">/join %s</kbd>";
 

@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum OrderPaymentStatus {
     FULL_PAYMENT("Оплачен"),
     PARTITIONAL_PAYMENT("Частично оплачен"),
+    REFUND("Возврат д. с."),
     NO_PAYMENT("Не оплачен"),
     ;
 

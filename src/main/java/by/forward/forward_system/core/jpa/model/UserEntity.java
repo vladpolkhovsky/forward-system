@@ -125,4 +125,10 @@ public class UserEntity {
             .toList();
         return String.join(",", authoritiesNames);
     }
+
+    public static UserEntity of(Long id) {
+        UserEntity userEntity = new UserEntity();
+        userEntity.setId(id);
+        return userEntity;
+    }
 }

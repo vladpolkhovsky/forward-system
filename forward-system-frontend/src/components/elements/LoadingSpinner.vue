@@ -1,13 +1,19 @@
 <script setup lang="ts">
+interface Props {
+  text?: string
+  marginTop?: boolean
+}
 
+const props = defineProps<Props>()
 </script>
 
 <template>
-  <div class="container">
-    <div class="d-flex">
+  <div :class="['container', { 'mt-3': marginTop }]">
+    <div class="d-flex justify-content-center align-items-center flex-column gap-2">
       <div class="spinner-border m-auto" role="status">
         <span class="visually-hidden">Loading...</span>
       </div>
+      <p v-if="props.text">{{ props.text }}</p>
     </div>
   </div>
 </template>

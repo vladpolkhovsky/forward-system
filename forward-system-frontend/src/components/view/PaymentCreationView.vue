@@ -122,15 +122,29 @@ function handelSave() {
                               :selected="item.paymentStatus == OrderPaymentStatusEnum.FULL_PAYMENT">
                         {{ paymentStatusToRusName(OrderPaymentStatusEnum.FULL_PAYMENT) }}
                       </option>
+                      <option :value="OrderPaymentStatusEnum.REFUND"
+                              :selected="item.paymentStatus == OrderPaymentStatusEnum.REFUND">
+                        {{ paymentStatusToRusName(OrderPaymentStatusEnum.REFUND) }}
+                      </option>
                     </select>
                   </td>
                   <td class="text-center align-content-center">
                     <input class="form-control form-control-sm"
                            v-model="item.value"
                            required
+                           :min="item.paymentStatus == OrderPaymentStatusEnum.REFUND ? '-100000' : '0'"
+                           :max="item.paymentStatus == OrderPaymentStatusEnum.REFUND ? '0' : '100000'"
                            placeholder="Нет выплаты"
                            type="number"
                            :disabled="item.paymentStatus == OrderPaymentStatusEnum.NO_PAYMENT">
+                    <p class="m-0 mt-2 mb-2" v-if="item.paymentStatus == OrderPaymentStatusEnum.REFUND">
+                      <em>
+                        <span class="text-danger">*</span>
+                        Выплаты со статусом
+                        <strong>{{ paymentStatusToRusName(OrderPaymentStatusEnum.REFUND) }}</strong> дожны быть
+                        отрицательным числом.
+                      </em>
+                    </p>
                   </td>
                   <td class="text-center align-content-center">
                     <button class="btn btn-sm btn-danger bi bi-trash" @click="handelDelete(item)"></button>
@@ -151,7 +165,8 @@ function handelSave() {
       </div>
     </div>
   </div>
-  <PaymentView :author-id="selectedAuthor.id" v-if="selectedAuthor" :two-on-row="true" ref="paymentViewRef" class="mt-3"/>
+  <PaymentView :author-id="selectedAuthor.id" v-if="selectedAuthor" :two-on-row="true" ref="paymentViewRef"
+               class="mt-3"/>
 </template>
 
 <style scoped>

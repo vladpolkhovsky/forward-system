@@ -13,6 +13,7 @@ import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectio
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
+import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -237,7 +238,7 @@ public class ReviewService {
         ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
         attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
 
-        messageService.sendMessage(null, chatEntity, message, true, chatMessageTypeEntity, List.of(attachmentEntity), List.of());
+        messageService.sendMessage(UserEntity.of(ChatNames.EXPERT_USER_ID), chatEntity, message, true, chatMessageTypeEntity, List.of(attachmentEntity), List.of());
     }
 
     public void acceptReview(Long orderId, Long reviewId, Boolean verdict, Boolean sendToChat) {
@@ -258,7 +259,7 @@ public class ReviewService {
             ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
             attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
 
-            ChatMessageEntity chatMessageEntity = messageService.sendMessage(null,
+            ChatMessageEntity chatMessageEntity = messageService.sendMessage(UserEntity.of(ChatNames.EXPERT_USER_ID),
                 chatEntity,
                 "Получена рецензия от экспертного отдела. Изучите внимательно файл и выполните доработку.",
                 true,

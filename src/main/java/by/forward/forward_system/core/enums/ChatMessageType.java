@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.enums;
 
+import by.forward.forward_system.core.jpa.model.ChatMessageTypeEntity;
 import lombok.Getter;
 
 @Getter
@@ -8,6 +9,7 @@ public enum ChatMessageType {
     NEW_ORDER("NEW_ORDER", "NEW_ORDER"),
     MESSAGE("MESSAGE", "MESSAGE"),
     MESSAGE_FROM_CUSTOMER("MESSAGE_FROM_CUSTOMER", "MESSAGE_FROM_CUSTOMER"),
+    SYSTEM_MESSAGE("SYSTEM_MESSAGE", "SYSTEM_MESSAGE"),
     ;
 
     private final String name;
@@ -26,5 +28,9 @@ public enum ChatMessageType {
             }
         }
         return null;
+    }
+
+    public ChatMessageTypeEntity entity() {
+        return new ChatMessageTypeEntity(getName());
     }
 }
