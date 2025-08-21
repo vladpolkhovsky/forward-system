@@ -31,6 +31,7 @@ public interface ChatNameMapper {
         if (metadata == null) {
             return chat.getChatName();
         }
+
         if (chat.getChatType().getType() == ChatType.REQUEST_ORDER_CHAT) {
             if (Objects.equals(AuthUtils.getCurrentUserId(), metadata.getAuthorId())) {
                 return "Новые заказы от " + metadata.getManager().getUsername();
@@ -38,7 +39,7 @@ public interface ChatNameMapper {
             if (Objects.equals(AuthUtils.getCurrentUserId(), metadata.getManagerId())) {
                 return "Новые заказы для " + metadata.getUser().getUsername();
             }
-            return "Новые заказы";
+            return chat.getChatName();
         }
 
         if (chat.getChatType().getType() == ChatType.ADMIN_TALK_CHAT) {

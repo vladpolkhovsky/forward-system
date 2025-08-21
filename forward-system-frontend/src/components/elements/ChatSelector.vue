@@ -142,10 +142,9 @@ function handleSelectChat(item: ChatItem) {
   </div>
   <div class="row overflow-auto flex-grow-1">
     <div class="col-12">
-      <div
-          :class="['fs-7 card mt-1 position-relative', { 'border border-5 border-primary-subtle': item.isActive }]"
-          v-for="item in items"
-          @click="handleSelectChat(item)">
+      <div :class="['fs-7 card mt-1 position-relative', { 'border border-5 border-primary-subtle': item.isActive }]"
+           v-for="item in items"
+           @click="handleSelectChat(item)">
         <div class="card-header p-1 ps-2">
           <p class="m-0 p-0 fs-6">
             <span class="me-1 badge text-bg-primary d-inline-block" v-if="item.isActive"><i
@@ -158,7 +157,7 @@ function handleSelectChat(item: ChatItem) {
             <span class="ms-1 fw-bold d-inline-block">{{ item.chat.displayName }}</span>
           </p>
         </div>
-        <div class="card-body p-2 d-flex flex-column gap-2">
+        <div class="card-body p-2 d-flex flex-column gap-2" v-if="item.chat.tags.length > 0">
           <div class="d-inline-flex gap-1 flex-wrap fs-6"
                v-if="item.chat.tags.filter(t => t.metadata.isPrimaryTag).length > 0">
             <template v-for="tag in item.chat.tags">
@@ -174,7 +173,9 @@ function handleSelectChat(item: ChatItem) {
             </template>
           </div>
         </div>
-        <div class="card-footer text-body-secondary p-1 ps-2">{{ item.chat.lastMessageDate }}</div>
+        <div :class="['card-footer text-body-secondary p-1 ps-2', { 'border-top-0': item.chat.tags.length == 0 }]">
+          {{ item.chat.lastMessageDate }}
+        </div>
       </div>
       <div class="mb-5">
         <div class="row mt-2" v-if="loading">
