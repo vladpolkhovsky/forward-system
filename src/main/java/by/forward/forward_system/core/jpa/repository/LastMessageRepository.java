@@ -35,7 +35,7 @@ public interface LastMessageRepository extends JpaRepository<LastMessageEntity, 
         "chat.chatMetadata.manager"
     })
     @Query(value = """
-        select lmf.message from LastMessageEntity lmf where lmf.message.id in (
+        select cm from ChatMessageEntity cm where cm.id in (
             select distinct r.id from (
                 select lme.message.id as id from LastMessageEntity lme
                     where lme.chat.id = :chatId and lme.message.createdAt > :after
@@ -44,7 +44,7 @@ public interface LastMessageRepository extends JpaRepository<LastMessageEntity, 
                     inner join ChatMessageToUserEntity cmtue on cmtue.message.id = lme.message.id
                     where cmtue.user.id = :userId and lme.createdAt > :after
             ) as r
-        ) order by lmf.createdAt
+        ) order by cm.createdAt
         """)
     List<ChatMessageEntity> newMessageToUserAndForChatFetch(Long userId, Long chatId, LocalDateTime after);
 

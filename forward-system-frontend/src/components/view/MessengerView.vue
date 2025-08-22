@@ -141,7 +141,7 @@ function handleLoadMoreChats() {
 
 function handleLoadMoreChatMessages(page: number) {
   chatService.loadChatMessages(selectedChat.value.id, page, page => {
-    page.content.forEach(chatWindowRef.value.appendMessageToBottom);
+    page.content.forEach(chatWindowRef.value.appendMessageToTop);
     chatWindowRef.value.setMessagesAdded();
     if (page.last) {
       chatWindowRef.value.setNoMoreMessages();

@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class OrderMapper {
@@ -71,7 +72,10 @@ public abstract class OrderMapper {
             return List.of();
         }
         return objectMapper.readValue(date, typedReference).stream()
-                .map(dto -> dto.withTime(localDataTimeToMMDDYY(LocalDateTime.parse(dto.getTime()))))
+                .map(dto -> dto.withTime(Optional.ofNullable(dto.getTime())
+                    .map(LocalDateTime::parse)
+                    .map(this::localDataTimeToMMDDYY)
+                    .orElse("<Дата не указана>")))
                 .toList();
     }
 

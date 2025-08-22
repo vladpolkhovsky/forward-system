@@ -104,7 +104,7 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Специальный чат
           </h5>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             Этот чат создан администратором для <strong>узконаправленного общения</strong> и решения специальных задач.
           </p>
         </div>
@@ -117,11 +117,11 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Чат для новых заказов
           </h5>
-          <p class="card-text">
+          <p class="card-text fs-7">
             Здесь вы будете получать и обсуждать <strong>условия новых заказов</strong>. Система автоматически пришлёт
             уведомление, когда для вас появится подходящее предложение.
           </p>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             <strong>Важно:</strong> общение в этом чате ведётся исключительно с вашим менеджером.
           </p>
         </div>
@@ -134,11 +134,11 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Чат с администрацией
           </h5>
-          <p class="card-text">
+          <p class="card-text fs-7">
             Направляйте сюда все ваши вопросы, связанные с работой платформы. Здесь вы можете получить консультацию и
             поддержку от администрации.
           </p>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             Кроме того, в этот чат будут приходить <strong>системные уведомления</strong> о платежах и статусах оплаты.
           </p>
         </div>
@@ -151,10 +151,10 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Чат по выполнению заказа
           </h5>
-          <p class="card-text">
+          <p class="card-text fs-7">
             Это рабочее пространство для обсуждения деталей и процесса выполнения текущего заказа.
           </p>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             Здесь вы можете задавать вопросы менеджеру, а он, в свою очередь, будет контролировать ход работы и
             интересоваться прогрессом.
           </p>
@@ -168,11 +168,11 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Прямой чат с заказчиком
           </h5>
-          <p class="card-text">
+          <p class="card-text fs-7">
             Этот чат предназначен для <strong>прямого общения с заказчиком</strong> по всем вопросам, связанным с
             выполнением его заказа.
           </p>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             <strong>Внимание:</strong> соблюдайте правила безопасности. Не передавайте личные данные и ведите всю
             коммуникацию строго в рамках этого чата.
           </p>
@@ -186,7 +186,7 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
           <h5 class="card-title">
             <i class="bi bi-info-circle me-1"></i> Прямой заказ (Чат с администрацией)
           </h5>
-          <p class="card-text mb-0">
+          <p class="card-text mb-0 fs-7">
             Этот чат предназначен для коммуникации с заказчиком по любым вопросам, связанным с его прямым заказом, при
             участии и поддержке администрации.
           </p>

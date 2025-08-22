@@ -45,6 +45,8 @@ const bodyRef = ref<InstanceType<typeof HTMLDivElement>>();
 
 const waitNewMessages = ref(true);
 const hasMoreMessages = ref(true);
+const isFirstLoad = ref(true);
+
 const messageText = ref("");
 
 const emit = defineEmits<{
@@ -55,6 +57,7 @@ const clear = () => {
   messages.value = [];
   hasMoreMessages.value = true;
   waitNewMessages.value = true;
+  isFirstLoad.value = true;
   page = 0;
 }
 
@@ -79,10 +82,6 @@ const appendMessageToTop = (message: MessageDto) => {
     messages.value.unshift(message);
     messages.value.sort((a, b) => a.id - b.id);
   }
-  bodyRef?.value?.scrollIntoView({
-    block: 'end',
-    behavior: 'smooth'
-  });
 }
 
 const appendMessageToBottom = (message: MessageDto) => {
