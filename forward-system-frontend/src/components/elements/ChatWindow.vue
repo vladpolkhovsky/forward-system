@@ -82,6 +82,12 @@ const appendMessageToTop = (message: MessageDto) => {
     messages.value.unshift(message);
     messages.value.sort((a, b) => a.id - b.id);
   }
+  nextTick(() => {
+    bodyRef.value?.scroll({
+      behavior: 'smooth',
+      top: bodyRef.value.scrollHeight
+    });
+  });
 }
 
 const appendMessageToBottom = (message: MessageDto) => {
@@ -89,7 +95,6 @@ const appendMessageToBottom = (message: MessageDto) => {
     messages.value.push(message);
     messages.value.sort((a, b) => a.id - b.id);
   }
-
   nextTick(() => {
     bodyRef.value?.scroll({
       behavior: 'smooth',

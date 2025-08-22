@@ -26,7 +26,8 @@ import java.util.Optional;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class OrderMapper {
 
-    private static final TypeReference<List<AdditionalDateDto>> typedReference = new TypeReference<>() {};
+    private static final TypeReference<List<AdditionalDateDto>> typedReference = new TypeReference<>() {
+    };
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -72,11 +73,12 @@ public abstract class OrderMapper {
             return List.of();
         }
         return objectMapper.readValue(date, typedReference).stream()
-                .map(dto -> dto.withTime(Optional.ofNullable(dto.getTime())
-                    .map(LocalDateTime::parse)
-                    .map(this::localDataTimeToMMDDYY)
-                    .orElse("<Дата не указана>")))
-                .toList();
+            .map(dto -> dto.withTime(Optional.ofNullable(dto.getTime())
+                .filter(StringUtils::isNoneBlank)
+                .map(LocalDateTime::parse)
+                .map(this::localDataTimeToMMDDYY)
+                .orElse("<Дата не указана>")))
+            .toList();
     }
 
     @Named("getAuthor")
