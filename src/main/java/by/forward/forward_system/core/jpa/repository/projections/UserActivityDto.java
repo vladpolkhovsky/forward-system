@@ -17,10 +17,12 @@ public class UserActivityDto {
 
     public UserActivityDto(Long id, String username, LocalDateTime lastSeenDate) {
         this.id = id;
+        this.shouldBeVisible = true;
 
         if (ChatNames.SYSTEM_USERS.contains(id)) {
             this.online = true;
             this.lastOnlineAt = "Онлайн";
+            this.shouldBeVisible = false;
             return;
         }
 
@@ -54,4 +56,5 @@ public class UserActivityDto {
     private String username;
     private String lastOnlineAt;
     private boolean online;
+    private boolean shouldBeVisible;
 }

@@ -69,7 +69,7 @@ onMounted(() => {
         'text-bg-secondary': !lastSeenAt.online,
         'text-bg-success': lastSeenAt.online
       }]" :online-status-id="lastSeenAt.id"
-            v-if="lastSeenAt">{{ (lastSeenAt.online ? '' : 'Был в сети: ') + lastSeenAt.lastOnlineAt }}</span>
+            v-if="lastSeenAt && lastSeenAt.shouldBeVisible">{{ (lastSeenAt.online ? '' : 'Был в сети: ') + lastSeenAt.lastOnlineAt }}</span>
     </p>
     <pre class="m-2 fs-7 line-break montserrat" v-if="message.text" v-html="message.text"/>
     <a class="btn btn-primary w-100 fs-7 mb-1" target="_blank" :href="opt.url"
@@ -83,7 +83,7 @@ onMounted(() => {
     <div class="d-flex justify-content-end fs-7 p-1 me-1">
       <span class="position-relative">{{ message.createdAt }}
         <span ref="tooltipRef"
-              class="ms-2 bi bi-envelope-paper"
+              class="ms-2 bi bi-check-lg"
               data-bs-toggle="tooltip"
               data-bs-title="Сообщение прочитано"
               v-show="message.messageReadedByUsernames.length > 0">

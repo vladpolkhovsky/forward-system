@@ -53,6 +53,8 @@ let page: number = 0;
 const selectedChat = ref<ChatShortDto>();
 
 const initialTabParam = QueryParamService.getParam("tab") ?? QueryParamService.setParam("tab", "all");
+const initialChatIdParam = QueryParamService.getParam("chatId");
+
 const tabs = ref<ChatTab[]>(ChatTabsService.getDefaultTabs().map<ChatTab>((value) => {
   return {
     isActive: initialTabParam == value.queryParam,
@@ -183,6 +185,7 @@ function renewNewMessageOnTab() {
 function initChatService() {
   if (chatService) {
     chatService.close();
+
     if (chatSelectorRef.value) {
       chatSelectorRef.value.clearChats();
       chatSelectorRef.value.setLoading();
@@ -195,7 +198,13 @@ function initChatService() {
     chatService = new ChatService(userDto.id, selectedChat.value?.id ?? null, getSelectedTab().description.chatTypes)
     chatService.start(
         () => {
-          handleLoadMoreChats();
+          if (initialChatIdParam && initialChatIdParam.length > 0) {
+            chatService.fetchChat(parseInt(initialChatIdParam), chat => {
+              chatSelectorRef.value.appendChatsToTop([chat]);
+            }, true);
+          } else {
+            handleLoadMoreChats();
+          }
         },
         (message, chat) => {
           if (selectedChat?.value?.id != chat.id) {

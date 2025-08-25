@@ -46,6 +46,7 @@ export class LastSeenAtService {
         }
         return {
             online: false,
+            shouldBeVisible: false,
             lastOnlineAt: "Никогда",
             id: null
         }
@@ -55,5 +56,6 @@ export class LastSeenAtService {
 export interface LastSeenAtDto {
     id: number,
     online: boolean,
+    shouldBeVisible: boolean,
     lastOnlineAt: string;
 }

@@ -105,6 +105,20 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
     interface NewMessageCountProjection {
         Long getChatId();
         Integer getNewMessageCount();
+
+        static NewMessageCountProjection zero(Long chatId) {
+            return new NewMessageCountProjection() {
+                @Override
+                public Long getChatId() {
+                    return chatId;
+                }
+
+                @Override
+                public Integer getNewMessageCount() {
+                    return 0;
+                }
+            };
+        }
     }
 
     @Query(value = """

@@ -85,7 +85,7 @@ public class AdminMenuController {
     @GetMapping("/review-order-redirect-to-chat/{catcherId}/{authorId}")
     public RedirectView reviewOrderRedirectWhenClickShowChat(@PathVariable Long catcherId, @PathVariable Long authorId) {
         Long chatId = userUiService.getChatIdWithManagerAndAuthor(catcherId, authorId);
-        return new RedirectView("/new-messenger?tab=new-orders&chatId=%d".formatted(chatId));
+        return new RedirectView("/new-messenger-v3?tab=all&chatId=%d".formatted(chatId));
     }
 
     @GetMapping(value = "/create-plan")

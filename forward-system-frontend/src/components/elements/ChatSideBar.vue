@@ -263,8 +263,9 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
             </AccordionItem>
           </Accordion>
 
-          <a class="btn btn-sm btn-outline-dark mt-3 p-1" target="_blank" :href="'/order-info/' + chat.orderId">Карточка
-            заказа</a>
+          <a class="btn btn-sm btn-outline-dark mt-3 p-1 w-100"
+             target="_blank"
+             :href="'/order-info/' + chat.orderId">Карточка заказа</a>
         </div>
       </div>
 

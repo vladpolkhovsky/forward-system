@@ -86,6 +86,12 @@ const clearSearch = () => {
   selectedChatId.value = null;
 }
 
+const updateSearch = (searchLineRequest: string) => {
+  searchLine.value = searchLineRequest;
+  selectedChatId.value = null;
+  emit("search-value", searchLineRequest);
+}
+
 const setMessageViewed = (chatId: number) => {
   items.value.filter(t => t.chat.id == chatId)
       .forEach(t => t.chat.newMessageCount = 0);
@@ -105,6 +111,7 @@ defineExpose({
   appendChatsToBottom,
   clearChats,
   clearSearch,
+  updateSearch,
   setMessageViewed,
   incNotViewedMessages
 });
@@ -146,15 +153,18 @@ function handleSelectChat(item: ChatItem) {
            v-for="item in items"
            @click="handleSelectChat(item)">
         <div class="card-header p-1 ps-2">
-          <p class="m-0 p-0 fs-6">
-            <span class="me-1 badge text-bg-primary d-inline-block" v-if="item.isActive"><i
-                class="bi bi-check2 me-1"></i>Открыт</span>
-            <span class="badge rounded-pill bg-danger me-1 ms-1"
-                  v-if="item.chat.newMessageCount > 0"><i
-                class="bi bi-chat-left-text me-1"></i>{{ item.chat.newMessageCount }}</span>
-            <OrderStatusIcon v-if="item.chat.orderId" :name="item.chat.orderStatus"
-                             :rus-name="item.chat.orderStatusRus"/>
-            <span class="ms-1 fw-bold d-inline-block">{{ item.chat.displayName }}</span>
+          <p class="m-0 p-0 fs-6 d-flex gap-2 justify-content-between">
+            <span>
+              <span class="me-1 badge text-bg-primary d-inline-block" v-if="item.isActive"><i
+                  class="bi bi-check2 me-1"></i>Открыт</span>
+              <span class="badge rounded-pill bg-danger me-1 ms-1 d-inline-block"
+                    v-if="item.chat.newMessageCount > 0">
+                <i class="bi bi-chat-left-text me-1"></i>{{ item.chat.newMessageCount }}</span>
+
+              <span class="ms-1 fw-bold d-inline-block">{{ item.chat.displayName }}</span>
+            </span>
+            <span class="d-inline-block"><OrderStatusIcon v-if="item.chat.orderId" :name="item.chat.orderStatus"
+                                                          :rus-name="item.chat.orderStatusRus"/></span>
           </p>
         </div>
         <div class="card-body p-2 d-flex flex-column gap-2" v-if="item.chat.tags.length > 0">

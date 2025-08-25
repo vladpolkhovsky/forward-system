@@ -84,11 +84,13 @@ public class V3ChatLoadService {
         return toV3ChatDtoPage(chats);
     }
 
-    private V3ChatDto toV3ChatDto(Long id) {
-        List<ChatEntity> fetchedChats = chatRepository.fetchDataToChatResponse(List.of(id));
+    private V3ChatDto toV3ChatDto(Long chatId) {
+        List<ChatEntity> fetchedChats = chatRepository.fetchDataToChatResponse(List.of(chatId));
         ChatEntity chat = fetchedChats.getFirst();
         V3ChatDto v3ChatDto = chatMapper.matToV3ChatDto(chat);
-        NewMessageCountProjection newMessages = chatRepository.findNewMessageCount(List.of(id), AuthUtils.getCurrentUserId()).getFirst();
+        NewMessageCountProjection newMessages = chatRepository.findNewMessageCount(List.of(chatId), AuthUtils.getCurrentUserId()).stream()
+            .filter(t -> Objects.equals(t.getChatId(), chatId))
+            .findAny().orElse(NewMessageCountProjection.zero(chatId));
         return v3ChatDto.withNewMessageCount(newMessages.getNewMessageCount());
     }
 
