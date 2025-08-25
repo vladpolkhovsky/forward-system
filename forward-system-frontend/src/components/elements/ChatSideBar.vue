@@ -13,6 +13,7 @@ import Accordion from "@/components/elements/Accordion.vue";
 import type {OrderReviewDto} from "@/core/dto/OrderReviewDto.ts";
 import {ChatTypeEnum} from "@/core/enum/ChatTypeEnum.ts";
 import type {ForwardOrderChatInformation} from "@/core/dto/ForwardOrderChatInformation.ts";
+import InformationText from "@/components/elements/InformationText.vue";
 
 interface Props {
   user: UserDto,
@@ -98,107 +99,80 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
       </figcaption>
     </figure>
 
-    <template v-if="chat.type == ChatTypeEnum.SPECIAL_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Специальный чат
-          </h5>
-          <p class="card-text mb-0 fs-7">
-            Этот чат создан администратором для <strong>узконаправленного общения</strong> и решения специальных задач.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-if="chat.type == ChatTypeEnum.SPECIAL_CHAT" :expand="true" icon="bi bi-info-circle" :mt="3"
+                     tittle="Специальный чат" :show-icon="true">
+      <p class="card-text mb-0 fs-7">
+        Этот чат создан администратором для <strong>узконаправленного общения</strong> и решения специальных задач.
+      </p>
+    </InformationText>
 
-    <template v-else-if="chat.type == ChatTypeEnum.REQUEST_ORDER_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Чат для новых заказов
-          </h5>
-          <p class="card-text fs-7">
-            Здесь вы будете получать и обсуждать <strong>условия новых заказов</strong>. Система автоматически пришлёт
-            уведомление, когда для вас появится подходящее предложение.
-          </p>
-          <p class="card-text mb-0 fs-7">
-            <strong>Важно:</strong> общение в этом чате ведётся исключительно с вашим менеджером.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-else-if="chat.type == ChatTypeEnum.REQUEST_ORDER_CHAT" :expand="true" icon="bi bi-info-circle"
+                     :mt="3" tittle="Чат для новых заказов" :show-icon="true">
+      <p class="card-text fs-7">
+        Здесь вы будете получать и обсуждать <strong>условия новых заказов</strong>. Система автоматически пришлёт
+        уведомление, когда для вас появится подходящее предложение.
+      </p>
+      <p class="card-text mb-0 fs-7">
+        <strong>Важно:</strong> общение в этом чате ведётся исключительно с вашим менеджером.
+      </p>
+    </InformationText>
 
-    <template v-else-if="chat.type == ChatTypeEnum.ADMIN_TALK_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Чат с администрацией
-          </h5>
-          <p class="card-text fs-7">
-            Направляйте сюда все ваши вопросы, связанные с работой платформы. Здесь вы можете получить консультацию и
-            поддержку от администрации.
-          </p>
-          <p class="card-text mb-0 fs-7">
-            Кроме того, в этот чат будут приходить <strong>системные уведомления</strong> о платежах и статусах оплаты.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-else-if="chat.type == ChatTypeEnum.ADMIN_TALK_CHAT" :expand="true" icon="bi bi-info-circle"
+                     :mt="3" tittle="Чат с администрацией" :show-icon="true">
+      <p class="card-text fs-7">
+        Здесь вы будете получать и обсуждать <strong>условия новых заказов</strong>. Система автоматически пришлёт
+        уведомление, когда для вас появится подходящее предложение.
+      </p>
+      <p class="card-text fs-7">
+        Направляйте сюда все ваши вопросы, связанные с работой платформы. Здесь вы можете получить консультацию и
+        поддержку от администрации.
+      </p>
+      <p class="card-text mb-0 fs-7">
+        Кроме того, в этот чат будут приходить <strong>системные уведомления</strong> о платежах и статусах оплаты.
+      </p>
+    </InformationText>
 
-    <template v-else-if="chat.type == ChatTypeEnum.ORDER_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Чат по выполнению заказа
-          </h5>
-          <p class="card-text fs-7">
-            Это рабочее пространство для обсуждения деталей и процесса выполнения текущего заказа.
-          </p>
-          <p class="card-text mb-0 fs-7">
-            Здесь вы можете задавать вопросы менеджеру, а он, в свою очередь, будет контролировать ход работы и
-            интересоваться прогрессом.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-else-if="chat.type == ChatTypeEnum.ORDER_CHAT" :expand="true" icon="bi bi-info-circle"
+                     :mt="3" tittle="Чат по выполнению заказа" :show-icon="true">
+      <p class="card-text fs-7">
+        Это рабочее пространство для обсуждения деталей и процесса выполнения текущего заказа.
+      </p>
+      <p class="card-text mb-0 fs-7">
+        Здесь вы можете задавать вопросы менеджеру, а он, в свою очередь, будет контролировать ход работы и
+        интересоваться прогрессом.
+      </p>
+    </InformationText>
 
-    <template v-else-if="chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Прямой чат с заказчиком
-          </h5>
-          <p class="card-text fs-7">
-            Этот чат предназначен для <strong>прямого общения с заказчиком</strong> по всем вопросам, связанным с
-            выполнением его заказа.
-          </p>
-          <p class="card-text mb-0 fs-7">
-            <strong>Внимание:</strong> соблюдайте правила безопасности. Не передавайте личные данные и ведите всю
-            коммуникацию строго в рамках этого чата.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-else-if="chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT" :expand="true" icon="bi bi-info-circle"
+                     :mt="3" tittle="Прямой чат с заказчиком" :show-icon="true">
+      <p class="card-text fs-7">
+        Этот чат предназначен для <strong>прямого общения с заказчиком</strong> по всем вопросам, связанным с
+        выполнением его заказа.
+      </p>
+      <p class="card-text mb-0 fs-7">
+        <strong>Внимание:</strong> соблюдайте правила безопасности. Не передавайте личные данные и ведите всю
+        коммуникацию строго в рамках этого чата.
+      </p>
+    </InformationText>
 
-    <template v-else-if="chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT">
-      <div class="card mt-3">
-        <div class="card-body">
-          <h5 class="card-title">
-            <i class="bi bi-info-circle me-1"></i> Прямой заказ (Чат с администрацией)
-          </h5>
-          <p class="card-text mb-0 fs-7">
-            Этот чат предназначен для коммуникации с заказчиком по любым вопросам, связанным с его прямым заказом, при
-            участии и поддержке администрации.
-          </p>
-        </div>
-      </div>
-    </template>
+    <InformationText v-else-if="chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT" :expand="true"
+                     icon="bi bi-info-circle"
+                     :mt="3" tittle="Прямой заказ (Чат с администрацией)" :show-icon="true">
+      <p class="card-text fs-7">
+        Этот чат предназначен для <strong>прямого общения с заказчиком</strong> по всем вопросам, связанным с
+        выполнением его заказа.
+      </p>
+      <p class="card-text mb-0 fs-7">
+        Этот чат предназначен для коммуникации с заказчиком по любым вопросам, связанным с его прямым заказом, при
+        участии и поддержке администрации.
+      </p>
+    </InformationText>
 
     <template v-if="chat.orderId">
       <LoadingSpinner v-if="orderChatInfoLoading" :margin-top="true"
                       text="Загружаем информацию о заказе"/>
       <div class="card mt-3" v-if="orderChatInformation">
-        <div class="card-body">
+        <div class="card-body p-2">
           <h5 class="card-title">
             <i class="bi bi-info-square me-1"></i>ТЗ №{{ orderChatInformation.techNumber + ' ' }}
             <OrderStatusIcon
@@ -269,36 +243,32 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
         </div>
       </div>
 
-      <template v-if="chat.orderId && hasAuthorityManager(user.authorities)
-      && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)">
+      <InformationText v-if="chat.orderId && hasAuthorityManager(user.authorities) && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)"
+                       :expand="true" icon="bi-telegram"
+                       :mt="3" tittle="Информация о прямом заказе" :show-icon="true">
         <LoadingSpinner v-if="forwardOrderInfoLoading" :margin-top="true"
                         text="Загружаем информацию о прямом заказе"/>
-        <div class="card mt-3" v-if="forwardOrderChatInformation">
-          <div class="card-body">
-            <h5 class="card-title">
-              <i class="bi bi-telegram me-1"></i>Информация о прямом заказе
-            </h5>
-            <p class="m-0">Кол-во участников чата в телеграмме:
-              <span class="h5">{{ forwardOrderChatInformation.botCount }}</span>
-            </p>
-            <p class="m-0">Код для присоединения к чату:
-              <kbd class="ms-2 d-inline-block">/join {{ forwardOrderChatInformation.code }}</kbd>
-            </p>
-            <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
-                    @click="handleForwardOrderDeleteUsers(forwardOrderChatInformation.forwardOrderId)">Удалить всех и
-              заменить код.
-            </button>
-            <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
-              чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
-            </div>
+        <template class="card mt-3" v-if="forwardOrderChatInformation">
+          <p class="m-0">Кол-во участников чата в телеграмме:
+            <span class="h5">{{ forwardOrderChatInformation.botCount }}</span>
+          </p>
+          <p class="m-0">Код для присоединения к чату:
+            <kbd class="ms-2 d-inline-block">/join {{ forwardOrderChatInformation.code }}</kbd>
+          </p>
+          <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
+                  @click="handleForwardOrderDeleteUsers(forwardOrderChatInformation.forwardOrderId)">Удалить всех и
+            заменить код.
+          </button>
+          <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
+            чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
           </div>
-        </div>
-      </template>
+        </template>
+      </InformationText>
 
       <LoadingSpinner v-if="orderReviewsInfoLoading" :margin-top="true"
                       text="Загружаем информацию о проверках"/>
       <div class="card mt-3" v-if="orderChatInformation">
-        <div class="card-body">
+        <div class="card-body p-2">
           <h5 class="card-title">
             <i class="bi bi-files me-1"></i>Проверки работы
           </h5>

@@ -53,7 +53,7 @@ public class ForwardSystemApplication {
     @Bean
     ApplicationRunner applicationRunner(@Autowired PasswordEncoder passwordEncoder) {
         return args -> {
-            System.out.println(passwordEncoder.encode("admin"));
+            System.out.println(passwordEncoder.encode("author-1"));
         };
     }
 }

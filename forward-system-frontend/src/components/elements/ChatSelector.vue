@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import {ref} from "vue";
-import type {ChatShortDto} from "@/core/dto/ChatShortDto.ts";
+import type {ChatShortDto, ChatTag} from "@/core/dto/ChatShortDto.ts";
 import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
 import Pill from "@/components/elements/Pill.vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
@@ -102,6 +102,14 @@ const incNotViewedMessages = (chatId: number) => {
       .forEach(t => t.chat.newMessageCount++);
 }
 
+const selectChatById = (chatId: number) => {
+  items.value.forEach(chat => {
+    if (chat.chat.id == chatId) {
+      handleSelectChat(chat);
+    }
+  });
+}
+
 defineExpose({
   setLoaded,
   setLoading,
@@ -109,6 +117,7 @@ defineExpose({
   setHasMoreChats,
   appendChatsToTop,
   appendChatsToBottom,
+  selectChatById,
   clearChats,
   clearSearch,
   updateSearch,
@@ -138,6 +147,26 @@ function handleSelectChat(item: ChatItem) {
   items.value.forEach(value => value.isActive = (value.id == item.id));
 }
 
+function countVisibleTags(item: ChatItem) {
+  if (item.chat.tags && item.chat.tags.length > 0) {
+    return item.chat.tags.filter(t => t.metadata.isVisible).length;
+  }
+  return 0;
+}
+
+function getNotPrimaryVisibleTags(item: ChatItem): ChatTag[] {
+  if (item.chat.tags && item.chat.tags.length > 0) {
+    return item.chat.tags.filter(t => t.metadata.isVisible && !t.metadata.isPrimaryTag);
+  }
+  return [];
+}
+
+function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
+  if (item.chat.tags && item.chat.tags.length > 0) {
+    return item.chat.tags.filter(t => t.metadata.isVisible && t.metadata.isPrimaryTag);
+  }
+  return [];
+}
 </script>
 
 <template>
@@ -167,18 +196,18 @@ function handleSelectChat(item: ChatItem) {
                                                           :rus-name="item.chat.orderStatusRus"/></span>
           </p>
         </div>
-        <div class="card-body p-2 d-flex flex-column gap-2" v-if="item.chat.tags.length > 0">
+        <div class="card-body p-2 d-flex flex-column gap-2" v-if="countVisibleTags(item)">
           <div class="d-inline-flex gap-1 flex-wrap fs-6"
-               v-if="item.chat.tags.filter(t => t.metadata.isPrimaryTag).length > 0">
-            <template v-for="tag in item.chat.tags">
-              <Pill :text="tag.name" v-if="tag.metadata.isPrimaryTag"
+               v-if="getPrimaryVisibleTags(item).length > 0">
+            <template v-for="tag in getPrimaryVisibleTags(item)">
+              <Pill :text="tag.name"
                     :color="(tag.metadata.isPersonalTag ? (props.userId == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
             </template>
           </div>
           <div class="d-inline-flex gap-1 flex-wrap fs-7"
-               v-if="item.chat.tags.filter(t => !t.metadata.isPrimaryTag).length > 0">
-            <template v-for="tag in item.chat.tags">
-              <Pill :text="tag.name" v-if="!tag.metadata.isPrimaryTag"
+               v-if="getNotPrimaryVisibleTags(item).length > 0">
+            <template v-for="tag in getNotPrimaryVisibleTags(item)">
+              <Pill :text="tag.name"
                     :color="(tag.metadata.isPersonalTag ? (props.userId == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
             </template>
           </div>

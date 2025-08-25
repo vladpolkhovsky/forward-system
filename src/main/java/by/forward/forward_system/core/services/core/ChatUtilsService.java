@@ -116,7 +116,7 @@ public class ChatUtilsService {
                 .type(TagType.SIMPLE)
                 .isPersonalTag(false)
                 .cssColorName(TagCssColor.secondary)
-                .isVisible(true)
+                .isVisible(false)
                 .isPrimaryTag(false)
                 .build())
             .build();
@@ -182,7 +182,7 @@ public class ChatUtilsService {
                 .type(TagType.ORDER)
                 .isPersonalTag(false)
                 .cssColorName(TagCssColor.secondary)
-                .isVisible(true)
+                .isVisible(false)
                 .isPrimaryTag(true)
                 .build())
             .build();

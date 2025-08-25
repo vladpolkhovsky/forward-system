@@ -24,7 +24,7 @@ public interface TagNameSearchRepository extends JpaRepository<TagEntity, String
         SELECT 
             websearch_to_tsquery('pg_catalog.russian', :tagNameQuery) AS ws_query,
             to_tsquery('pg_catalog.russian',
-                array_to_string(regexp_split_to_array(:tagNameQuery, '\\W+'), ' | ')
+                array_to_string(regexp_split_to_array(:tagNameQuery, '[^a-zA-Zа-яА-ЯёЁ0-9]+'), ' | ')
             ) AS or_query
     ) AS sq
     WHERE (t.tsvector_tag_name @@ sq.ws_query

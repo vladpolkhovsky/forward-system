@@ -23,6 +23,12 @@ export class QueryParamService {
         return value;
     }
 
+    public static removeParam(paramName: string) {
+        if (QueryParamService.getUrlSearchParams().has(paramName)) {
+            QueryParamService.getUrlSearchParams().delete(paramName);
+        }
+    }
+
     public static getParam(paramName: string): string {
         if (QueryParamService.getUrlSearchParams().has(paramName)) {
             return QueryParamService.getUrlSearchParams().get(paramName);

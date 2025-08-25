@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import {computed, h, onBeforeUnmount, onMounted, ref, render, useId} from "vue";
+import {computed, h, nextTick, onBeforeUnmount, onMounted, ref, render, useId} from "vue";
 import OffCanvas from "@/components/elements/OffCanvas.vue";
 import type {ChatTabDescription} from "@/core/dto/ChatTabDescription.ts";
 import {ChatTabsService} from "@/core/ChatTabsService.ts";
@@ -24,6 +24,8 @@ const windowWidth = ref(window.innerWidth);
 const windowHeight = ref(window.innerHeight);
 
 const isSmallDevice = computed(() => windowWidth.value < 992 || windowHeight.value < 720);
+
+let firstTimeLoad = true;
 
 const chatSelectorRef = ref<InstanceType<typeof ChatSelector>>();
 const chatWindowRef = ref<InstanceType<typeof ChatWindow>>();
@@ -198,13 +200,16 @@ function initChatService() {
     chatService = new ChatService(userDto.id, selectedChat.value?.id ?? null, getSelectedTab().description.chatTypes)
     chatService.start(
         () => {
-          if (initialChatIdParam && initialChatIdParam.length > 0) {
+          if (firstTimeLoad && initialChatIdParam && initialChatIdParam.length > 0) {
             chatService.fetchChat(parseInt(initialChatIdParam), chat => {
               chatSelectorRef.value.appendChatsToTop([chat]);
+              nextTick(() => {
+                chatSelectorRef.value.selectChatById(chat.id);
+              });
             }, true);
-          } else {
-            handleLoadMoreChats();
           }
+          handleLoadMoreChats();
+          firstTimeLoad = false;
         },
         (message, chat) => {
           if (selectedChat?.value?.id != chat.id) {
