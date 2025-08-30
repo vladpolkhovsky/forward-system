@@ -26,7 +26,6 @@ public class V3ChatRestController {
 
     private final V3ChatLoadService v3ChatLoadService;
     private final V3ChatMessageLoadService v3ChatMessageLoadService;
-    private final ChatService chatService;
     private final MessageService messageService;
 
     @PostMapping(value = "/search", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)

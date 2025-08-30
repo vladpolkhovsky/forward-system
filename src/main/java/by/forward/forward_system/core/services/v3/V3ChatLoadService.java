@@ -69,7 +69,7 @@ public class V3ChatLoadService {
             if (!searchedTags.isEmpty()) {
                 Map<String, Float> additionalRank = searchedTags.stream().collect(Collectors.toMap(t -> t.getId().toString(), TagNameProjection::getRank));
                 String jsonAdditionalRank = objectMapper.writeValueAsString(additionalRank);
-                String chatNameQuery = defaultIfBlank(trimToNull(criteria.getChatNameQuery()), criteria.getTagNameQuery());
+                String chatNameQuery = defaultIfBlank(trimToNull(chatNameString), tegNameString);
 
                 Page<ChatNameProjection> chatsByChatNameAndTagsQuery = chatNameSearchRepository
                     .findChatsByChatNameAndTagsQuery(AuthUtils.getCurrentUserId(), jsonAdditionalRank, chatNameQuery, types, pageable);
