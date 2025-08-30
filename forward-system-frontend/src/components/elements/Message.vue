@@ -6,6 +6,7 @@ import {type LastSeenAtDto, LastSeenAtService} from "@/core/LastSeenAtService.ts
 import {onMounted, ref} from "vue";
 import {Tooltip} from "bootstrap";
 import {ParticipantTypeEnum} from "@/core/enum/ParticipantTypeEnum.ts";
+import type {ChatOptionDto} from "@/core/dto/ChatOptionDto.ts";
 
 interface Props {
   user: UserDto,
@@ -48,6 +49,58 @@ onMounted(() => {
   tooltip.setContent({'.tooltip-inner': tooltipHtml});
 });
 
+function handleOptionClick(option: ChatOptionDto) {
+  if (option.isResolved) {
+    return;
+  }
+
+  if (option.url.startsWith("/api/order/distribution/item")) {
+    fetch(`${option.url}&optionId=${option.id}`)
+        .then(value => value.json())
+        .then(value => {
+          if (value['code'] != 200) {
+            throw new Error(value['message'])
+          }
+          option.isResolved = true;
+        })
+        .catch(err => {
+          alert(err['message']);
+        });
+    return;
+  }
+
+  window.open(option.url, '_blank');
+}
+
+function getOptionClasses(option: ChatOptionDto): string[] {
+
+  let optionColorDefined = false;
+  const classes: string[] = [];
+
+  if (option.isResolved) {
+    classes.push("text-decoration-line-through")
+  }
+
+  if (option.url.startsWith("/api/order/distribution/item")) {
+    if (option.url.includes("action=ACCEPTED")) {
+      classes.push("btn-success")
+    }
+    if (option.url.includes("action=TALK")) {
+      classes.push("btn-info")
+    }
+    if (option.url.includes("action=DECLINE")) {
+      classes.push("btn-danger")
+    }
+    optionColorDefined = true;
+  }
+
+  if (!optionColorDefined) {
+    classes.push("btn-primary")
+  }
+
+  return classes;
+}
+
 </script>
 
 <template>
@@ -65,16 +118,20 @@ onMounted(() => {
             v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.MAIN_AUTHOR">Автор</span>
       <span class="me-2 badge text-bg-primary" v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
       <span class="me-2 badge text-bg-danger" v-if="message.fromUserIsAdmin">Админ</span>
-      <span :class="[ 'me-2 badge', {
-        'text-bg-secondary': !lastSeenAt.online,
-        'text-bg-success': lastSeenAt.online
-      }]" :online-status-id="lastSeenAt.id"
-            v-if="lastSeenAt && lastSeenAt.shouldBeVisible">{{ (lastSeenAt.online ? '' : 'Был в сети: ') + lastSeenAt.lastOnlineAt }}</span>
+      <span :class="[ 'me-2 badge', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"
+            :online-status-id="lastSeenAt.id"
+            v-if="lastSeenAt && lastSeenAt.shouldBeVisible">
+        {{ (lastSeenAt.online ? '' : 'Был в сети: ') + lastSeenAt.lastOnlineAt }}
+      </span>
     </p>
     <pre class="m-2 fs-7 line-break montserrat" v-if="message.text" v-html="message.text"/>
-    <a class="btn btn-primary w-100 fs-7 mb-1" target="_blank" :href="opt.url"
-       v-for="opt in message.options">{{ opt.name }}</a>
-    <div class="d-flex justify-content-between m-2 fs-7">
+    <template v-for="opt in message.options">
+      <button :class="['btn btn-sm w-100 fs-7 mb-1 montserrat', ...getOptionClasses(opt)]"
+              :disabled="opt.isResolved"
+              @click="handleOptionClick(opt)">{{ opt.name }}
+      </button>
+    </template>
+    <div class="d-flex justify-content-between m-2 fs-7" v-if="message.attachments.length > 0">
       <div class="d-block">
         <a :href="'/load-file/' + att.id" target="_blank" class="me-2 d-inline-block line-break text-break"
            v-for="att in message.attachments">{{ att.name }}</a>

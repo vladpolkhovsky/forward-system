@@ -1,6 +1,6 @@
-import type {AuthorShortDto} from "@/core/dto/AuthorShortDto.ts";
+import type {AuthorDto} from "@/core/dto/AuthorDto.ts";
 
-export type AuthorCallback = (authors: AuthorShortDto[]) => void;
+export type AuthorCallback = (authors: AuthorDto[]) => void;
 
 export class AuthorService {
     private constructor() {
@@ -10,8 +10,8 @@ export class AuthorService {
     public static fetchAuthors(callback: AuthorCallback): void {
         fetch("/api/author/get-authors", {method: "GET"})
             .then(value => value.json())
-            .then(value => value as AuthorShortDto[])
-            .then((value: AuthorShortDto[]) => {
+            .then(value => value as AuthorDto[])
+            .then((value: AuthorDto[]) => {
                 callback(value);
             })
     }

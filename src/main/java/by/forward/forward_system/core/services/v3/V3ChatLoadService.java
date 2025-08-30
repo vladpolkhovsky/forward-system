@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -56,8 +57,14 @@ public class V3ChatLoadService {
             types = criteria.getChatTypes().stream().map(ChatType::name).toList();
         }
 
-        if (StringUtils.isNotBlank(criteria.getTagNameQuery())) {
-            List<TagNameProjection> searchedTags = tagSearchRepository.search(StringUtils.trimToEmpty(criteria.getTagNameQuery()));
+        String chatNameString = StringUtils.trimToNull(RegExUtils.replaceAll(criteria.getChatNameQuery(), "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "));
+        String tegNameString = StringUtils.trimToNull(RegExUtils.replaceAll(criteria.getTagNameQuery(), "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "));
+
+        if (StringUtils.isNotBlank(tegNameString)) {
+            tegNameString = StringUtils.lowerCase(tegNameString);
+            tegNameString = StringUtils.capitalize(tegNameString);
+
+            List<TagNameProjection> searchedTags = tagSearchRepository.search(tegNameString);
 
             if (!searchedTags.isEmpty()) {
                 Map<String, Float> additionalRank = searchedTags.stream().collect(Collectors.toMap(t -> t.getId().toString(), TagNameProjection::getRank));
@@ -71,9 +78,12 @@ public class V3ChatLoadService {
             }
         }
 
-        if (StringUtils.isNotBlank(criteria.getChatNameQuery())) {
+        if (StringUtils.isNotBlank(chatNameString)) {
+            chatNameString = StringUtils.lowerCase(chatNameString);
+            chatNameString = StringUtils.capitalize(chatNameString);
+
             Page<ChatNameProjection> chatsByChatNameQuery = chatNameSearchRepository
-                .findChatsByNameQuery(AuthUtils.getCurrentUserId(), criteria.getChatNameQuery(), types, pageable);
+                .findChatsByNameQuery(AuthUtils.getCurrentUserId(), chatNameString, types, pageable);
 
             return toV3ChatDtoPage(chatsByChatNameQuery);
         }

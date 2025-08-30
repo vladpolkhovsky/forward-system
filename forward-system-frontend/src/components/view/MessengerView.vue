@@ -147,9 +147,12 @@ function handleLoadMoreChatMessages(page: number) {
   chatService.loadChatMessages(selectedChat.value.id, page, page => {
     page.content.forEach(chatWindowRef.value.appendMessageToTop);
     chatWindowRef.value.setMessagesAdded();
+
     if (page.last) {
       chatWindowRef.value.setNoMoreMessages();
     }
+
+    handleMessageViewed(selectedChat.value.id);
   });
 }
 
@@ -254,7 +257,6 @@ function handleChatSelection(chatId: number) {
     chatService.updateChatId(chat.id);
     QueryParamService.setParam("chatId", chatId.toString());
 
-    handleMessageViewed(selectedChat.value.id);
     decUnreadedChatsCount(selectedChat.value.type as ChatType)
   });
 

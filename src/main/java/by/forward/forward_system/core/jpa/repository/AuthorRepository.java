@@ -2,6 +2,7 @@ package by.forward.forward_system.core.jpa.repository;
 
 import by.forward.forward_system.core.jpa.model.AuthorEntity;
 import by.forward.forward_system.core.jpa.repository.projections.AuthorWithDisciplineProjection;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,10 @@ import java.util.List;
 @Repository
 public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
 
-    @Query(value = "select distinct a from AuthorEntity a join fetch a.user join fetch a.createdByUser where not a.user.deleted")
+    @Query(value = "select distinct a from AuthorEntity a " +
+                   "join fetch a.user " +
+                   "join fetch a.createdByUser " +
+                   "where not a.user.deleted")
     List<AuthorEntity> getAuthorsFast();
 
     @Query(nativeQuery = true, value = "select u.id as id, u.username as username, d.id as disciplineId, d.\"name\" as discipline, ad.discipline_quality as disciplineQuality from forward_system.authors a" +
@@ -23,4 +27,24 @@ public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
 
     @Query(value = "select a from AuthorEntity a where not a.user.deleted")
     List<AuthorEntity> getNotDeletedAuthors();
+
+    @EntityGraph(attributePaths = {
+        "user",
+        "createdByUser",
+        "authorDisciplines",
+        "authorDisciplines.discipline",
+        "authorDisciplines.disciplineQuality",
+    })
+    @Query(value = "from AuthorEntity where user.deleted is false")
+    List<AuthorEntity> getAuthorsFetchedAll();
+
+    @EntityGraph(attributePaths = {
+        "user",
+        "createdByUser",
+        "authorDisciplines",
+        "authorDisciplines.discipline",
+        "authorDisciplines.disciplineQuality",
+    })
+    @Query(value = "from AuthorEntity where id = :userId and user.deleted is false")
+    AuthorEntity getAuthorByIdFetchedAll(Long userId);
 }

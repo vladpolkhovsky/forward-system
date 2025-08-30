@@ -139,7 +139,7 @@ defineExpose({
           </div>
           <div class="d-flex gap-5 justify-content-between align-items-sm-baseline">
             <div class="w-50">
-              <label class="form-label">Добавит файлы</label>
+              <label class="form-label">Добавить файлы</label>
               <input class="form-control form-control-sm" multiple type="file" @change="handleFileAdded"
                      ref="fileAddInputRef">
             </div>

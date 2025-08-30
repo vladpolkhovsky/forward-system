@@ -1,8 +1,10 @@
 package by.forward.forward_system.core.jpa.repository;
 
+import by.forward.forward_system.core.dto.rest.users.UserDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.projections.UserSimpleProjectionDto;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,4 +38,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     default List<UserSimpleProjectionDto> loadAllWithRole(Authority authority) {
         return loadAllWithRole(authority.getAuthority());
     }
+
+    @Query(value = "from UserEntity where roles like concat('%', :authority, '%') and deleted = false order by lower(username)")
+    List<UserEntity> findByAuthority(String authority);
 }

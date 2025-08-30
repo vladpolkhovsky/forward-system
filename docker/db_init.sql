@@ -827,3 +827,26 @@ insert into forward_system.chat_to_tag(tag_id, chat_id)
 values (-10, 0),
        (-20, 0),
        (-10, -1);
+
+create table if not exists forward_system.queue_distribution
+(
+    id              bigint primary key,
+    order_id        bigint      not null references forward_system.orders (id),
+    wait_minutes    bigint      not null,
+    initial_message varchar(65536),
+    status          varchar(75) not null,
+    created_by      bigint      not null references forward_system.users (id),
+    created_at      timestamp   not null
+);
+
+create table if not exists forward_system.queue_distribution_item
+(
+    id                    bigint primary key,
+    queue_distribution_id bigint      not null references forward_system.queue_distribution (id),
+    distribution_order    bigint      not null,
+    user_id               bigint      not null references forward_system.users (id),
+    status                varchar(75) not null,
+    wait_start            timestamp,
+    wait_until            timestamp,
+    created_at            timestamp   not null
+);

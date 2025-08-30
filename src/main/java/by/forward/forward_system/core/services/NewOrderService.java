@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.services;
 
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.enums.OrderPaymentStatus;
@@ -8,11 +9,13 @@ import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.mapper.OrderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +26,8 @@ public class NewOrderService {
     private final OrderMapper orderMapper;
     private final NewOrderPaymentService newOrderPaymentService;
 
-    public List<AuthorOrderDto> getAuthorOrders(long userId) {
+    @Transactional(readOnly = true)
+    public List<AuthorOrderDto> getAuthorOrders(Long userId) {
         var orderWhereAuthorIs = orderRepository.getOrderWhereAuthorIs(userId);
 
         Comparator<OrderEntity> comparator = Comparator.<OrderEntity>comparingInt(oe -> oe.getOrderStatus().getStatus().ordinal())
@@ -39,5 +43,11 @@ public class NewOrderService {
         map.forEach(t -> t.setPaymentStatus(orderIdToPaymentStatus.get(t.getOrderId())));
 
         return map;
+    }
+
+    @Transactional(readOnly = true)
+    public V3OrderDto getOrderById(Long id) {
+        OrderEntity byId = orderRepository.findById(id).get();
+        return orderMapper.mapToDto(byId);
     }
 }

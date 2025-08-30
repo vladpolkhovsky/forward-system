@@ -85,9 +85,10 @@ public interface MessageMapper {
     @Mapping(target = "name", source = "attachment.filename")
     V3AttachmentDto map(ChatMessageAttachmentEntity attachment);
 
-    @Mapping(target = "id", source = "option.id")
-    @Mapping(target = "name", source = "option.optionName")
-    @Mapping(target = "url", source = "option.content")
+    @Mapping(target = "isResolved", source = "optionResolved")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "name", source = "optionName")
+    @Mapping(target = "url", source = "content")
     V3OptionDto map(ChatMessageOptionEntity option);
 
     @Named("getOrderParticipantTypeRus")

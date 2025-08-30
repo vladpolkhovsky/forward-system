@@ -528,4 +528,10 @@ public class CreateOrderController {
         return new RedirectView("/main");
     }
 
+    @GetMapping("/order/distribution")
+    public String orderDistribution(@RequestParam("orderId") Long orderId, Model model) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/order-distribution";
+    }
 }

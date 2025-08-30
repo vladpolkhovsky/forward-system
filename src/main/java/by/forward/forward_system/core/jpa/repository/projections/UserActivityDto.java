@@ -3,6 +3,7 @@ package by.forward.forward_system.core.jpa.repository.projections;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +11,7 @@ import java.time.temporal.ChronoUnit;
 
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
 public class UserActivityDto {
     private static final String lessThen55minutesFormat = "%d мин. назад";
     private static final DateTimeFormatter lessThen12hours = DateTimeFormatter.ofPattern("HH:mm");

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type {AdditionalDate} from "@/core/dto/AuthorOrdersDto.ts";
+import type {AdditionalDateDto} from "@/core/dto/AdditionalDateDto.ts";
 
 interface Props {
-  dates: AdditionalDate[]
+  dates: AdditionalDateDto[]
 }
 
 let props = defineProps<Props>();

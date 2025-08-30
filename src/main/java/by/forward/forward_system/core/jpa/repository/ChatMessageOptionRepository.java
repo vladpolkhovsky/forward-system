@@ -12,4 +12,8 @@ public interface ChatMessageOptionRepository extends JpaRepository<ChatMessageOp
     @Modifying
     @Query("delete from ChatMessageOptionEntity where message.chat.id = :chatId")
     void deleteByChatId(Long chatId);
+
+    @Modifying
+    @Query("update ChatMessageOptionEntity set optionResolved = true where id = :optionId")
+    void setOptionResolved(Long optionId);
 }

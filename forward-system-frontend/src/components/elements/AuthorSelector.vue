@@ -3,6 +3,7 @@ import {onMounted, ref, watch} from "vue";
 import {AuthorService} from "@/core/AuthorService.ts";
 import type {AuthorShortDto} from "@/core/dto/AuthorShortDto.ts";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
+import type {AuthorDto} from "@/core/dto/AuthorDto.ts";
 
 interface Props {
   size?: number
@@ -26,7 +27,7 @@ watch(selectedAuthor, (newValue) => {
 });
 
 const loading = ref(true);
-const authors = ref<AuthorShortDto[]>();
+const authors = ref<AuthorDto[]>();
 
 const refresh = () => {
   loading.value = true;

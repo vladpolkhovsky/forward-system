@@ -6,10 +6,14 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
+import java.util.List;
+
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface UserMapper {
     @Mapping(target = "middleName", source = "surname")
     @Mapping(target = "lastName", source = "lastname")
     @Mapping(target = "firstName", source = "firstname")
     UserDto map(UserEntity userEntity);
+
+    List<UserDto> mapMany(List<UserEntity> list);
 }

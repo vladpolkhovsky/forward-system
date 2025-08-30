@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.enums;
 
+import by.forward.forward_system.core.jpa.model.OrderParticipantsTypeEntity;
 import lombok.Getter;
 
 @Getter
@@ -28,5 +29,9 @@ public enum ParticipantType {
             }
         }
         return null;
+    }
+
+    public OrderParticipantsTypeEntity toEntity() {
+        return new OrderParticipantsTypeEntity(name);
     }
 }

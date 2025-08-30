@@ -51,6 +51,7 @@ const messageText = ref("");
 
 const emit = defineEmits<{
   (e: 'load-more', value: number): void
+  (e: 'send-viewed', value: number): void
 }>();
 
 const clear = () => {
@@ -123,7 +124,11 @@ const requestMoreMessages = () => {
 
 function handleSendMessage() {
   let fileIds = (filesSelectorRef?.value?.readyFiles ?? []).map(value => value.id);
-  let text = messageText.value;
+  let text = messageText.value?.trim() ?? "";
+
+  if ((fileIds?.length ?? 0) == 0 && text.length == 0) {
+    return;
+  }
 
   buttonElementRef?.value?.setAttribute("disabled", "");
   textAreaElementRef?.value?.setAttribute("disabled", "");

@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.enums;
 
+import by.forward.forward_system.core.jpa.model.OrderStatusEntity;
 import lombok.Getter;
 
 @Getter
@@ -41,5 +42,11 @@ public enum OrderStatus {
             }
         }
         return -1;
+    }
+
+    public OrderStatusEntity toEntity() {
+        OrderStatusEntity orderStatusEntity = new OrderStatusEntity();
+        orderStatusEntity.setName(getName());
+        return orderStatusEntity;
     }
 }

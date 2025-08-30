@@ -24,5 +24,4 @@ public class ChatMessageTypeEntity {
     public ChatMessageType getType() {
         return ChatMessageType.byName(getName());
     }
-
 }

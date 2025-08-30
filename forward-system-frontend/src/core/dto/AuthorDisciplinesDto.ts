@@ -1,6 +1,12 @@
+import type {DisciplineDto} from "@/core/dto/DisciplineDto.ts";
+import type {LastSeenAtDto} from "@/core/LastSeenAtService.ts";
+
 export interface AuthorDisciplinesDto {
     userId: number,
-    excellent: string[],
-    good: string[],
-    maybe: string[]
+    excellent: DisciplineDto[],
+    good: DisciplineDto[],
+    maybe: DisciplineDto[],
+    activity: LastSeenAtDto,
+    activeOrderIds: number[],
+    maxOrdersCount: number
 }

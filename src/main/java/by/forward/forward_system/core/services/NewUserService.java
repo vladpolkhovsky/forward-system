@@ -1,11 +1,14 @@
 package by.forward.forward_system.core.services;
 
 import by.forward.forward_system.core.dto.rest.users.UserDto;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -17,5 +20,9 @@ public class NewUserService {
     public UserDto getUserById(Long id) {
         UserEntity userEntity = userRepository.findById(id).get();
         return userMapper.map(userEntity);
+    }
+
+    public List<UserDto> getUsersByAuthority(Authority authority) {
+        return userMapper.mapMany(userRepository.findByAuthority(authority.getAuthority()));
     }
 }

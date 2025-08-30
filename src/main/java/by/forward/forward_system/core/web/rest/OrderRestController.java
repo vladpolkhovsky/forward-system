@@ -1,6 +1,8 @@
 package by.forward.forward_system.core.web.rest;
 
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
 import by.forward.forward_system.core.dto.rest.AddParticipantRequestDto;
+import by.forward.forward_system.core.services.NewOrderService;
 import by.forward.forward_system.core.services.core.OrderService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -14,6 +16,8 @@ public class OrderRestController {
 
     private final OrderService orderService;
 
+    private final NewOrderService newOrderService;
+
     @PostMapping(value = "/add-participants/{orderId}", consumes = MediaType.ALL_VALUE)
     public ResponseEntity<Boolean> addParticipant(@PathVariable("orderId") Long orderId,
                                                   @RequestBody AddParticipantRequestDto addParticipantRequestDto) {
@@ -21,4 +25,8 @@ public class OrderRestController {
         return ResponseEntity.ok(true);
     }
 
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<V3OrderDto> getOrderById(@PathVariable Long id) {
+        return ResponseEntity.ok(newOrderService.getOrderById(id));
+    }
 }

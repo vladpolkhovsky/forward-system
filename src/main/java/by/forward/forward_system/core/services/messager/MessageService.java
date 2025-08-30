@@ -6,6 +6,8 @@ import by.forward.forward_system.core.dto.messenger.MessageOptionDto;
 import by.forward.forward_system.core.dto.messenger.MessageToUserDto;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
 import by.forward.forward_system.core.events.events.NotifyChatEvent;
 import by.forward.forward_system.core.events.events.NotifyForwardOrderCustomersEvent;
 import by.forward.forward_system.core.jpa.model.*;
@@ -44,6 +46,38 @@ public class MessageService {
     private final LastMessageRepository lastMessageRepository;
     private final ForwardOrderRepository forwardOrderRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
+
+    @Transactional
+    public void sendMessageToNewOrderChat(Long authorId, Long managerId, Boolean isSystemMessage, String message, Map<String, String> optionNameToUrl) {
+        sendMessageToNewOrderChat(authorId, managerId, isSystemMessage, message, optionNameToUrl, true);
+    }
+
+    @Transactional
+    public void sendMessageToNewOrderChat(Long authorId, Long managerId, Boolean isSystemMessage, String message, Map<String, String> optionNameToUrl, boolean markAsNew) {
+        Optional<ChatEntity> newOrderChat = chatRepository.findChatEntityByUserAndManagerId(authorId, managerId);
+        if (newOrderChat.isPresent()) {
+            ChatEntity chatEntity = newOrderChat.get();
+            UserEntity fromUserMessage = isSystemMessage ? UserEntity.of(ChatNames.SYSTEM_USER_ID) : UserEntity.of(managerId);
+
+            List<ChatMessageOptionEntity> options = optionNameToUrl.entrySet().stream().map(e -> {
+                ChatMessageOptionEntity chatMessageOptionEntity = new ChatMessageOptionEntity();
+                chatMessageOptionEntity.setOrderParticipant(ParticipantType.AUTHOR.toEntity());
+                chatMessageOptionEntity.setOptionName(e.getKey());
+                chatMessageOptionEntity.setContent(e.getValue());
+                return chatMessageOptionEntity;
+            }).toList();
+
+            sendMessage(fromUserMessage,
+                chatEntity,
+                message,
+                isSystemMessage,
+                ChatMessageType.MESSAGE.entity(),
+                List.of(),
+                options,
+                markAsNew
+            );
+        }
+    }
 
     @Transactional
     public Long sendMessage(Long fromUserId, Long chatId, String message, List<Long> attachmentIds) {
@@ -159,10 +193,7 @@ public class MessageService {
         chatMessageEntity.getChatMessageAttachments().addAll(attachments);
 
         chatMessageEntity = messageRepository.save(chatMessageEntity);
-
-        if (!markMessagesAsNew) {
-            return chatMessageEntity;
-        }
+        final long messageId = chatMessageId;
 
         List<ChatMessageToUserEntity> chatMessageToUserEntities = new ArrayList<>();
         for (UserEntity chatMember : chatMessageEntity.getChat().getParticipants()) {
@@ -174,13 +205,26 @@ public class MessageService {
             chatMessageToUserEntity.setUser(chatMember);
             chatMessageToUserEntity.setChat(chatEntity);
             chatMessageToUserEntity.setMessage(chatMessageEntity);
-            chatMessageToUserEntity.setIsViewed(false);
+
+            boolean isViewed = markMessagesAsNew ? false : true;
+            chatMessageToUserEntity.setIsViewed(isViewed);
             chatMessageToUserEntity.setCreatedAt(now);
 
             chatMessageToUserEntities.add(chatMessageToUserEntity);
         }
 
         chatMessageToUserEntities = chatMessageToUserRepository.saveAll(chatMessageToUserEntities);
+
+        LastMessageEntity lastMessageEntity = new LastMessageEntity();
+        lastMessageEntity.setChat(chatEntity);
+        lastMessageEntity.setMessage(chatMessageEntity);
+        lastMessageEntity.setCreatedAt(LocalDateTime.now());
+
+        lastMessageRepository.save(lastMessageEntity);
+
+        if (!markMessagesAsNew) {
+            return chatMessageEntity;
+        }
 
         List<NotificationOutboxEntity> notificationOutboxEntities = new ArrayList<>();
         for (ChatMessageToUserEntity chatMessageToUserEntity : chatMessageToUserEntities) {
@@ -196,13 +240,7 @@ public class MessageService {
         chatMessageEntity.getChatMessageToUsers().addAll(chatMessageToUserEntities);
         chatMessageEntity = messageRepository.save(chatMessageEntity);
 
-        LastMessageEntity lastMessageEntity = new LastMessageEntity();
-        lastMessageEntity.setChat(chatEntity);
-        lastMessageEntity.setMessage(chatMessageEntity);
-        lastMessageEntity.setCreatedAt(LocalDateTime.now());
-
         notificationOutboxRepository.saveAll(notificationOutboxEntities);
-        lastMessageRepository.save(lastMessageEntity);
 
         Optional<NotifyForwardOrderCustomersEvent> notifyForwardOrderCustomersEvent = forwardOrderRepository.findForwardOrderIdByChatId(chatId)
             .map(id -> new NotifyForwardOrderCustomersEvent(id, chatMessageId))
@@ -213,8 +251,11 @@ public class MessageService {
 
         try {
             taskScheduler.schedule(() -> {
+                applicationEventPublisher.publishEvent(new CheckMessageByAiEvent(messageId));
                 notifyChatEvent.ifPresent(applicationEventPublisher::publishEvent);
-                notifyForwardOrderCustomersEvent.ifPresent(applicationEventPublisher::publishEvent);
+                if (!isSystemMessage) {
+                    notifyForwardOrderCustomersEvent.ifPresent(applicationEventPublisher::publishEvent);
+                }
             }, plusSeconds(10));
         } catch (Exception e) {
             log.error("Ошибка создания задания на отправку уведомления: ", e);

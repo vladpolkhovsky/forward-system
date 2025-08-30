@@ -401,9 +401,15 @@ public class OrderUiService {
         return new BigDecimal(orderService.getLastTechNumber());
     }
 
+    public Integer countMyOrdersAuthor() {
+        Long currentUserId = userUiService.getCurrentUserId();
+        List<ParticipantType> participantTypes = List.of(ParticipantType.MAIN_AUTHOR);
+        return orderService.getOrdersCount(currentUserId, participantTypes);
+    }
+
     public Integer countMyOrders() {
         Long currentUserId = userUiService.getCurrentUserId();
-        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST, ParticipantType.MAIN_AUTHOR);
+        List<ParticipantType> participantTypes = Arrays.asList(ParticipantType.CATCHER, ParticipantType.HOST);
         return orderService.getOrdersCount(currentUserId, participantTypes);
     }
 

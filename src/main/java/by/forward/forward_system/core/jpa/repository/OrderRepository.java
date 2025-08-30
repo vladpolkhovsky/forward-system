@@ -5,9 +5,11 @@ import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentP
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.UserOrderDates;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -122,8 +124,34 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
                 join fetch u.discipline
                 join fetch u.orderStatus
                 join fetch u.createdBy
-                join u.orderParticipants op on op.participantsType.name = 'MAIN_AUTHOR'
-                where op.user.id = :userId
+                join u.orderParticipants op on op.participantsType.name = 'MAIN_AUTHOR' and op.user.id = :userId
             """)
     List<OrderEntity> getOrderWhereAuthorIs(long userId);
+
+    @Query(value = """
+            select a.id as userId, op.order.id as orderId from AuthorEntity a
+                inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
+                where op.order.orderStatus.name in ('FINALIZATION', 'ADMIN_REVIEW', 'IN_PROGRESS')
+            """)
+    List<ActiveOrderCountProjection> getActiveOrderCount();
+
+    @Modifying
+    @Query("UPDATE OrderEntity set orderStatus.name = :statusName where id = :orderId")
+    void updateOrderStatus(Long orderId, String statusName);
+
+    interface ActiveOrderCountProjection {
+        Long getUserId();
+        Long getOrderId();
+    }
+
+    @Query(value = "select o.id as id, o.techNumber as techNumber, o.workType as workType, o.discipline.name as discipline, o.subject as subject from OrderEntity o where o.id = :orderId")
+    OrderSendRequestProjection findOrderProjectionToOrderSendRequest(Long orderId);
+
+    interface OrderSendRequestProjection {
+        Long getId();
+        BigDecimal getTechNumber();
+        String getWorkType();
+        String getDiscipline();
+        String getSubject();
+    }
 }

@@ -179,7 +179,7 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
                 :name="orderChatInformation.status" :rus-name="orderChatInformation.statusRusName"/>
           </h5>
           <h6 class="card-subtitle mb-2 text-body-secondary" v-if="orderChatInformation.subject">
-            Предмет: {{ orderChatInformation.subject }}</h6>
+            Тема: {{ orderChatInformation.subject }}</h6>
           <div class="input-group mb-1" v-if="hasAuthorityManager(user.authorities)">
             <span class="input-group-text">Название</span>
             <textarea type="text" class="form-control form-control-sm disabled" disabled
@@ -200,7 +200,7 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
             <input type="text" class="form-control form-control-sm disabled" disabled :value="item.time">
           </div>
           <div class="input-group mb-1" v-if="orderChatInformation.deadline">
-            <span class="input-group-text">Окончательный с. д.</span>
+            <span class="input-group-text">Окончательный срок</span>
             <input type="text" class="form-control form-control-sm disabled" disabled
                    :value="orderChatInformation.deadline">
           </div>

@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.mapper;
 
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
+import by.forward.forward_system.core.dto.messenger.v3.V3ParticipantDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.rest.AdditionalDateDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
@@ -23,7 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
-@Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
+@Mapper(componentModel = MappingConstants.ComponentModel.SPRING, uses = {UserMapper.class})
 public abstract class OrderMapper {
 
     private static final TypeReference<List<AdditionalDateDto>> typedReference = new TypeReference<>() {
@@ -41,6 +43,26 @@ public abstract class OrderMapper {
     @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
     @Mapping(target = "paymentStatus", ignore = true)
     public abstract AuthorOrderDto map(OrderEntity orderEntity);
+
+    @Mapping(target = "participants", source = "orderParticipants")
+    @Mapping(target = "orderCost", source = "takingCost")
+    @Mapping(target = "orderAuthorCost", source = "authorCost")
+    @Mapping(target = "disciplineName", source = "discipline.name")
+    @Mapping(target = "disciplineId", source = "discipline.id")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "techNumber", source = "techNumber")
+    @Mapping(target = "deadline", source = "deadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "additionalDates", source = "additionalDates", qualifiedByName = "additionalDatesMapper")
+    @Mapping(target = "orderStatus", source = "orderStatus.status.name")
+    @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
+    public abstract V3OrderDto mapToDto(OrderEntity entity);
+
+    @Mapping(target = "typeRusName", source = "participantsType.type.rusName")
+    @Mapping(target = "type", source = "participantsType.type")
+    @Mapping(target = "orderId", source = "order.id")
+    @Mapping(target = "user", source = "user")
+    public abstract V3ParticipantDto map(OrderParticipantEntity orderParticipantEntity);
 
     @Mapping(target = "managerUsername", source = "orderEntity", qualifiedByName = "getManager")
     @Mapping(target = "authorUsername", source = "orderEntity", qualifiedByName = "getAuthor")

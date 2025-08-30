@@ -14,6 +14,7 @@ import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
+import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderSendRequestProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.mapper.TagMapper;
@@ -24,6 +25,7 @@ import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.services.ui.UserUiService;
+import by.forward.forward_system.core.utils.AuthUtils;
 import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
@@ -277,6 +279,7 @@ public class OrderService {
             addParticipant(orderEntity, orderParticipantsTypeEntity, c.id(), fee);
             sendNewOrderRequest(
                 c.id(),
+                AuthUtils.getCurrentUserId(),
                 orderEntity.getId(),
                 new BigDecimal(orderEntity.getTechNumber()),
                 orderEntity.getWorkType(),
@@ -293,7 +296,7 @@ public class OrderService {
 
     private boolean isAssignedAuthor(OrderParticipantEntity orderParticipant) {
         return orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
-            || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
+               || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
     }
 
     private void sendDeclineMessage(Long userId, Long managerId, String techNumber) {
@@ -332,36 +335,40 @@ public class OrderService {
         websocketMassageService.sendMessageToUsers(list, messageDto);
     }
 
-    private void sendNewOrderRequest(Long userId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject, String message) {
-        UserEntity userEntity = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
-        Long currentUserId = userUiService.getCurrentUserId();
+    public void sendNewOrderRequest(Long userId, Long managerId, Long orderId, String message) {
+        OrderSendRequestProjection orderProjection = orderRepository.findOrderProjectionToOrderSendRequest(orderId);
+        sendNewOrderRequest(userId,
+            managerId,
+            orderId,
+            orderProjection.getTechNumber(),
+            orderProjection.getWorkType(),
+            orderProjection.getDiscipline(),
+            orderProjection.getSubject(),
+            message);
+    }
 
-        UserEntity manager = userRepository.findById(currentUserId).orElseThrow(() -> new RuntimeException("User not found with id " + currentUserId));
+    private void sendNewOrderRequest(Long authorId, Long managerId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject, String message) {
+        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(authorId, managerId);
 
-        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(userEntity.getId(), manager.getId());
-        Optional<ChatMessageTypeEntity> chatMessageType = chatMessageTypeRepository.findById(ChatMessageType.NEW_ORDER.getName());
-        Optional<OrderParticipantsTypeEntity> participantsType = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName());
+        ChatMessageTypeEntity chatMessageType = ChatMessageType.NEW_ORDER.entity();
+        OrderParticipantsTypeEntity participantsType = ParticipantType.AUTHOR.toEntity();
 
         ChatMessageOptionEntity chatMessageOptionEntity = new ChatMessageOptionEntity();
         chatMessageOptionEntity.setOptionName("Ознакомиться с ТЗ/требованиями");
         chatMessageOptionEntity.setContent("/request-order/" + orderId);
         chatMessageOptionEntity.setOptionResolved(false);
-        chatMessageOptionEntity.setOrderParticipant(participantsType.get());
+        chatMessageOptionEntity.setOrderParticipant(participantsType);
 
-        if (newOrdersChatByUser.isPresent() && chatMessageType.isPresent()) {
-            ChatMessageEntity chatMessageEntity = messageService.sendMessage(
+        if (newOrdersChatByUser.isPresent()) {
+            messageService.sendMessage(
                 UserEntity.of(ChatNames.SYSTEM_USER_ID),
                 newOrdersChatByUser.get(),
                 "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
                 true,
-                chatMessageType.get(),
+                chatMessageType,
                 Collections.emptyList(),
                 Collections.singletonList(chatMessageOptionEntity)
             );
-
-            Long authorId = newOrdersChatByUser.get().getChatMetadata().getUser().getId();
-            Long managerId = newOrdersChatByUser.get().getChatMetadata().getManager().getId();
 
             OrderRequestStatisticEntity orderRequestStatisticEntity = new OrderRequestStatisticEntity();
             orderRequestStatisticEntity.setAuthor(authorId);
@@ -371,26 +378,18 @@ public class OrderService {
 
             orderRequestStatisticRepository.save(orderRequestStatisticEntity);
 
-            MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
-            List<Long> list = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
-
-            websocketMassageService.sendMessageToUsers(list, messageDto);
-
             if (!StringUtils.isBlank(message)) {
-                ChatMessageEntity additionalMessage = messageService.sendMessage(
-                    manager,
+                messageService.sendMessage(
+                    UserEntity.of(managerId),
                     newOrdersChatByUser.get(),
                     message,
                     false,
-                    chatMessageType.get(),
+                    chatMessageType,
                     Collections.emptyList(),
                     Collections.emptyList(),
                     true,
                     false
                 );
-                MessageDto addMessageDto = messageService.convertChatMessage(additionalMessage);
-                List<Long> addList = addMessageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
-                websocketMassageService.sendMessageToUsers(addList, addMessageDto);
             }
         }
     }
@@ -607,12 +606,12 @@ public class OrderService {
         Optional<ForwardOrderEntity> oldForwardOrder = forwardOrderRepository.findByOrder_Id(orderEntity.getId());
 
         List<ChatTagDto> forwardOrderChatTags = ListUtils.union(List.of(
-            ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build()),
+                ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build()),
             chatUtilsService.createOrderChatTags(orderEntity));
 
         List<ChatTagDto> forwardOrderAdminChatTags = ListUtils.union(List.of(
-            ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build(),
-            ChatTagDto.builder().name("Администрация").metadata(ChatTagMetadataDto.builder().build()).build()),
+                ChatTagDto.builder().name("Прямой заказ").metadata(ChatTagMetadataDto.builder().build()).build(),
+                ChatTagDto.builder().name("Администрация").metadata(ChatTagMetadataDto.builder().build()).build()),
             chatUtilsService.createOrderChatTags(orderEntity));
 
         if (oldForwardOrder.isPresent()) {

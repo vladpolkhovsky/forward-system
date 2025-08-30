@@ -193,7 +193,7 @@ public class ChatUtilsService {
                 .type(TagType.DISCIPLINE)
                 .isPersonalTag(false)
                 .cssColorName(TagCssColor.secondary)
-                .isVisible(true)
+                .isVisible(false)
                 .isPrimaryTag(false)
                 .build())
             .build();

@@ -2,6 +2,7 @@ package by.forward.forward_system.core.web.rest;
 
 import by.forward.forward_system.core.dto.rest.authors.AuthorDisciplinesDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorDto;
+import by.forward.forward_system.core.dto.rest.authors.AuthorFullDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.services.NewAuthorService;
 import by.forward.forward_system.core.services.NewOrderService;
@@ -43,7 +44,7 @@ public class AuthorRestController {
     }
 
     @GetMapping(value = "/get-authors")
-    public ResponseEntity<List<AuthorDto>> getAuthors() {
+    public ResponseEntity<List<AuthorFullDto>> getAuthors() {
         var authors = newAuthorService.getAllAuthors();
         return ResponseEntity.ok(authors);
     }
