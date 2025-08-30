@@ -918,6 +918,12 @@ public class OrderService {
         }
     }
 
+    public void removeOrderFileAll(Long orderId) {
+        OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        orderAttachmentRepository.deleteAll(orderEntity.getOrderAttachment());
+        orderEntity.getOrderAttachment().clear();
+    }
+
     @Transactional
     public void delMainAuthorFromOrder(Long orderId, Long authorId) {
         OrderEntity orderEntity = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));

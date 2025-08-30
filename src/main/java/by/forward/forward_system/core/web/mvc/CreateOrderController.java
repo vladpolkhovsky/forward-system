@@ -162,6 +162,13 @@ public class CreateOrderController {
         return new RedirectView("/files-order/" + id);
     }
 
+    @PostMapping("/order-file-delete-all/{orderId}")
+    public RedirectView orderFileDeleteAll(@PathVariable Long orderId) {
+        orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
+        orderService.removeOrderFileAll(orderId);
+        return new RedirectView("/files-order/" + orderId);
+    }
+
     @PostMapping("/files-order/{id}")
     public String saveOrderFile(@PathVariable Long id, @RequestParam("file") MultipartFile[] file, Model model) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());

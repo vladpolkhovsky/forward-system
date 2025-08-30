@@ -48,8 +48,12 @@
                 </tr>
                 </tbody>
             </table>
+            <form method="post"
+                  th:action="|/order-file-delete-all/| + ${orderId}">
+                <button class="btn btn-danger w-100">Удалить все файлы</button>
+            </form>
         </div>
-        <a class="btn btn-primary" th:href="|/order/distribution?orderId=| + ${orderId}">Далее</a>
+        <a class="btn btn-primary mt-3" th:href="|/order/distribution?orderId=| + ${orderId}">Далее</a>
     </div>
 </div>
 </body>
