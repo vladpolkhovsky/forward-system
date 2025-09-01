@@ -5,9 +5,7 @@ import by.forward.forward_system.core.dto.ui.OrderUiDto;
 import by.forward.forward_system.core.dto.ui.ReviewDto;
 import by.forward.forward_system.core.dto.ui.UserSelectionUiDto;
 import by.forward.forward_system.core.enums.OrderStatus;
-import by.forward.forward_system.core.jpa.model.AttachmentEntity;
-import by.forward.forward_system.core.jpa.model.ForwardOrderReviewRequestEntity;
-import by.forward.forward_system.core.jpa.model.ReviewEntity;
+import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderReviewRequestRepository;
 import by.forward.forward_system.core.jpa.repository.ReviewRepository;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjectionDto;
@@ -189,12 +187,15 @@ public class ReviewController {
 
         Optional<ForwardOrderReviewRequestEntity> forwardOrderReviewRequest = forwardOrderReviewRequestRepository.findFirstByReview_Id(reviewId);
 
-        if (forwardOrderReviewRequest.isPresent()) {
-            reviewService.notifyThatRequestApproved(forwardOrderReviewRequest.get().getForwardOrder().getChat().getId(), reviewId);
-            return new RedirectView("/main");
-        }
+        Long chatId = forwardOrderReviewRequest.map(ForwardOrderReviewRequestEntity::getForwardOrder)
+            .map(ForwardOrderEntity::getChat)
+            .map(ChatEntity::getId)
+            .orElse(orderService.getOrderMainChat(orderId));
+
+        reviewService.notifyThatRequestApproved(chatId, reviewId);
 
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);
+
         return new RedirectView("/main");
     }
 
@@ -244,6 +245,7 @@ public class ReviewController {
         return "main/expert-review-order";
     }
 
+    @Deprecated
     @GetMapping(value = "/review-order-answers")
     public String reviewOrderAnswers(Model model,
                                      @RequestParam(value = "page", required = false, defaultValue = "1") int page,
@@ -268,6 +270,12 @@ public class ReviewController {
         model.addAttribute("pages", pages);
 
         return "main/expert-review-view-selector";
+    }
+
+    @GetMapping(value = "/review/manager-list-view")
+    public String getReviewManagerListView(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/review/manager-list-view";
     }
 
     @GetMapping(value = "/expert-review-order-view/{orderId}/{reviewId}")

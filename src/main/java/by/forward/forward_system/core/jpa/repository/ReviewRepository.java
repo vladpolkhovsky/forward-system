@@ -62,4 +62,13 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
     })
     @Query("FROM ReviewEntity where order.id = :orderId order by id desc")
     List<ReviewEntity> fetchReviewByOrderId(Long orderId);
+
+    @EntityGraph(attributePaths = {
+        "order",
+        "attachment",
+        "reviewAttachment",
+        "reviewedBy"
+    })
+    @Query("FROM ReviewEntity where order.id in :orderIds order by id desc")
+    List<ReviewEntity> fetchReviewByOrderIdIn(List<Long> orderIds);
 }

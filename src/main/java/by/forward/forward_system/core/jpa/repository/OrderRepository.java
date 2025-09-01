@@ -4,6 +4,9 @@ import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.UserOrderDates;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -131,13 +134,21 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     @Query(value = """
             select a.id as userId, op.order.id as orderId from AuthorEntity a
                 inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
-                where op.order.orderStatus.name in ('FINALIZATION', 'ADMIN_REVIEW', 'IN_PROGRESS')
+                where op.order.orderStatus.name in ('FINALIZATION', 'REVIEW', 'IN_PROGRESS')
             """)
     List<ActiveOrderCountProjection> getActiveOrderCount();
 
     @Modifying
     @Query("UPDATE OrderEntity set orderStatus.name = :statusName where id = :orderId")
     void updateOrderStatus(Long orderId, String statusName);
+
+    @EntityGraph(attributePaths = {
+        "orderStatus",
+        "discipline",
+        "createdBy"
+    })
+    @Query("from OrderEntity o where o.techNumber like concat('%', :techNumber, '%') order by cast(o.techNumber as int) desc")
+    Page<OrderEntity> findOrderIdsByTechNumber(String techNumber, Pageable pageable);
 
     interface ActiveOrderCountProjection {
         Long getUserId();

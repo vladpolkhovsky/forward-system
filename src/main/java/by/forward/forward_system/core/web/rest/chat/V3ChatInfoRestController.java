@@ -2,17 +2,14 @@ package by.forward.forward_system.core.web.rest.chat;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ForwardOrderChatInfo;
-import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3OrderReviewDto;
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderReviewDto;
 import by.forward.forward_system.core.services.core.ForwardOrderService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.services.v3.V3ChatInfoService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 

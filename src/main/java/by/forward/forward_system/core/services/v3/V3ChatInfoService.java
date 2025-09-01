@@ -2,7 +2,7 @@ package by.forward.forward_system.core.services.v3;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ForwardOrderChatInfo;
-import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3OrderReviewDto;
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderReviewDto;
 import by.forward.forward_system.core.jpa.model.ForwardOrderEntity;
 import by.forward.forward_system.core.jpa.model.ReviewEntity;
 import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;

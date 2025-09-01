@@ -1,4 +1,4 @@
-package by.forward.forward_system.core.dto.messenger.v3.chat.info;
+package by.forward.forward_system.core.dto.messenger.v3;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.V3AttachmentDto;
 import lombok.AllArgsConstructor;
@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class V3OrderReviewDto {
     private Long id;
     private Long orderId;
+    private String orderTechNumber;
     private Boolean isApproved;
     private String requestText;
     private String resultText;

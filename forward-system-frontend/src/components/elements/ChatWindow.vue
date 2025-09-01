@@ -166,7 +166,11 @@ defineExpose({
         </button>
       </div>
       <LoadingSpinner v-else text="Загрузка сообщений"/>
-      <Message :user="user" :message="message" :is-small-device="isSmallDevice" v-for="message in messages"
+      <Message :user="user"
+               :message="message"
+               :is-small-device="isSmallDevice"
+               :show-read-count="!((chat.metadata?.onlyOwnerCanType ?? false) && hasAuthority(user.authorities, AuthorityEnum.AUTHOR))"
+               v-for="message in messages"
                :key="message.id"
                ref="msgRef"/>
     </div>

@@ -11,10 +11,14 @@ import type {ChatOptionDto} from "@/core/dto/ChatOptionDto.ts";
 interface Props {
   user: UserDto,
   message: MessageDto,
-  isSmallDevice: boolean
+  isSmallDevice: boolean,
+  showReadCount?: boolean
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+  showReadCount: true
+});
+
 const tooltipRef = ref<InstanceType<typeof HTMLSpanElement>>();
 
 const isMyOwnMessage = props.message.fromUserId == props.user.id;
@@ -143,7 +147,7 @@ function getOptionClasses(option: ChatOptionDto): string[] {
               class="ms-2 bi bi-check-lg"
               data-bs-toggle="tooltip"
               data-bs-title="Сообщение прочитано"
-              v-show="message.messageReadedByUsernames.length > 0">
+              v-show="message.messageReadedByUsernames.length > 0 && showReadCount">
           <span class="position-absolute top-0 start-100 translate-middle fw-light ms-1"
                 v-if="message.messageReadedByUsernames.length > 0">
             {{ message.messageReadedByUsernames.length }}
