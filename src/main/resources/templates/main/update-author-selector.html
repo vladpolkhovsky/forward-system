@@ -25,11 +25,19 @@
             <a th:href="|/update-author/| + ${user.getId()}"
                th:text="${user.getUsername()} + | (| + ${user.getRolesRus()} + |)|"></a>
             <form class="mt-3 mt-sm-0" method="post" th:action="'/update-author/delete/' + ${user.getId()}"
-                  th:if="${user.getIsBanned()}">
+                  th:if="${user.getIsBanned() && !user.getIsDeleted()}">
                 <input class="btn btn-danger"
                        onclick="return confirm('Вы уверене что хотите удалить ' + event.target.getAttribute('authorName') + '?')"
                        th:attr="authorName=${user.getUsername()}"
                        th:value="'Удалить ' + ${user.getUsername()}"
+                       type="submit">
+            </form>
+            <form class="mt-3 mt-sm-0" method="post" th:action="'/update-author/un-delete/' + ${user.getId()}"
+                  th:if="${user.getIsBanned() && user.getIsDeleted()}">
+                <input class="btn btn-success"
+                       onclick="return confirm('Вы уверене что хотите отменить удаление ' + event.target.getAttribute('authorName') + '?')"
+                       th:attr="authorName=${user.getUsername()}"
+                       th:value="'Отменить удаление ' + ${user.getUsername()}"
                        type="submit">
             </form>
         </li>

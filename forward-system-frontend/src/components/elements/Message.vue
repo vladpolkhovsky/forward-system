@@ -118,14 +118,16 @@ function getOptionClasses(option: ChatOptionDto): string[] {
   }]" :message-id="message.id">
     <p class="fs-6 m-2" :message-from-user-id="message.fromUserId">
       <span class="me-2 fw-bold">{{ message.fromUserUsername }}</span>
-      <span class="me-2 badge text-bg-success"
+      <span class="me-2 badge text-bg-success fs-8"
             v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.MAIN_AUTHOR">Автор</span>
-      <span class="me-2 badge text-bg-primary" v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
-      <span class="me-2 badge text-bg-danger" v-if="message.fromUserIsAdmin">Админ</span>
-      <span :class="[ 'me-2 badge', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"
+      <span class="me-2 badge text-bg-warning fs-8"
+            v-if="message.fromUserIsDeleted">Удалён</span>
+      <span class="me-2 badge text-bg-primary fs-8" v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
+      <span class="me-2 badge text-bg-danger fs-8" v-if="message.fromUserIsAdmin">Админ</span>
+      <span :class="[ 'me-2 badge fs-8', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"
             :online-status-id="lastSeenAt.id"
             v-if="lastSeenAt && lastSeenAt.shouldBeVisible">
-        {{ (lastSeenAt.online ? '' : 'Был в сети: ') + lastSeenAt.lastOnlineAt }}
+        {{ (lastSeenAt.online ? '' : 'В сети: ') + lastSeenAt.lastOnlineAt }}
       </span>
     </p>
     <pre class="m-2 fs-7 line-break montserrat" v-if="message.text" v-html="message.text"/>
@@ -179,5 +181,9 @@ function getOptionClasses(option: ChatOptionDto): string[] {
 
 .fs-7 {
   font-size: 0.85rem !important;
+}
+
+.fs-8 {
+  font-size: 0.75rem !important;
 }
 </style>

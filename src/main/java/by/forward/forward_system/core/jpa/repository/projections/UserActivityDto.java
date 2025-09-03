@@ -13,9 +13,9 @@ import java.time.temporal.ChronoUnit;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserActivityDto {
-    private static final String lessThen55minutesFormat = "%d мин. назад";
+    private static final String lessThen55minutesFormat = "%d мин.";
     private static final DateTimeFormatter lessThen12hours = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter moreThen12hours = DateTimeFormatter.ofPattern("dd.MM' в 'HH:mm");
+    private static final DateTimeFormatter moreThen12hours = DateTimeFormatter.ofPattern("dd.MM HH:mm");
 
     public UserActivityDto(Long id, String username, LocalDateTime lastSeenDate) {
         this.id = id;

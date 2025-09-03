@@ -41,4 +41,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     @Query(value = "from UserEntity where roles like concat('%', :authority, '%') and deleted = false order by lower(username)")
     List<UserEntity> findByAuthority(String authority);
+
+    List<UserEntity> findByRolesNotContains(String role);
 }

@@ -93,4 +93,13 @@ public class CreateAuthorController {
         return new RedirectView("/update-author?userUpdated");
     }
 
+    @PostMapping(value = "/update-author/un-delete/{id}", consumes = MediaType.ALL_VALUE)
+    public RedirectView undeleteUser(@PathVariable Long id) {
+        userUiService.checkAccessOwner();
+
+        userDeletionService.unDeleteUser(id);
+
+        return new RedirectView("/update-author?userUpdated");
+    }
+
 }

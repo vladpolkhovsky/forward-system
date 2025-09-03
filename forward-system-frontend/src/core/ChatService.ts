@@ -105,7 +105,7 @@ export class ChatService {
 
     public loadChatMessages(chatId: number, page: number, messagePageCallback: MessagePageCallback): void {
         ChatService.fetchData("GET", "/api/new-chat/server-time", null, json => {
-            if (!this.firstFetchMessageChatTime.has(chatId)) {
+            if (page == 0) {
                 this.firstFetchMessageChatTime.set(chatId, (json as { time: string }).time);
             }
             const time = this.firstFetchMessageChatTime.get(chatId);

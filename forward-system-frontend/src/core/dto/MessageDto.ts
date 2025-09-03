@@ -12,6 +12,7 @@ export interface MessageDto {
     fromUserOrderParticipantType: ParticipantType,
     fromUserOrderParticipantTypeRusName: string,
     fromUserIsAdmin: boolean,
+    fromUserIsDeleted: boolean,
     createdAt: string,
     realCreatedAt: string,
     isNewMessage: boolean,

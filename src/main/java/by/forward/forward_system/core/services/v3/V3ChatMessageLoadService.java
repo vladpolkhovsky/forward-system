@@ -9,6 +9,7 @@ import by.forward.forward_system.core.jpa.repository.LastMessageRepository;
 import by.forward.forward_system.core.jpa.repository.MessageRepository;
 import by.forward.forward_system.core.mapper.MessageMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +19,7 @@ import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class V3ChatMessageLoadService {
@@ -35,21 +37,14 @@ public class V3ChatMessageLoadService {
     }
 
     public Page<V3MessageDto> search(V3MessageSearchCriteria criteria, Pageable pageable) {
-        return messageRepository.search(criteria.getChatId(), criteria.getAfterTime(), pageable)
-            .map(t -> {
-                Hibernate.initialize(t.getChatMessageAttachments());
-                Hibernate.initialize(t.getChatMessageOptions());
-                Hibernate.initialize(t.getChatMessageToUsers());
-                return t;
-            })
+        log.warn("start fetching messages");
+        Page<V3MessageDto> map = messageRepository.search(criteria.getChatId(), criteria.getAfterTime(), pageable)
             .map(messageMapper::map);
+        log.warn("end fetching messages");
+        return map;
     }
 
     public V3MessageDto findById(Long messageId) {
-        ChatMessageEntity byIdAndFetch = messageRepository.findByIdAndFetch(messageId);
-        Hibernate.initialize(byIdAndFetch.getChatMessageAttachments());
-        Hibernate.initialize(byIdAndFetch.getChatMessageOptions());
-        Hibernate.initialize(byIdAndFetch.getChatMessageToUsers());
-        return messageMapper.map(byIdAndFetch);
+        return messageMapper.map(messageRepository.findByIdAndFetch(messageId));
     }
 }

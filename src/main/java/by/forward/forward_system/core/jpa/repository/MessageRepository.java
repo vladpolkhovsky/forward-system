@@ -48,9 +48,17 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
     @EntityGraph(attributePaths = {
         "chat",
         "chat.order",
+        "chat.order.orderParticipants",
+        "chat.order.orderParticipants.user",
         "chat.participants",
         "chat.chatMetadata",
         "chatMessageType",
+        "chatMessageAttachmentsSet",
+        "chatMessageAttachmentsSet.attachment",
+        "chatMessageOptionsSet",
+        "chatMessageOptionsSet.orderParticipant",
+        "chatMessageToUsersSet",
+        "chatMessageToUsersSet.user",
         "fromUser"
     })
     @Query("from ChatMessageEntity where chat.id = :chatId and createdAt < :afterTime order by createdAt desc ")

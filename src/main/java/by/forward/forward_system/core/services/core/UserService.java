@@ -68,8 +68,12 @@ public class UserService {
         return userRepository.findByRolesNotContainsAndDeletedIsFalse(Authority.AUTHOR.getAuthority());
     }
 
-    public List<UserEntity> getAllUserWithoutRole(Authority authority) {
-        return userRepository.findByRolesNotContainsAndDeletedIsFalse(authority.getAuthority());
+    public List<UserEntity> getAllUsersAndDeleted() {
+        return userRepository.findByRolesNotContains(Authority.AUTHOR.getAuthority());
+    }
+
+    public List<UserEntity> getAllUserWithoutRole(String role) {
+        return userRepository.findByRolesNotContainsAndDeletedIsFalse(role);
     }
 
     public List<UserEntity> findUsersWithRole(String role) {
@@ -94,5 +98,4 @@ public class UserService {
     public Collection<UserEntity> getAllUsersFast() {
         return userRepository.getUsersFast();
     }
-
 }

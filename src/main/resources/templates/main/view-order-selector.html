@@ -83,7 +83,7 @@
                              th:if="${chatHandler.get(order.getId())}">
                             <p class="mt-1 mb-0"><a
                                     target="_blank"
-                                    th:href="|/new-messenger?tab=orders&chatId=| + ${chatHandler.get(order.getId()).getChatId()}">Чат заказа <span
+                                    th:href="|/new-messenger-v3?tab=orders&chatId=| + ${chatHandler.get(order.getId()).getChatId()}">Чат заказа <span
                                     class="fw-bold"
                                     th:if="${chatHandler.get(order.getId()).getNewMessageCount() > 0}"
                                     th:text="|(| + ${chatHandler.get(order.getId()).getNewMessageCount()} + | новых)|"></span></a>

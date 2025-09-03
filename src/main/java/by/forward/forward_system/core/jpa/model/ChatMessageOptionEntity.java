@@ -1,17 +1,20 @@
 package by.forward.forward_system.core.jpa.model;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Table(name = "chat_message_options", schema = "forward_system")
 public class ChatMessageOptionEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "forward_system.id_seq")
     @Column(name = "id", nullable = false)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -23,11 +26,14 @@ public class ChatMessageOptionEntity {
     private OrderParticipantsTypeEntity orderParticipant;
 
     @Column(name = "option_resolved", nullable = false)
+    @EqualsAndHashCode.Include
     private Boolean optionResolved = false;
 
     @Column(name = "content", length = 2048)
+    @EqualsAndHashCode.Include
     private String content;
 
     @Column(name = "option_name", length = 2048)
+    @EqualsAndHashCode.Include
     private String optionName;
 }

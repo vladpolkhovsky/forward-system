@@ -9,7 +9,9 @@ import org.hibernate.annotations.FetchMode;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -47,15 +49,26 @@ public class ChatMessageEntity {
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
-    @BatchSize(size = 15)
-    private List<ChatMessageAttachmentEntity> chatMessageAttachments = new ArrayList<>();
+    private Set<ChatMessageAttachmentEntity> chatMessageAttachmentsSet = new HashSet<>();
 
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
-    @BatchSize(size = 5)
-    private List<ChatMessageOptionEntity> chatMessageOptions = new ArrayList<>();
+    private Set<ChatMessageOptionEntity> chatMessageOptionsSet = new HashSet<>();
 
     @OneToMany(mappedBy = "message", fetch = FetchType.LAZY)
-    @BatchSize(size = 500)
-    private List<ChatMessageToUserEntity> chatMessageToUsers = new ArrayList<>();
+    private Set<ChatMessageToUserEntity> chatMessageToUsersSet = new HashSet<>();
 
+    @Deprecated
+    public List<ChatMessageOptionEntity> getChatMessageOptions() {
+        return List.copyOf(getChatMessageOptionsSet());
+    }
+
+    @Deprecated
+    public List<ChatMessageToUserEntity> getChatMessageToUsers() {
+        return List.copyOf(getChatMessageToUsersSet());
+    }
+
+    @Deprecated
+    public List<ChatMessageAttachmentEntity> getChatMessageAttachments() {
+        return List.copyOf(getChatMessageAttachmentsSet());
+    }
 }

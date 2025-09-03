@@ -189,8 +189,8 @@ public class MessageService {
         }
         attachments = chatMessageAttachmentRepository.saveAll(attachments);
 
-        chatMessageEntity.getChatMessageOptions().addAll(options);
-        chatMessageEntity.getChatMessageAttachments().addAll(attachments);
+        chatMessageEntity.getChatMessageOptionsSet().addAll(options);
+        chatMessageEntity.getChatMessageAttachmentsSet().addAll(attachments);
 
         chatMessageEntity = messageRepository.save(chatMessageEntity);
         final long messageId = chatMessageId;
@@ -237,7 +237,7 @@ public class MessageService {
             notificationOutboxEntities.add(notificationOutboxEntity);
         }
 
-        chatMessageEntity.getChatMessageToUsers().addAll(chatMessageToUserEntities);
+        chatMessageEntity.getChatMessageToUsersSet().addAll(chatMessageToUserEntities);
         chatMessageEntity = messageRepository.save(chatMessageEntity);
 
         notificationOutboxRepository.saveAll(notificationOutboxEntities);

@@ -39,7 +39,7 @@ public class CreateUserController {
 
         model.addAttribute("menuName", "Выберите пользователя для изменения");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("userList", userUiService.getAllUsers());
+        model.addAttribute("userList", userUiService.getAllUsersAndDeleted());
 
         return "main/update-user-selector";
     }
@@ -81,6 +81,15 @@ public class CreateUserController {
         userUiService.checkAccessOwner();
 
         userDeletionService.deleteUser(id);
+
+        return new RedirectView("/update-user?userUpdated");
+    }
+
+    @PostMapping(value = "/update-user/un-delete/{id}", consumes = MediaType.ALL_VALUE)
+    public RedirectView unDeleteUser(@PathVariable Long id) {
+        userUiService.checkAccessOwner();
+
+        userDeletionService.unDeleteUser(id);
 
         return new RedirectView("/update-user?userUpdated");
     }

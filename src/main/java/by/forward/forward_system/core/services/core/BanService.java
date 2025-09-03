@@ -185,7 +185,7 @@ public class BanService {
     }
 
     public List<UserDto> getAllUsersForBan() {
-        return userService.getAllUserWithoutRole(Authority.OWNER).stream()
+        return userService.getAllUserWithoutRole(Authority.OWNER.getAuthority()).stream()
             .filter(u -> !u.hasAuthority(Authority.BANNED))
             .map(userService::convertUserToDto)
             .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))

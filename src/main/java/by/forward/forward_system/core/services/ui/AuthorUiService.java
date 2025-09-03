@@ -96,6 +96,7 @@ public class AuthorUiService {
             authorEntity.getUser().hasAuthority(Authority.HR),
             authorEntity.getUser().hasAuthority(Authority.OWNER),
             authorEntity.getUser().hasAuthority(Authority.BANNED),
+            authorEntity.getUser().hasAuthority(Authority.DELETED),
             authorEntity.getUser().getAuthoritiesNamesRus()
         );
     }
@@ -132,6 +133,7 @@ public class AuthorUiService {
             authorEntity.getUser().hasAuthority(Authority.HR),
             authorEntity.getUser().hasAuthority(Authority.OWNER),
             authorEntity.getUser().hasAuthority(Authority.BANNED),
+            authorEntity.getUser().hasAuthority(Authority.DELETED),
             authorEntity.getUser().getAuthoritiesNamesRus()
         );
     }

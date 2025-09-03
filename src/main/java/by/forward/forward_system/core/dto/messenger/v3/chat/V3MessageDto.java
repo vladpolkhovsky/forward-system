@@ -22,6 +22,7 @@ public class V3MessageDto {
     private String fromUserOrderParticipantType;
     private String fromUserOrderParticipantTypeRusName;
     private Boolean fromUserIsAdmin;
+    private Boolean fromUserIsDeleted;
     private String createdAt;
     private String realCreatedAt;
     private Boolean isNewMessage;

@@ -32,5 +32,6 @@ public class AuthorUiDto {
     private Boolean isHr;
     private Boolean isOwner;
     private Boolean isBanned;
+    private Boolean isDeleted;
     private String rolesRus;
 }

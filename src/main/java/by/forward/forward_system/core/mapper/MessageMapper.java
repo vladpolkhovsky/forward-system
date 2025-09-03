@@ -38,17 +38,18 @@ public interface MessageMapper {
     @Mapping(target = "text", source = "content")
     @Mapping(target = "realCreatedAt", source = "createdAt")
     @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "toDisplayableString")
-    @Mapping(target = "options", source = "chatMessageOptions")
+    @Mapping(target = "options", source = "chatMessageOptionsSet")
     @Mapping(target = "messageType", source = "chatMessageType.type")
     @Mapping(target = "messageReadedByUsernames", expression = "java(whoReadMessage(message.getChat(), message))")
     @Mapping(target = "isNewMessage", source = "message", qualifiedByName = "isNewMessageForUser")
     @Mapping(target = "fromUserId", source = "fromUser.id")
     @Mapping(target = "fromUserUsername", source = "fromUser.username")
     @Mapping(target = "fromUserIsAdmin", source = "fromUser.authorities", qualifiedByName = "isAdmin")
+    @Mapping(target = "fromUserIsDeleted", source = "fromUser.authorities", qualifiedByName = "isDeleted")
     @Mapping(target = "fromUserOrderParticipantType", source = "message", qualifiedByName = "getOrderParticipantType")
     @Mapping(target = "fromUserOrderParticipantTypeRusName", source = "message", qualifiedByName = "getOrderParticipantTypeRus")
     @Mapping(target = "chatId", source = "chat.id")
-    @Mapping(target = "attachments", source = "chatMessageAttachments")
+    @Mapping(target = "attachments", source = "chatMessageAttachmentsSet")
     V3MessageDto map(ChatMessageEntity message);
 
     List<V3MessageDto> map(List<ChatMessageEntity> messages);
@@ -56,7 +57,7 @@ public interface MessageMapper {
     default List<String> whoReadMessage(ChatEntity chatEntity, ChatMessageEntity messageEntity) {
         Set<UserEntity> participants = chatEntity.getParticipants();
 
-        Map<Long, Boolean> userIdToIsViewed = messageEntity.getChatMessageToUsers().stream()
+        Map<Long, Boolean> userIdToIsViewed = messageEntity.getChatMessageToUsersSet().stream()
             .collect(Collectors.toMap(t -> t.getUser().getId(), ChatMessageToUserEntity::getIsViewed));
 
         return participants.stream()
@@ -120,6 +121,14 @@ public interface MessageMapper {
             return false;
         }
         return authorities.contains(Authority.ADMIN) || authorities.contains(Authority.OWNER);
+    }
+
+    @Named("isDeleted")
+    default Boolean isDeleted(Set<Authority> authorities) {
+        if (authorities == null) {
+            return false;
+        }
+        return authorities.contains(Authority.DELETED);
     }
 
     default BinaryOperator<ParticipantType> defineMainParticipantType() {

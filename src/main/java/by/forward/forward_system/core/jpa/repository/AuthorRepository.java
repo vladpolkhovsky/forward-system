@@ -14,8 +14,7 @@ public interface AuthorRepository extends JpaRepository<AuthorEntity, Long> {
 
     @Query(value = "select distinct a from AuthorEntity a " +
                    "join fetch a.user " +
-                   "join fetch a.createdByUser " +
-                   "where not a.user.deleted")
+                   "join fetch a.createdByUser")
     List<AuthorEntity> getAuthorsFast();
 
     @Query(nativeQuery = true, value = "select u.id as id, u.username as username, d.id as disciplineId, d.\"name\" as discipline, ad.discipline_quality as disciplineQuality from forward_system.authors a" +

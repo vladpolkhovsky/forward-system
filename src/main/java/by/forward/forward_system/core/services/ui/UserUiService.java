@@ -132,6 +132,12 @@ public class UserUiService {
             .toList();
     }
 
+    public List<UserUiDto> getAllUsersAndDeleted() {
+        return userService.getAllUsersAndDeleted().stream()
+            .map(this::toDto)
+            .toList();
+    }
+
     public List<UserUiDto> getAllUsersFast() {
         return userService.getAllUsersFast().stream()
             .map(this::toDto)
