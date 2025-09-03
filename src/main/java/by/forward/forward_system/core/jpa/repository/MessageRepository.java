@@ -64,7 +64,7 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
         "chatMessageToUsersSet.user",
         "fromUser"
     })
-    @Query("from ChatMessageEntity where id in :messageIds and createdAt < :afterTime order by createdAt desc")
+    @Query("from ChatMessageEntity where id in :messageIds order by createdAt desc")
     List<ChatMessageEntity> loadChatMessagesByPaginationIds(List<Long> messageIds);
 
 
