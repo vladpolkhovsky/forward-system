@@ -27,23 +27,16 @@ public class MessengerController {
     private final OrderService orderService;
     private final OrderUiService orderUiService;
 
+    @Deprecated
     @GetMapping(value = "/messenger")
-    public String messenger(Model model) {
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("userId", userUiService.getCurrentUserId());
-        model.addAttribute("isAdmin", userUiService.isCurrentUserAdmin());
-        model.addAttribute("isOwner", userUiService.isCurrentUserOwner());
-        return "messenger/messenger";
+    public RedirectView messenger() {
+        return new RedirectView("/new-messenger-v3");
     }
 
+    @Deprecated
     @GetMapping(value = "/new-messenger")
-    public String newMessenger(Model model) {
-        model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("userId", userUiService.getCurrentUserId());
-        model.addAttribute("isAdmin", userUiService.isCurrentUserAdmin());
-        model.addAttribute("isOwner", userUiService.isCurrentUserOwner());
-        model.addAttribute("isAuthor", userUiService.isCurrentUserAuthor());
-        return "messenger/new-messenger";
+    public RedirectView newMessenger(Model model) {
+        return new RedirectView("/new-messenger-v3");
     }
 
     @GetMapping(value = "/new-messenger-v3")
