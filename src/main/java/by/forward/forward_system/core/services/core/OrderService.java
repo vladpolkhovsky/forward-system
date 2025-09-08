@@ -650,7 +650,7 @@ public class OrderService {
             .chatType(ChatType.FORWARD_ORDER_CHAT)
             .orderId(orderEntity.getId())
             .tags(forwardOrderChatTags)
-            .members(List.of(mainAuthorUser.getId()))
+            .members(userAndAdmins.stream().map(UserEntity::getId).toList())
             .metadata(ChatMetadataDto.builder()
                 .authorCanSubmitFiles(false)
                 .authorId(mainAuthorUser.getId())
@@ -664,7 +664,7 @@ public class OrderService {
             .chatType(ChatType.FORWARD_ORDER_ADMIN_CHAT)
             .orderId(orderEntity.getId())
             .tags(forwardOrderAdminChatTags)
-            .members(List.of())
+            .members(admins.stream().map(UserEntity::getId).toList())
             .build();
 
         ChatEntity forwardOrderAdminChat = chatCreatorService.createChat(creationForwardOrderAdminChatDto, message, true);
