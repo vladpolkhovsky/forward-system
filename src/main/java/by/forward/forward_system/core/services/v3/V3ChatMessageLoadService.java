@@ -8,17 +8,20 @@ import by.forward.forward_system.core.jpa.model.ChatMessageEntity;
 import by.forward.forward_system.core.jpa.repository.LastMessageRepository;
 import by.forward.forward_system.core.jpa.repository.MessageRepository;
 import by.forward.forward_system.core.mapper.MessageMapper;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.MessageEntity;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -38,6 +41,9 @@ public class V3ChatMessageLoadService {
     }
 
     public Page<V3MessageDto> search(V3MessageSearchCriteria criteria, Pageable pageable) {
+        if (Objects.equals(criteria.getChatId(), ChatNames.NEWS_CHAT_ID)) {
+            pageable = PageRequest.of(pageable.getPageNumber(), 5);
+        }
         Page<Long> paginationIds = messageRepository.searchIdsPagination(criteria.getChatId(), criteria.getAfterTime(), pageable);
         List<V3MessageDto> mappedMessages = messageRepository.loadChatMessagesByPaginationIds(paginationIds.getContent()).stream()
             .map(messageMapper::map)
