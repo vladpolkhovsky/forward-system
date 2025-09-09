@@ -127,7 +127,7 @@ defineExpose({
           Зпрос уже отправлен автору.
         </div>
         <div class="form-text text-danger fw-bold mb-3" v-if="item.isLimitExceeded">
-          Превышено максимальное число одновременных заказов
+          Превышено максимальное число одновременных заказов <i class="ms-2 bi bi-info-circle"></i>
         </div>
       </template>
     </div>

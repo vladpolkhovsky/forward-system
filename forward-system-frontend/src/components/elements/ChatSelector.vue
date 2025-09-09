@@ -212,7 +212,7 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
             </template>
           </div>
         </div>
-        <div :class="['card-footer text-body-secondary p-1 ps-2', { 'border-top-0': item.chat.tags.length == 0 }]">
+        <div :class="['card-footer text-body-secondary p-1 ps-2 text-end', { 'border-top-0': item.chat.tags.length == 0 }]">
           {{ item.chat.lastMessageDate }}
         </div>
       </div>

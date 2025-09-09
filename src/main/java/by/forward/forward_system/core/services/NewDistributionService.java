@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -123,13 +120,16 @@ public class NewDistributionService {
             throw new IllegalArgumentException("empty persons collection");
         }
 
+        OrderEntity order = orderRepository.findById(orderId)
+            .orElseThrow((() -> new IllegalArgumentException("not found order")));
+
         List<DistributionPersonDto> persons = createDistributionRequestDto.getPersons();
-        List<OrderParticipantEntity> participants = createAuthorParticipants(orderId, persons);
+        List<OrderParticipantEntity> participants = createAuthorParticipants(order, persons);
 
         if (BooleanUtils.isTrue(createDistributionRequestDto.getIsQueueDistribution())) {
-            createQueueDistribution(createDistributionRequestDto, orderId, AuthUtils.getCurrentUserId());
+            createQueueDistribution(createDistributionRequestDto, order, AuthUtils.getCurrentUserId());
         } else {
-            sendRequestToAuthors(participants, AuthUtils.getCurrentUserId(), orderId, createDistributionRequestDto.getText());
+            sendRequestToAuthors(participants, AuthUtils.getCurrentUserId(), order, createDistributionRequestDto.getText());
         }
 
         orderRepository.updateOrderStatus(orderId, OrderStatus.DISTRIBUTION.getName());
@@ -141,12 +141,14 @@ public class NewDistributionService {
         return queueDistributionMapper.mapMany(byOrderId);
     }
 
-    private List<OrderParticipantEntity> createAuthorParticipants(Long orderId, List<DistributionPersonDto> persons) {
+    private List<OrderParticipantEntity> createAuthorParticipants(OrderEntity order, List<DistributionPersonDto> persons) {
+        Integer defaultAuthorsCost = order.getAuthorCost();
+
         List<OrderParticipantEntity> list = persons.stream().map(p -> {
             OrderParticipantEntity entity = new OrderParticipantEntity();
             entity.setUser(UserEntity.of(p.getUserId()));
-            entity.setOrder(OrderEntity.of(orderId));
-            entity.setFee(p.getCustomFee());
+            entity.setOrder(order);
+            entity.setFee(Optional.ofNullable(p.getCustomFee()).orElse(defaultAuthorsCost));
             entity.setParticipantsType(ParticipantType.AUTHOR.toEntity());
             return entity;
         }).toList();
@@ -318,7 +320,7 @@ public class NewDistributionService {
         }
     }
 
-    private void createQueueDistribution(CreateDistributionRequestDto createDistributionRequestDto, Long orderId, Long managerId) {
+    private void createQueueDistribution(CreateDistributionRequestDto createDistributionRequestDto, OrderEntity order, Long managerId) {
         List<Long> authorIds = createDistributionRequestDto.getPersons().stream()
             .sorted(Comparator.comparing(DistributionPersonDto::getOrder))
             .map(DistributionPersonDto::getAuthor)
@@ -328,7 +330,7 @@ public class NewDistributionService {
         QueueDistributionEntity queueDistributionEntity = new QueueDistributionEntity();
 
         queueDistributionEntity.setCreatedBy(UserEntity.of(managerId));
-        queueDistributionEntity.setOrder(OrderEntity.of(orderId));
+        queueDistributionEntity.setOrder(order);
         queueDistributionEntity.setQueueDistributionWaitMinutes(createDistributionRequestDto.getQueueDistributionWaitMinutes());
         queueDistributionEntity.setStatus(DistributionStatusType.IN_PROGRESS);
         queueDistributionEntity.setCreatedByUserMessage(StringUtils.trimToNull(createDistributionRequestDto.getText()));
@@ -362,9 +364,9 @@ public class NewDistributionService {
             orderProjection.getWorkType(), orderProjection.getDiscipline(), orderProjection.getSubject());
     }
 
-    private void sendRequestToAuthors(List<OrderParticipantEntity> participants, Long managerId, Long orderId, String message) {
+    private void sendRequestToAuthors(List<OrderParticipantEntity> participants, Long managerId, OrderEntity order, String message) {
         for (OrderParticipantEntity participant : participants) {
-            orderService.sendNewOrderRequest(participant.getUser().getId(), managerId, orderId, message);
+            orderService.sendNewOrderRequest(participant.getUser().getId(), managerId, order.getId(), message);
         }
     }
 

@@ -850,3 +850,6 @@ create table if not exists forward_system.queue_distribution_item
     wait_until            timestamp,
     created_at            timestamp   not null
 );
+
+alter table forward_system.users
+    add last_version_of_user_agreement_signed boolean not null default false;

@@ -232,7 +232,7 @@ public class ReviewService {
             .orElseThrow(() -> new RuntimeException("CMT not found"));
 
         String message = """
-            Эксперт проверил работу и поставил оценку: %s. Внимательно оцените результат, он доступен в карточке проверки, в меню. Так же прикреплёна таблица с результатами проверки.
+            Эксперт проверил работу и поставил оценку: %s. Внимательно оцените результат, он доступен в карточке проверки, в меню. Также прикреплёна таблица с результатами проверки.
             """.formatted(reviewEntity.getReviewMark());
 
         ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();

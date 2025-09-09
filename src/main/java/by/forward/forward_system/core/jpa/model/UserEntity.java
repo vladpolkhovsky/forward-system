@@ -57,6 +57,9 @@ public class UserEntity {
     @Column(name = "is_deleted")
     private Boolean deleted;
 
+    @Column(name = "last_version_of_user_agreement_signed")
+    private Boolean newAgreementSigned;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

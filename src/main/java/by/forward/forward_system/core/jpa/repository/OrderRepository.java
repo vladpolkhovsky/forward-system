@@ -132,7 +132,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     List<OrderEntity> getOrderWhereAuthorIs(long userId);
 
     @Query(value = """
-            select a.id as userId, op.order.id as orderId from AuthorEntity a
+            select a.id as userId, op.order.id as orderId, op.order.techNumber as orderTechNumber from AuthorEntity a
                 inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
                 where op.order.orderStatus.name in ('FINALIZATION', 'REVIEW', 'IN_PROGRESS')
             """)
@@ -153,6 +153,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     interface ActiveOrderCountProjection {
         Long getUserId();
         Long getOrderId();
+        String getOrderTechNumber();
     }
 
     @Query(value = "select o.id as id, o.techNumber as techNumber, o.workType as workType, o.discipline.name as discipline, o.subject as subject from OrderEntity o where o.id = :orderId")

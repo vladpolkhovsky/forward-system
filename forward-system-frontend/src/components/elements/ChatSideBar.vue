@@ -234,6 +234,10 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
                    target="_blank">Изменить
                   статус заказа</a>
               </div>
+              <div class="input-group mb-0">
+                <a class="btn btn-sm btn-success" :href="`/expert-review-order/${orderChatInformation.id}`"
+                   target="_blank">Отправить на проверку</a>
+              </div>
             </AccordionItem>
           </Accordion>
 

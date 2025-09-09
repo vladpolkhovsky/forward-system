@@ -122,11 +122,13 @@ function getOptionClasses(option: ChatOptionDto): string[] {
             v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.MAIN_AUTHOR">Автор</span>
       <span class="me-2 badge text-bg-warning fs-8"
             v-if="message.fromUserIsDeleted">Удалён</span>
-      <span class="me-2 badge text-bg-primary fs-8" v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
+      <span class="me-2 badge text-bg-primary fs-8"
+            v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
       <span class="me-2 badge text-bg-danger fs-8" v-if="message.fromUserIsAdmin">Админ</span>
-      <span :class="[ 'me-2 badge fs-8', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"
-            :online-status-id="lastSeenAt.id"
-            v-if="lastSeenAt && lastSeenAt.shouldBeVisible">
+      <span
+          :class="[ 'me-2 badge fs-8', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"
+          :online-status-id="lastSeenAt.id"
+          v-if="lastSeenAt && lastSeenAt.shouldBeVisible">
         {{ (lastSeenAt.online ? '' : 'В сети: ') + lastSeenAt.lastOnlineAt }}
       </span>
     </p>
@@ -139,8 +141,8 @@ function getOptionClasses(option: ChatOptionDto): string[] {
     </template>
     <div class="d-flex justify-content-between m-2 fs-7" v-if="message.attachments.length > 0">
       <div class="d-block">
-        <a :href="'/load-file/' + att.id" target="_blank" class="me-2 d-inline-block line-break text-break"
-           v-for="att in message.attachments">{{ att.name }}</a>
+        <a :href="'/load-file/' + att.id" target="_blank" class="me-3 d-inline-block line-break text-break"
+           v-for="att in message.attachments"><i class="bi bi-file-text me-1"></i> {{ att.name }}</a>
       </div>
     </div>
     <div class="d-flex justify-content-end fs-7 p-1 me-1">

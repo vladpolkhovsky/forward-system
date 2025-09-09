@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <title>Ошибка</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <link href="/static/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/favicon.png" rel="icon" type="image/x-icon">
+</head>
+<body>
+<div class="container">
+    <h2 class="text-center">Пользовательское соглашение от 09.09.2025</h2>
+
+    <div class="alert alert-danger mt-2 mb-2" role="alert" th:if="${param.notSigned}">
+        <h5 class="alert-heading mb-2">Требуется принятие пользовательского соглашения</h5>
+        <p class="mb-2">Доступ к услугам сервиса возможен только после принятия Пользовательского соглашения. Это
+            обязательное требование, которое <strong>обеспечивает безопасность</strong>, определяет правила
+            использования и защищает права обеих сторон.</p>
+        <p class="mb-0">Если вы не согласны с условиями, использование сервиса, к сожалению, невозможно.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" action="/user-agreement">
+        <iframe title="пользовательское соглашение" class="mb-2 w-100"
+                height="720"
+                src="/static/user-agreement/user-agreement-v1.html"></iframe>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" name="is-agree" id="user-agreement-agree">
+            <label class="form-check-label" for="user-agreement-agree">
+                Нажимая кнопку «Подписать», я подтверждаю, что ознакомлен(а) и согласен(на) с условиями
+                пользовательского соглашения.
+            </label>
+        </div>
+        <input type="submit" class="btn btn-success btn-sm mt-2 mb-2" value="Подписать">
+    </form>
+    <a class="btn btn-sm btn-danger mb-3" href="/logout">Выйти из системы</a>
+</div>
+</body>

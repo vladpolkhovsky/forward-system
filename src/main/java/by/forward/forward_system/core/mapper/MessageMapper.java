@@ -57,6 +57,10 @@ public interface MessageMapper {
     default List<String> whoReadMessage(ChatEntity chatEntity, ChatMessageEntity messageEntity) {
         Set<UserEntity> participants = chatEntity.getParticipants();
 
+        if (participants.size() > 20) {
+            return List.of("Немозможно отобразить.");
+        }
+
         Map<Long, Boolean> userIdToIsViewed = messageEntity.getChatMessageToUsersSet().stream()
             .collect(Collectors.toMap(t -> t.getUser().getId(), ChatMessageToUserEntity::getIsViewed));
 
