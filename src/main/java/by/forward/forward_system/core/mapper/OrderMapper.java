@@ -5,6 +5,7 @@ import by.forward.forward_system.core.dto.messenger.v3.V3ParticipantDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.rest.AdditionalDateDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
+import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
@@ -45,6 +46,16 @@ public abstract class OrderMapper {
     public abstract AuthorOrderDto map(OrderEntity orderEntity);
 
     @Mapping(target = "participants", source = "orderParticipants")
+    @Mapping(target = "orderId", source = "id")
+    @Mapping(target = "orderTechNumber", source = "techNumber")
+    @Mapping(target = "deadline", source = "deadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "additionalDates", source = "additionalDates", qualifiedByName = "additionalDatesMapper")
+    @Mapping(target = "orderStatus", source = "orderStatus.status.name")
+    @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
+    public abstract ManagerOrderDto mapToManagerDto(OrderEntity orderEntity);
+
+    @Mapping(target = "participants", source = "orderParticipants")
     @Mapping(target = "orderCost", source = "takingCost")
     @Mapping(target = "orderAuthorCost", source = "authorCost")
     @Mapping(target = "disciplineName", source = "discipline.name")
@@ -78,6 +89,8 @@ public abstract class OrderMapper {
     public abstract V3ChatOrderInfoDto mapToChatOrderInfo(OrderEntity orderEntity);
 
     public abstract List<AuthorOrderDto> map(List<OrderEntity> orderEntities);
+
+    public abstract List<ManagerOrderDto> mapToManagersDto(List<OrderEntity> orderEntities);
 
     @Named("localDataTimeToMMDDYY")
     public String localDataTimeToMMDDYY(LocalDateTime date) {

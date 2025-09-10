@@ -122,14 +122,32 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             """)
     Long getOrdersSumByTimeAndCatcher(Long catcherId, LocalDateTime from, LocalDateTime to);
 
+    @EntityGraph(attributePaths = {
+        "discipline",
+        "orderStatus",
+        "createdBy"
+    })
     @Query(value = """
             select u from OrderEntity u
-                join fetch u.discipline
-                join fetch u.orderStatus
-                join fetch u.createdBy
                 join u.orderParticipants op on op.participantsType.name = 'MAIN_AUTHOR' and op.user.id = :userId
             """)
     List<OrderEntity> getOrderWhereAuthorIs(long userId);
+
+    @EntityGraph(attributePaths = {
+        "discipline",
+        "orderStatus",
+        "createdBy",
+        "orderParticipants",
+        "orderParticipants.participantsType",
+        "orderParticipants.user"
+    })
+    @Query(value = """
+        select u from OrderEntity u
+            join u.orderParticipants op on op.user.id = :userId
+            where u.orderStatus.name in ('CREATED' , 'DISTRIBUTION', 'ADMIN_REVIEW', 'IN_PROGRESS' , 'REVIEW', 'GUARANTEE', 'FINALIZATION')
+                    or (:showClosed is true and u.orderStatus.name = 'CLOSED')
+        """)
+    List<OrderEntity> getOrderWhereManagerIs(long userId, boolean showClosed);
 
     @Query(value = """
             select a.id as userId, op.order.id as orderId, op.order.techNumber as orderTechNumber from AuthorEntity a

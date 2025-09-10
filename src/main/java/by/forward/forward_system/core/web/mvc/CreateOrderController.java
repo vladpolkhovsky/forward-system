@@ -223,11 +223,8 @@ public class CreateOrderController {
     }
 
     @GetMapping(value = "/view-my-order")
-    public String viewMyOrder(Model model,
-                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                              @RequestParam(value = "techNumber", required = false) String techNumber) {
-        userUiService.checkAccessManager();
-        loadPage(model, page, techNumber, "/view-my-order");
+    public String viewMyOrder(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
         return "main/view-order-selector";
     }
 

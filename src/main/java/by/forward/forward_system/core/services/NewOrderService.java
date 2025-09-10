@@ -2,6 +2,7 @@ package by.forward.forward_system.core.services;
 
 import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
+import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.enums.OrderPaymentStatus;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
@@ -43,6 +44,18 @@ public class NewOrderService {
         map.forEach(t -> t.setPaymentStatus(orderIdToPaymentStatus.get(t.getOrderId())));
 
         return map;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ManagerOrderDto> getManagerOrders(Long userId, Boolean showClosed) {
+        var orderWhereManagerIs = orderRepository.getOrderWhereManagerIs(userId, showClosed);
+
+        Comparator<OrderEntity> comparator = Comparator.<OrderEntity>comparingInt(oe -> oe.getOrderStatus().getStatus().ordinal())
+            .thenComparing(oe -> new BigDecimal(oe.getTechNumber()));
+
+        orderWhereManagerIs.sort(comparator);
+
+        return orderMapper.mapToManagersDto(orderWhereManagerIs);
     }
 
     @Transactional(readOnly = true)
