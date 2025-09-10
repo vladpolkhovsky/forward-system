@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 import type {ManagerOrdersDto} from "@/core/dto/ManagerOrdersDto.ts";
 import {UserService} from "@/core/UserService.ts";
 import type {UserDto} from "@/core/dto/UserDto.ts";
+import {ParticipantTypeEnum} from "@/core/enum/ParticipantTypeEnum.ts";
 
 const loading = ref(true)
 const showClosed = ref(false)
@@ -52,6 +53,11 @@ function getUserOrderPosition(order: ManagerOrdersDto) {
   return order?.participants?.filter(t => t.user.id == user.value.id)?.[0]?.typeRusName ?? "<Не указано>"
 }
 
+function isOrderCatcherAndInDistribution(order: ManagerOrdersDto) {
+  return order?.participants?.filter(t => t.user.id == user.value.id)?.[0]?.type == ParticipantTypeEnum.CATCHER
+      && (order.orderStatus == OrderStatusEnum.DISTRIBUTION || order.orderStatus == OrderStatusEnum.CREATED)
+}
+
 </script>
 
 <template>
@@ -89,7 +95,11 @@ function getUserOrderPosition(order: ManagerOrdersDto) {
       <tr v-for="item in filteredTable">
         <th scope="row" class="text-center align-content-center"><a
             :href="`/order-info/` + item.orderId">{{ item.orderTechNumber }}</a></th>
-        <th scope="row" class="text-center align-content-center">{{ getUserOrderPosition(item) }}</th>
+        <th scope="row" class="text-center align-content-center">
+          {{ getUserOrderPosition(item) }}
+          <a class="badge text-bg-primary mt-2" :href="'/order/distribution?orderId=' + item.orderId"
+             v-if="isOrderCatcherAndInDistribution(item)">Перейти к распрделению</a>
+        </th>
         <td class="text-center align-content-center">
           <OrderStatusIcon :name="item.orderStatus" :rus-name="item.orderStatusRus"/>
         </td>

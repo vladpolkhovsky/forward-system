@@ -219,7 +219,7 @@ public class CreateOrderController {
         model.addAttribute("showSearch", true);
         model.addAttribute("searchOrderUrl", "/view-order");
 
-        return "main/view-order-selector";
+        return "main/view-order-selector-all";
     }
 
     @GetMapping(value = "/view-my-order")
