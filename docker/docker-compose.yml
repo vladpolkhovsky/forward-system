@@ -34,6 +34,15 @@ services:
     hostname: nginx
     restart: always
     container_name: nginx
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '1g'
+        reservations:
+          cpus: '1.0'
+          memory: '1g'
+    cpuset: "0-2"
     logging:
       driver: json-file
       options:
@@ -163,6 +172,15 @@ services:
     ports:
       - "9090:8080"
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '1g'
+        reservations:
+          cpus: '1.0'
+          memory: '1g'
+    cpuset: "0-2"
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
