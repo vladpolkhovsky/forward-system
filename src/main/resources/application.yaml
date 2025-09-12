@@ -22,7 +22,7 @@ spring:
 
   datasource:
     hikari:
-      maximum-pool-size: 25
+      maximum-pool-size: 40
       max-lifetime: 60000
       validationTimeout: 3000
     driver-class-name: org.postgresql.Driver
