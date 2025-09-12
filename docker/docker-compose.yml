@@ -5,11 +5,11 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '0.7'
-          memory: '4g'
+          cpus: '2.0'
+          memory: '6g'
         reservations:
-          cpus: '0.5'
-          memory: '2g'
+          cpus: '1.0'
+          memory: '4g'
     cpuset: "0-2"
     logging:
       driver: "json-file"
@@ -126,6 +126,15 @@ services:
     container_name: broker
     hostname: "kafka"
     restart: always
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: '2g'
+        reservations:
+          cpus: '0.5'
+          memory: '1g'
+    cpuset: "0-2"
     networks:
       - nginx-net
     volumes:
