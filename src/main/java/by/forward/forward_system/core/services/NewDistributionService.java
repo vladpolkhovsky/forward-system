@@ -227,6 +227,10 @@ public class NewDistributionService {
                 .formatted(item.getStatus().getRusName()));
         }
 
+        item.getQueueDistribution().getItems().stream()
+            .filter(cItem -> cItem.getStatus() == DistributionItemStatusType.WAITING)
+            .forEach(cItem -> cItem.setStatus(DistributionItemStatusType.SKIPPED));
+
         getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
             user.getId(), """
                 Автоматическое распредление по заказу №%s для автора %s. Автор принял заказ.

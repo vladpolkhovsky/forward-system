@@ -1,11 +1,13 @@
 package by.forward.forward_system.core.mapper;
 
 import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderFullDto;
 import by.forward.forward_system.core.dto.messenger.v3.V3ParticipantDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.rest.AdditionalDateDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
+import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
@@ -21,6 +23,7 @@ import org.mapstruct.MappingConstants;
 import org.mapstruct.Named;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -69,6 +72,24 @@ public abstract class OrderMapper {
     @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
     public abstract V3OrderDto mapToDto(OrderEntity entity);
 
+    @Mapping(target = "orderChatIdNewMessages", ignore = true)
+    @Mapping(target = "orderChatId", ignore = true)
+    @Mapping(target = "distributionDays", source = "orderEntity", qualifiedByName = "calcDistributionDays")
+    @Mapping(target = "participants", source = "orderParticipants")
+    @Mapping(target = "orderCost", source = "takingCost")
+    @Mapping(target = "orderAuthorCost", source = "authorCost")
+    @Mapping(target = "disciplineName", source = "discipline.name")
+    @Mapping(target = "disciplineId", source = "discipline.id")
+    @Mapping(target = "id", source = "id")
+    @Mapping(target = "techNumber", source = "techNumber")
+    @Mapping(target = "deadline", source = "deadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "createdAt", source = "createdAt", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "intermediateDeadline", source = "intermediateDeadline", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "additionalDates", source = "additionalDates", qualifiedByName = "additionalDatesMapper")
+    @Mapping(target = "orderStatus", source = "orderStatus.status.name")
+    @Mapping(target = "orderStatusRus", source = "orderStatus.status.rusName")
+    public abstract V3OrderFullDto mapToFullDto(OrderEntity orderEntity);
+
     @Mapping(target = "typeRusName", source = "participantsType.type.rusName")
     @Mapping(target = "type", source = "participantsType.type")
     @Mapping(target = "orderId", source = "order.id")
@@ -91,6 +112,15 @@ public abstract class OrderMapper {
     public abstract List<AuthorOrderDto> map(List<OrderEntity> orderEntities);
 
     public abstract List<ManagerOrderDto> mapToManagersDto(List<OrderEntity> orderEntities);
+
+    @Named("calcDistributionDays")
+    public Long calcDistributionDays(OrderEntity orderEntity) {
+        if (orderEntity.getOrderStatus().getStatus() == OrderStatus.DISTRIBUTION) {
+            long hours = Duration.between(orderEntity.getCreatedAt(), LocalDateTime.now()).toHours();
+            return (hours + 23) / 24;
+        }
+        return null;
+    }
 
     @Named("localDataTimeToMMDDYY")
     public String localDataTimeToMMDDYY(LocalDateTime date) {

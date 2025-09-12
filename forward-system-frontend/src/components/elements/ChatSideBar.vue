@@ -230,6 +230,10 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
             </AccordionItem>
             <AccordionItem name="Действия с заказом" :open="false" v-if="hasAuthorityManager(user.authorities)">
               <div class="input-group mb-1">
+                <a class="btn btn-sm btn-primary" :href="`/update-order/${orderChatInformation.id}`"
+                   target="_blank">Изменить карточку заказа</a>
+              </div>
+              <div class="input-group mb-1">
                 <a class="btn btn-sm btn-primary" :href="`/change-order-status/${orderChatInformation.id}`"
                    target="_blank">Изменить
                   статус заказа</a>

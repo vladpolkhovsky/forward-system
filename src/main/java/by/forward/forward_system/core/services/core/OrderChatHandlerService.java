@@ -20,15 +20,8 @@ public class OrderChatHandlerService {
         return newMessagesForUser.stream().collect(Collectors.toMap(
             OrderChatDataProjection::getOrderId,
             t -> t,
-            (u, v) -> {
-                if (u.getChatId() > v.getChatId()) {
-                    return u;
-                }
-                if (v.getChatId() > u.getChatId()) {
-                    return v;
-                }
-                return u;
-            })
+            (u, v) ->
+                Math.max(u.getChatId(), v.getChatId()) == u.getChatId() ? u : v)
         );
     }
 

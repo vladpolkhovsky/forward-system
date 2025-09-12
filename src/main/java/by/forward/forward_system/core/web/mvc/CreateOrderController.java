@@ -184,40 +184,9 @@ public class CreateOrderController {
     }
 
     @GetMapping(value = "/view-order")
-    public String viewOrder(Model model,
-                            @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                            @RequestParam(value = "techNumber", required = false) String techNumber) {
-        List<OrderUiDto> orders = Collections.emptyList();
+    public String viewOrder(Model model) {
 
-        int pageCount;
-
-        if (!StringUtils.isBlank(techNumber)) {
-            pageCount = 1;
-            page = 1;
-
-            orders = orderUiService.getOrderByTechNumber(techNumber);
-        } else {
-            pageCount = orderUiService.getOrdersPageCount();
-            page = Math.max(Math.min(pageCount, page), 1);
-
-            orders = orderUiService.getAllOrdersPage(page);
-            pageCount = orderUiService.getOrdersPageCount();
-        }
-
-        List<Long> orderIds = orders.stream().map(t -> t.getId()).toList();
-        Map<Long, OrderChatDataProjection> chatData = orderChatHandlerService.calcChatData(orderIds, userUiService.getCurrentUserId());
-
-        List<Integer> pages = IntStream.range(1, pageCount + 1).boxed().toList();
-
-        model.addAttribute("menuName", "Выберите заказ для просмотра");
         model.addAttribute("userShort", userUiService.getCurrentUser());
-        model.addAttribute("ordersList", orders);
-        model.addAttribute("page", page);
-        model.addAttribute("pages", pages);
-        model.addAttribute("chatHandler", chatData);
-        model.addAttribute("showPages", true);
-        model.addAttribute("showSearch", true);
-        model.addAttribute("searchOrderUrl", "/view-order");
 
         return "main/view-order-selector-all";
     }

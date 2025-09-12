@@ -31,7 +31,7 @@ dependencies {
 	implementation("org.springframework.kafka:spring-kafka")
 	implementation("org.springframework.retry:spring-retry:2.0.11")
 	implementation("org.springframework:spring-aspects:6.2.5")
-	implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-web")
 
 	implementation("org.springframework.boot:spring-boot-starter-websocket")
 	implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -59,11 +59,13 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
 	compileOnly("org.projectlombok:lombok:1.18.36")
 
-	annotationProcessor("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.6.3")
+
+    implementation("org.hibernate.orm:hibernate-core:6.5.2.Final")
+    annotationProcessor("org.hibernate.orm:hibernate-jpamodelgen:6.5.2.Final")
 }
 
 tasks.withType<Test> {

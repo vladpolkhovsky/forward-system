@@ -5,5 +5,5 @@ public interface OrderChatDataProjection {
 
     Long getOrderId();
 
-    Integer getNewMessageCount();
+    Long getNewMessageCount();
 }

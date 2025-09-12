@@ -6,10 +6,8 @@ import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProj
 import by.forward.forward_system.core.jpa.repository.projections.UserOrderDates;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -18,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSpecificationExecutor<OrderEntity> {
 
     @Query(nativeQuery = true, value = """
             select
@@ -149,6 +147,17 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         """)
     List<OrderEntity> getOrderWhereManagerIs(long userId, boolean showClosed);
 
+    @EntityGraph(attributePaths = {
+        "discipline",
+        "orderStatus",
+        "createdBy",
+        "orderParticipants",
+        "orderParticipants.participantsType",
+        "orderParticipants.user"
+    })
+    @Query(value = "from OrderEntity u where u.id in :ids")
+    List<OrderEntity> findAllByIds(List<Long> ids);
+
     @Query(value = """
             select a.id as userId, op.order.id as orderId, op.order.techNumber as orderTechNumber from AuthorEntity a
                 inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
@@ -183,5 +192,9 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
         String getWorkType();
         String getDiscipline();
         String getSubject();
+    }
+
+    interface OrderIdProjection {
+        Long getId();
     }
 }
