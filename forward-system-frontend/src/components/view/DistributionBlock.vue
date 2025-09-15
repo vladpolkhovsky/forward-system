@@ -28,7 +28,7 @@ const model = ref<UserSelectionStatus[]>([]);
 const author = new Map<number, AuthorDto>([])
 
 watch(() => props.users, (newValue) => {
-  console.log(props.tittle, newValue)
+  console.log(props.tittle, newValue);
   updateUserSelectionStatus();
 });
 
@@ -47,7 +47,7 @@ function isParticipant(userId: number): boolean {
 }
 
 function isLimitExceeded(user: AuthorDto): boolean {
-  return user.activeOrderIds.length >= user.maxOrdersCount;
+  return user.activeOrders.length >= user.maxOrdersCount;
 }
 
 function updateUserSelectionStatus() {
@@ -66,6 +66,10 @@ function updateUserSelectionStatus() {
       isChecked: false
     }
   }) ?? [];
+}
+
+function getOrderItmes(userId: number) {
+  return props.users?.filter(t => t.id == userId)?.[0]?.activeOrders ?? []
 }
 
 const clearSelectionAll = () => {
@@ -123,11 +127,22 @@ defineExpose({
                  placeholder="Стоимость для автора"
                  :disabled="item.isDisabled || disabled">
         </div>
-        <div class="form-text text-danger fw-bold mb-3" v-if="item.isDistributed">
+        <div class="form-text text-danger fw-bold mb-2" v-if="item.isDistributed">
           Зпрос уже отправлен автору.
         </div>
-        <div class="form-text text-danger fw-bold mb-3" v-if="item.isLimitExceeded">
-          Превышено максимальное число одновременных заказов <i class="ms-2 bi bi-info-circle"></i>
+        <div class="form-text text-danger fw-bold mb-2 d-flex flex-column gap-2" v-if="item.isLimitExceeded">
+          <div class="d-flex gap-2">
+            <a class="fs-4 ms-2 bi bi-info-circle text-danger"></a>
+            <p class="m-1 mb-2">Превышено максимальное число одновременных заказов</p>
+          </div>
+          <div class="d-flex gap-2">
+            <a v-for="order in getOrderItmes(item.userId)" class="d-inline-block me-2" target="_blank" :href="'/view-order/' + order.orderId">
+              <i class="bi bi-journal-text"></i> {{ '№ ' + order.orderTechNumber + ' | ' + order.orderStatusRus }}
+            </a>
+          </div>
+          <span >
+
+          </span>
         </div>
       </template>
     </div>

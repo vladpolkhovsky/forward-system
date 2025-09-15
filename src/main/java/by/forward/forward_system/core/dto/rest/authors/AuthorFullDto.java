@@ -16,6 +16,6 @@ public class AuthorFullDto {
     @With
     private UserActivityDto activity;
     @With
-    private List<Long> activeOrderIds;
+    private List<AuthorOrderDto> activeOrders;
     private Long maxOrdersCount;
 }

@@ -350,6 +350,7 @@ console.log(isSmallDevice, windowWidth, windowHeight)
 
   <Teleport :to="'#' + (isSmallDevice ? offcanvasChatSelectorRefTemplateId : leftColumnId)">
     <ChatSelector :user-id="user.id" ref="chatSelectorRef" v-if="user"
+                  :tab="selectedTab.description.queryParam"
                   @load-more="() => handleLoadMoreChats()"
                   @search-value="value => handleSearchUpdate(value)"
                   @select-chat="value => handleChatSelection(value)"/>

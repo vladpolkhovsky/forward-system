@@ -7,7 +7,8 @@ import Pill from "@/components/elements/Pill.vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 
 interface Props {
-  userId: number
+  userId: number,
+  tab: string
 }
 
 const loading = ref(false);
@@ -229,6 +230,11 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
         </div>
       </div>
     </div>
+  </div>
+  <div class="row mt-2 mb-3 montserrat">
+    <a target="_self"
+       :href="`/new-messenger-all-viewed?tab=${tab}`"
+       v-if="tab != 'all'">Отметить все как прочитанные</a>
   </div>
 </template>
 

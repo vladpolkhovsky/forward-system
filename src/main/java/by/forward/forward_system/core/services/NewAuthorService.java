@@ -4,6 +4,7 @@ import by.forward.forward_system.core.dto.rest.DisciplineDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorDisciplinesDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorFullDto;
+import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.enums.DisciplineQualityType;
 import by.forward.forward_system.core.jpa.model.AuthorDisciplineEntity;
 import by.forward.forward_system.core.jpa.model.AuthorEntity;
@@ -75,11 +76,16 @@ public class NewAuthorService {
         Map<Long, UserActivityDto> activityById = userActivityService.getAllUserActivity().stream()
             .collect(Collectors.toMap(UserActivityDto::getId, t -> t));
 
-        Map<Long, List<Long>> activeOrderIdsById = orderRepository.getActiveOrderCount().stream()
+        Map<Long, List<AuthorOrderDto>> activeOrderIdsById = orderRepository.getActiveOrderCount().stream()
             .collect(Collectors.groupingBy(ActiveOrderCountProjection::getUserId))
             .entrySet().stream()
             .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().stream()
-                .map(ActiveOrderCountProjection::getOrderId)
+                .map(t -> AuthorOrderDto.builder()
+                    .orderId(t.getOrderId())
+                    .orderTechNumber(t.getOrderTechNumber())
+                    .orderStatus(t.getStatus().getStatus().getName())
+                    .orderStatusRus(t.getStatus().getStatus().getRusName())
+                    .build())
                 .toList()));
 
         return authorsFetchedAll.stream()
@@ -87,7 +93,7 @@ public class NewAuthorService {
             .map(authorMapper::mapReach)
             .sorted(Comparator.comparing(AuthorFullDto::getUsername))
             .map(t -> t.withActivity(activityById.getOrDefault(t.getId(), new UserActivityDto(t.getId(), t.getUsername(), null))))
-            .map(t -> t.withActiveOrderIds(activeOrderIdsById.getOrDefault(t.getId(), List.of())))
+            .map(t -> t.withActiveOrders(activeOrderIdsById.getOrDefault(t.getId(), List.of())))
             .toList();
     }
 }

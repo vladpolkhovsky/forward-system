@@ -52,9 +52,9 @@ public class MessengerController {
     }
 
     @GetMapping(value = "/new-messenger-all-viewed")
-    public RedirectView newMessengerAllViewed(@RequestParam(value = "tab", required = true) String tab) {
+    public RedirectView newMessengerAllViewed(@RequestParam(value = "tab") String tab) {
         chatService.setAllMessagesViewed(userUiService.getCurrentUserId(), tab);
-        return new RedirectView("/new-messenger?tab=" + tab);
+        return new RedirectView("/new-messenger-v3?tab=" + tab + "#center");
     }
 
     @GetMapping(value = "/request-order/{orderId}")

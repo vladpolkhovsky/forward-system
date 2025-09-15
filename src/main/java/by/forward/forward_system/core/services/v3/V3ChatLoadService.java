@@ -57,50 +57,51 @@ public class V3ChatLoadService {
             types = criteria.getChatTypes().stream().map(ChatType::name).toList();
         }
 
-        String chatNameString = StringUtils.trimToNull(RegExUtils.replaceAll(criteria.getChatNameQuery(), "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "));
-        String tegNameString = StringUtils.trimToNull(RegExUtils.replaceAll(criteria.getTagNameQuery(), "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "));
+        String tagNameSearch = Optional.ofNullable(criteria.getTagNameQuery())
+            .map(query -> RegExUtils.replaceAll(query,"[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
+            .map(query -> RegExUtils.replaceAll(query," +", " "))
+            .map(StringUtils::trimToNull)
+            .stream()
+            .flatMap(query -> Arrays.stream(StringUtils.split(query)))
+            .map(StringUtils::capitalize)
+            .collect(Collectors.joining(" | "));
 
-        if (StringUtils.isNotBlank(tegNameString)) {
-            tegNameString = StringUtils.lowerCase(tegNameString);
-            tegNameString = StringUtils.capitalize(tegNameString);
+        String chatNameSearch = Optional.ofNullable(criteria.getTagNameQuery())
+            .map(query -> RegExUtils.replaceAll(query,"[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
+            .map(query -> RegExUtils.replaceAll(query," +", " "))
+            .map(StringUtils::trimToNull)
+            .stream()
+            .flatMap(query -> Arrays.stream(StringUtils.split(query)))
+            .map(StringUtils::capitalize)
+            .collect(Collectors.joining(" | "));
 
-            List<TagNameProjection> searchedTags = tagSearchRepository.search(tegNameString);
-
-            if (!searchedTags.isEmpty()) {
-                Map<String, Float> additionalRank = searchedTags.stream().collect(Collectors.toMap(t -> t.getId().toString(), TagNameProjection::getRank));
-                String jsonAdditionalRank = objectMapper.writeValueAsString(additionalRank);
-                String chatNameQuery = defaultIfBlank(trimToNull(chatNameString), tegNameString);
-
-                Page<ChatNameProjection> chatsByChatNameAndTagsQuery = chatNameSearchRepository
-                    .findChatsByChatNameAndTagsQuery(AuthUtils.getCurrentUserId(), jsonAdditionalRank, chatNameQuery, types, pageable);
-
+        if (StringUtils.isNotBlank(tagNameSearch) || StringUtils.isNotBlank(chatNameSearch)) {
+            List<TagNameProjection> tagSearch = tagSearchRepository.search(tagNameSearch);
+            if (tagSearch.size() > 0) {
+                Page<ChatNameProjection> chatsByChatNameAndTagsQuery =
+                    chatNameSearchRepository.findChatsByChatNameAndTagsQuery(
+                        AuthUtils.getCurrentUserId(), tagNameSearch, types, pageable);
                 return toV3ChatDtoPage(chatsByChatNameAndTagsQuery);
             }
+
+            return toV3ChatDtoPage(chatNameSearchRepository.findChatsByNameQuery(
+                AuthUtils.getCurrentUserId(), chatNameSearch, types, pageable));
         }
 
-        if (StringUtils.isNotBlank(chatNameString)) {
-            chatNameString = StringUtils.lowerCase(chatNameString);
-            chatNameString = StringUtils.capitalize(chatNameString);
-
-            Page<ChatNameProjection> chatsByChatNameQuery = chatNameSearchRepository
-                .findChatsByNameQuery(AuthUtils.getCurrentUserId(), chatNameString, types, pageable);
-
-            return toV3ChatDtoPage(chatsByChatNameQuery);
-        }
-
-        Page<ChatNameProjection> chats = chatNameSearchRepository
-            .findChats(AuthUtils.getCurrentUserId(), types, pageable);
-
-        return toV3ChatDtoPage(chats);
+        return toV3ChatDtoPage(chatNameSearchRepository.findChats(
+            AuthUtils.getCurrentUserId(), types, pageable));
     }
 
     private V3ChatDto toV3ChatDto(Long chatId) {
         List<ChatEntity> fetchedChats = chatRepository.fetchDataToChatResponse(List.of(chatId));
         ChatEntity chat = fetchedChats.getFirst();
+
         V3ChatDto v3ChatDto = chatMapper.matToV3ChatDto(chat);
+
         NewMessageCountProjection newMessages = chatRepository.findNewMessageCount(List.of(chatId), AuthUtils.getCurrentUserId()).stream()
             .filter(t -> Objects.equals(t.getChatId(), chatId))
             .findAny().orElse(NewMessageCountProjection.zero(chatId));
+
         return v3ChatDto.withNewMessageCount(newMessages.getNewMessageCount());
     }
 

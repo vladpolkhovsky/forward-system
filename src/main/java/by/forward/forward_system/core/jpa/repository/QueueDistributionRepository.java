@@ -3,6 +3,7 @@ package by.forward.forward_system.core.jpa.repository;
 import by.forward.forward_system.core.jpa.model.QueueDistributionEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -41,4 +42,7 @@ public interface QueueDistributionRepository extends JpaRepository<QueueDistribu
                 where q.status = 'IN_PROGRESS' and q.order.id = :orderId and qi.user.id = :authorId
         """)
     boolean isUserInInProgressDistribution(Long orderId, Long authorId);
+
+    @Modifying
+    void deleteAllByOrder_Id(Long orderId);
 }

@@ -1,6 +1,8 @@
 package by.forward.forward_system.core.jpa.repository;
 
+import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
+import by.forward.forward_system.core.jpa.model.OrderStatusEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.UserOrderDates;
@@ -159,7 +161,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
     List<OrderEntity> findAllByIds(List<Long> ids);
 
     @Query(value = """
-            select a.id as userId, op.order.id as orderId, op.order.techNumber as orderTechNumber from AuthorEntity a
+            select a.id as userId,
+                op.order.id as orderId,
+                op.order.techNumber as orderTechNumber,
+                op.order.orderStatus as status
+            from AuthorEntity a
                 inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
                 where op.order.orderStatus.name in ('FINALIZATION', 'REVIEW', 'IN_PROGRESS')
             """)
@@ -181,6 +187,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
         Long getUserId();
         Long getOrderId();
         String getOrderTechNumber();
+        OrderStatusEntity getStatus();
     }
 
     @Query(value = "select o.id as id, o.techNumber as techNumber, o.workType as workType, o.discipline.name as discipline, o.subject as subject from OrderEntity o where o.id = :orderId")

@@ -12,21 +12,19 @@ public class ChatTabToChatTypeService {
         if (tabName == null) {
             return null;
         }
+
         if (tabName.equals("saved")) {
             return "use-saved";
         } else if (tabName.equals("new-orders")) {
-
             return ChatType.REQUEST_ORDER_CHAT.getName();
         } else if (tabName.equals("admin")) {
-
             return ChatType.ADMIN_TALK_CHAT.getName();
         } else if (tabName.equals("orders")) {
-
             return ChatType.ORDER_CHAT.getName();
         } else if (tabName.equals("special")) {
-
             return ChatType.SPECIAL_CHAT.getName();
         }
+
         return null;
     }
 

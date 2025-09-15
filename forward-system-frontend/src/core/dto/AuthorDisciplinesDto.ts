@@ -6,7 +6,5 @@ export interface AuthorDisciplinesDto {
     excellent: DisciplineDto[],
     good: DisciplineDto[],
     maybe: DisciplineDto[],
-    activity: LastSeenAtDto,
-    activeOrderIds: number[],
-    maxOrdersCount: number
+    activity: LastSeenAtDto
 }

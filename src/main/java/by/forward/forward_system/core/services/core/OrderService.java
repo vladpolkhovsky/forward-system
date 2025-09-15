@@ -79,6 +79,8 @@ public class OrderService {
     private final ChatUtilsService chatUtilsService;
     private final TagMapper tagMapper;
     private final TagService tagService;
+    private final QueueDistributionRepository queueDistributionRepository;
+    private final QueueDistributionItemRepository queueDistributionItemRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -1004,9 +1006,8 @@ public class OrderService {
 
         Optional<ForwardOrderEntity> forwardOrder = forwardOrderRepository.findByOrder_Id(orderId);
 
-        List<CompletableFuture<Void>> wait = new ArrayList<>();
-
-        HashSet<Long> deletedChatIds = new HashSet<>();
+        queueDistributionItemRepository.deleteAllByQueueDistribution_Order_Id(orderId);
+        queueDistributionRepository.deleteAllByOrder_Id(orderId);
 
         if (forwardOrder.isPresent()) {
             ForwardOrderEntity forwardOrderEntity = forwardOrder.get();
