@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
+@Deprecated
 public class LoadAllChatsWithNameQueryHandler implements QueryHandler<SearchChatRequestDto, ChatWithNameDto> {
 
     @Language("SQL")
@@ -33,7 +34,7 @@ public class LoadAllChatsWithNameQueryHandler implements QueryHandler<SearchChat
     public PreparedStatementSetter getPreparedStatementSetter(SearchChatRequestDto request) {
         return ps -> {
             ps.setLong(1, request.getUserId());
-            ps.setString(2, tabToChatType.getChatTypeByTab(request.getChatTab()));
+            //ps.setString(2, tabToChatType.getChatTypeByTab(request.getChatTab()));
             ps.setBoolean(3, "use-saved".equals(tabToChatType.getChatTypeByTab(request.getChatTab())));
         };
     }

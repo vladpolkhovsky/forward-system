@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 @Component
 @AllArgsConstructor
+@Deprecated
 public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, FastChatDto> {
 
     private final static String QUERY_IN = ":IN:";
@@ -45,10 +46,11 @@ public class LoadChatQueryHandler implements QueryHandler<LoadChatRequestDto, Fa
     }
 
     @Override
+    @Deprecated
     public PreparedStatementSetter getPreparedStatementSetter(LoadChatRequestDto request) {
         return ps -> {
             ps.setLong(1, request.getUserId());
-            ps.setString(2, tabToChatType.getChatTypeByTab(request.getChatTab()));
+
             ps.setBoolean(3, "use-saved".equals(tabToChatType.getChatTypeByTab(request.getChatTab())));
             ps.setLong(4, request.getUserId());
             int index = 5;
