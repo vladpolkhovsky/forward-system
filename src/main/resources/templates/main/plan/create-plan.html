@@ -36,7 +36,12 @@
                 <input id="plan-end" name="plan-end" class="form-control mb-3" readonly required type="date">
                 <div class="input-group mb-3">
                     <span class="input-group-text">Руб.</span>
-                    <input id="plan-amount" name="plan-amount" type="number" class="form-control" aria-label="Кол-во"></div>
+                    <input id="plan-amount" name="plan-amount" type="number" class="form-control" aria-label="Кол-во">
+                </div>
+                <div class="input-group mb-3">
+                    <span class="input-group-text">Кол-во</span>
+                    <input id="plan-amount-count" name="plan-amount-count" type="number" class="form-control" aria-label="Кол-во">
+                </div>
                 <input id="submit-btn" type="submit" class="btn btn-primary col-12" disabled value="Сохранить">
             </form>
         </div>
@@ -87,6 +92,10 @@
             return;
         }
         if (!document.getElementById("plan-amount").value){
+            document.getElementById("submit-btn").setAttribute("disabled", "true")
+            return;
+        }
+        if (!document.getElementById("plan-amount-count").value){
             document.getElementById("submit-btn").setAttribute("disabled", "true")
             return;
         }
@@ -147,6 +156,9 @@
         });
 
     document.getElementById("plan-amount")
+        .addEventListener("change", () => unlockSubmitIfNeeded());
+
+    document.getElementById("plan-amount-count")
         .addEventListener("change", () => unlockSubmitIfNeeded());
 
     loadAllManagers((managers) => {

@@ -139,21 +139,21 @@ export class ChatService {
 
     public static fetchMessageById(messageId: number, messageCallback: MessageCallback) {
         console.log("force fetch message id = ", messageId)
-        ChatService.fetchData("GET", `api/v3/chat/message/id/${messageId}`, null, (json) => {
+        ChatService.fetchData("GET", `/api/v3/chat/message/id/${messageId}`, null, (json) => {
             messageCallback(json as MessageDto);
         })
     }
 
     public static fetchNewMessageCount(newMessageCountCallback: NewMessageCountCallback) {
         console.log("update new message chat tab count")
-        ChatService.fetchData("GET", `api/v3/chat/count`, null, (json) => {
+        ChatService.fetchData("GET", `/api/v3/chat/count`, null, (json) => {
             newMessageCountCallback(json as NewMessageCountDto);
         })
     }
 
     private static fetchChatById(chatId: number, chatCallback: ChatCallback): void {
         console.log("force fetch chat id = ", chatId)
-        ChatService.fetchData("GET", `api/v3/chat/id/${chatId}`, null, (json) => {
+        ChatService.fetchData("GET", `/api/v3/chat/id/${chatId}`, null, (json) => {
             chatCallback(json as ChatShortDto);
         })
     }

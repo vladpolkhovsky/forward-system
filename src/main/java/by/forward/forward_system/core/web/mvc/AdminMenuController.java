@@ -104,7 +104,8 @@ public class AdminMenuController {
         @RequestParam(value = "username") String username,
         @RequestParam(value = "plan-start") String planStart,
         @RequestParam(value = "plan-end") String planEnd,
-        @RequestParam(value = "plan-amount") Long planTarget
+        @RequestParam(value = "plan-amount") Long planTarget,
+        @RequestParam(value = "plan-amount-count") Long planTargetCount
     ) {
         userUiService.checkAccessAdmin();
 
@@ -113,7 +114,7 @@ public class AdminMenuController {
         LocalDateTime start = LocalDate.parse(planStart, DateTimeFormatter.ISO_DATE).atStartOfDay();
         LocalDateTime end = LocalDate.parse(planEnd, DateTimeFormatter.ISO_DATE).atStartOfDay().minusSeconds(1);
 
-        planService.savePlan(targetUserId, username, start, end, planTarget, createdBy);
+        planService.savePlan(targetUserId, start, end, planTarget, planTargetCount, createdBy);
 
         return new RedirectView("/main");
     }

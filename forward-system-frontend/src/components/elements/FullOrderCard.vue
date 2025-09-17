@@ -51,9 +51,11 @@ function confirmDeleteOrder(event: SubmitEvent) {
 
 <template>
   <div class="card mb-2">
-    <h6 class="card-header p-1 ps-2">Заказ / ТЗ № {{ order.techNumber }} <span class="ms-3">
-        <OrderStatusIcon :name="order.orderStatus" :rus-name="order.orderStatusRus"/>
-      </span>
+    <h6 class="card-header p-1 ps-2">
+      <a :href="`/view-order/` + order.id" target="_blank">Заказ / ТЗ № {{ order.techNumber }} <span class="ms-3">
+          <OrderStatusIcon :name="order.orderStatus" :rus-name="order.orderStatusRus"/>
+        </span>
+      </a>
     </h6>
     <div class="card-body p-2">
       <div class="container">

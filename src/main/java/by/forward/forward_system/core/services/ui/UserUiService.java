@@ -235,6 +235,7 @@ public class UserUiService {
         userEntity.setContactTelegram(userUiDto.getContactTelegram());
         userEntity.setPayment(userUiDto.getPayment());
         userEntity.setDeleted(false);
+        userEntity.setNewAgreementSigned(false);
         userEntity.setRoles("");
 
         if (userUiDto.getIsAuthor() != null && userUiDto.getIsAuthor()) {

@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.services.core;
 
+import by.forward.forward_system.core.dto.rest.UserPlanViewProjectionDto;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.PlanEntity;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
@@ -7,6 +8,7 @@ import by.forward.forward_system.core.jpa.repository.PlanRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.UserPlanProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.UserSimpleProjectionDto;
+import by.forward.forward_system.core.mapper.UserPlanMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import lombok.AllArgsConstructor;
@@ -17,6 +19,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -27,6 +30,7 @@ public class PlanService {
     private final PlanRepository planRepository;
 
     private final OrderRepository orderRepository;
+    private final UserPlanMapper userPlanMapper;
 
     public List<UserSimpleProjectionDto> getAllManagers() {
         return userRepository.loadAllWithRole(Authority.MANAGER);
@@ -46,8 +50,8 @@ public class PlanService {
             .toList();
     }
 
-    public void savePlan(Long targetUserId, String username, LocalDateTime planStart, LocalDateTime planEnd, Long planTarget, Long createdBy) {
-        planRepository.save(new PlanEntity(null, targetUserId, createdBy, planTarget, planStart, planEnd, LocalDateTime.now()));
+    public void savePlan(Long targetUserId, LocalDateTime planStart, LocalDateTime planEnd, Long planTargetSum, Long planTargetCount, Long createdBy) {
+        planRepository.save(new PlanEntity(null, targetUserId, createdBy, planTargetSum, planTargetCount, planStart, planEnd, LocalDateTime.now()));
     }
 
     public ValidationResponse validate(ValidationRequest validationRequest) {
@@ -69,13 +73,23 @@ public class PlanService {
         planRepository.deleteById(planId);
     }
 
+    public List<UserPlanViewProjectionDto> findAllUserPlanViews() {
+        return userPlanMapper.mapMany(planRepository.findAllUserPlanView());
+    }
+
+    public Optional<UserPlanViewProjectionDto> findActiveUserPlanById(Long userId) {
+        return planRepository.finActivePlanByUser(userId)
+            .map(userPlanMapper::map);
+    }
+
     public record ValidationRequest(
         Long userId,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         LocalDateTime start,
         @JsonDeserialize(using = LocalDateTimeDeserializer.class)
         LocalDateTime end,
-        Integer targetSum
+        Integer targetSum,
+        Integer targetCount
     ) {
     }
 

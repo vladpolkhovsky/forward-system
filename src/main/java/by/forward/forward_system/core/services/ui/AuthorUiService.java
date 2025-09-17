@@ -171,6 +171,7 @@ public class AuthorUiService {
         userEntity.setContactTelegram(authorUiDto.getContactTelegram());
         userEntity.setPayment(authorUiDto.getPayment());
         userEntity.setRoles("");
+        userEntity.setNewAgreementSigned(false);
         userEntity.setDeleted(false);
 
         authorEntity.setUser(userEntity);

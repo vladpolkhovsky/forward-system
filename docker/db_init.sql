@@ -853,3 +853,6 @@ create table if not exists forward_system.queue_distribution_item
 
 alter table forward_system.users
     add last_version_of_user_agreement_signed boolean not null default false;
+
+alter table forward_system.user_plan
+    add target_count bigint    not null default 0;

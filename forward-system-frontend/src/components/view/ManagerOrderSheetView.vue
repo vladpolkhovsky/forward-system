@@ -94,7 +94,7 @@ function isOrderCatcherAndInDistribution(order: ManagerOrdersDto) {
       <tbody>
       <tr v-for="item in filteredTable">
         <th scope="row" class="text-center align-content-center"><a
-            :href="`/order-info/` + item.orderId">{{ item.orderTechNumber }}</a></th>
+            :href="`/view-order/` + item.orderId">{{ item.orderTechNumber }}</a></th>
         <th scope="row" class="text-center align-content-center">
           {{ getUserOrderPosition(item) }}
           <a class="badge text-bg-primary mt-2" :href="'/order/distribution?orderId=' + item.orderId"

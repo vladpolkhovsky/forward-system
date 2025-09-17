@@ -25,6 +25,7 @@ public class UserPlanProjectionDto {
     private final LocalDateTime startDateTime;
     private final LocalDateTime endDateTime;
     private final Long targetSum;
+    private final Long targetCount;
 
     public UserPlanProjectionDto(PlanEntity planEntity, UserEntity userEntity) {
         this(
@@ -33,7 +34,8 @@ public class UserPlanProjectionDto {
             userEntity.getUsername(),
             planEntity.getStart(),
             planEntity.getEnd(),
-            planEntity.getTargetSum()
+            planEntity.getTargetSum(),
+            planEntity.getTargetCount()
         );
     }
 
@@ -42,12 +44,14 @@ public class UserPlanProjectionDto {
                                  String username,
                                  LocalDateTime start,
                                  LocalDateTime end,
-                                 Long targetSum
+                                 Long targetSum,
+                                 Long targetCount
     ) {
         this.id = id;
         this.userId = userId;
         this.username = username;
         this.targetSum = targetSum;
+        this.targetCount = targetCount;
         this.start = start.format(DATE_TIME_FORMATTER);
         this.end = end.toLocalDate().atStartOfDay().plusDays(1).format(DATE_TIME_FORMATTER);
 
@@ -81,7 +85,8 @@ public class UserPlanProjectionDto {
         return false;
     }
 
-    public long untilStartDays(LocalDateTime now) {
+    @JsonProperty("beforeStartDays")
+    public Long untilStartDays(LocalDateTime now) {
         return (long) Math.ceil(Duration.between(now, startDateTime).toHours() / 24.0);
     }
 }

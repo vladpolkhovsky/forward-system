@@ -30,6 +30,9 @@ public class PlanEntity {
     @Column(name = "target_sum", nullable = false)
     private Long targetSum;
 
+    @Column(name = "target_count", nullable = false)
+    private Long targetCount;
+
     @Column(name = "plan_start", nullable = false)
     private LocalDateTime start;
 

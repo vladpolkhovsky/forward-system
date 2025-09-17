@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.web.rest;
 
+import by.forward.forward_system.core.dto.rest.UserPlanViewProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.UserPlanProjectionDto;
 import by.forward.forward_system.core.jpa.repository.projections.UserSimpleProjectionDto;
 import by.forward.forward_system.core.services.core.PlanService;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/api/plan")
@@ -31,5 +33,15 @@ public class PlanRestController {
     @PostMapping(value = "/validate", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
     public ResponseEntity<PlanService.ValidationResponse> validatePlan(@RequestBody PlanService.ValidationRequest validationRequest) {
         return ResponseEntity.ok(planService.validate(validationRequest));
+    }
+
+    @GetMapping(value = "/user-plan-view")
+    public ResponseEntity<List<UserPlanViewProjectionDto>> findAllUserPlans() {
+        return ResponseEntity.ok(planService.findAllUserPlanViews());
+    }
+
+    @GetMapping(value = "/user-plan-view/{userId}")
+    public ResponseEntity<Optional<UserPlanViewProjectionDto>> findActiveUserPlan(@PathVariable Long userId) {
+        return ResponseEntity.ok(planService.findActiveUserPlanById(userId));
     }
 }
