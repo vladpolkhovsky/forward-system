@@ -65,7 +65,6 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
     @Query("from ChatMessageEntity where id in :messageIds order by createdAt desc")
     List<ChatMessageEntity> loadChatMessagesByPaginationIds(List<Long> messageIds);
 
-
     @EntityGraph(attributePaths = {
         "chat",
         "chat.order",

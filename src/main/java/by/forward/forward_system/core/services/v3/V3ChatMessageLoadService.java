@@ -12,6 +12,7 @@ import by.forward.forward_system.core.utils.AuthUtils;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -56,10 +57,7 @@ public class V3ChatMessageLoadService {
 
         List<V3MessageDto> mappedMessages = messageRepository.loadChatMessagesByPaginationIds(paginationIds.getContent()).stream()
             .map(messageMapper::map)
-            .map(t -> t.withIsNewMessage(Optional.ofNullable(viewedById.get(t.getId()))
-                .orElse(Set.of()).contains(currentUserUsername))
-                .withMessageReadedByUsernames(Optional.ofNullable(viewedById.get(t.getId()))
-                .orElse(Set.of())))
+            .map(enrichReadByUser(viewedById, currentUserUsername))
             .toList();
 
         return new PageImpl<>(mappedMessages, paginationIds.getPageable(), paginationIds.getTotalElements());
@@ -67,6 +65,21 @@ public class V3ChatMessageLoadService {
 
     @Transactional(readOnly = true)
     public V3MessageDto findById(Long messageId) {
-        return messageMapper.map(messageRepository.findByIdAndFetch(messageId));
+        String currentUserUsername = AuthUtils.getCurrentUserDetails()
+            .getUsername();
+
+        Map<Long, Set<String>> viewedById = messageViewStatusRepository.findAllById(List.of(messageId)).stream()
+            .collect(Collectors.toMap(MessageViewStatusView::getMessageId, t -> Set.copyOf(t.getViewedByUsers())));
+
+        return Optional.of(messageMapper.map(messageRepository.findByIdAndFetch(messageId)))
+            .map(enrichReadByUser(viewedById, currentUserUsername)).get();
+    }
+
+    @NotNull
+    private static Function<V3MessageDto, V3MessageDto> enrichReadByUser(Map<Long, Set<String>> viewedById, String currentUserUsername) {
+        return t -> t.withIsNewMessage(Optional.ofNullable(viewedById.get(t.getId()))
+                .orElse(Set.of()).contains(currentUserUsername))
+            .withMessageReadedByUsernames(Optional.ofNullable(viewedById.get(t.getId()))
+                .orElse(Set.of()));
     }
 }
