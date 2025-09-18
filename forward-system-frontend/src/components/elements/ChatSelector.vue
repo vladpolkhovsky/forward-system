@@ -195,7 +195,7 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
 
               <span class="ms-1 fw-bold d-inline-block">{{ item.chat.displayName }}</span>
             </span>
-            <span class="d-flex align-items-center gap-2">
+            <span class="align-items-center d-flex flex-wrap gap-2 justify-content-end">
               <OrderStatusIcon v-if="item.chat.orderId" :name="item.chat.orderStatus"
                 :rus-name="item.chat.orderStatusRus"/>
               <Pill text="Оплачен" color="success"
