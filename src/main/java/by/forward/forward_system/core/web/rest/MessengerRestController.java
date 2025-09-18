@@ -68,9 +68,9 @@ public class MessengerRestController {
     }
 
     @PostMapping(value = "/message-viewed/{chatId}/{userId}")
-    public ResponseEntity<Boolean> viewMessage(@PathVariable Long chatId, @PathVariable Long userId) {
+    public ResponseEntity<Map<String, Boolean>> viewMessage(@PathVariable Long chatId, @PathVariable Long userId) {
         chatService.setMessageViewed(chatId, userId);
-        return ResponseEntity.ok(true);
+        return ResponseEntity.ok(Map.of("status", true));
     }
 
     @PostMapping(value = "/message-viewed/{chatId}")

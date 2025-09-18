@@ -25,6 +25,10 @@ public class V3ChatDto {
     private String orderTechNumber;
     private OrderStatus orderStatus;
     private String orderStatusRus;
+    @With
+    private Boolean isForwardOrder;
+    @With
+    private Boolean isForwardOrderPaid;
     private ChatType type;
     private ChatMetadataDto metadata;
 }

@@ -52,13 +52,15 @@ public interface ChatMapper {
         return new ChatTypeEntity(chatType.getName());
     }
 
+    @Mapping(target = "isForwardOrderPaid", ignore = true)
+    @Mapping(target = "isForwardOrder", ignore = true)
     @Mapping(target = "metadata", source = "chatMetadata")
     @Mapping(target = "type", source = "chatType.type")
     @Mapping(target = "orderId", source = "order.id")
     @Mapping(target = "orderTechNumber", source = "order.techNumber")
     @Mapping(target = "lastMessageDate", source = "lastMessageDate", qualifiedByName = "toDisplayableString")
     @Mapping(target = "realLastMessageDate", source = "lastMessageDate")
-    @Mapping(target = "newMessageCount", constant = "20")
+    @Mapping(target = "newMessageCount", ignore = true)
     @Mapping(target = "displayName", source = "chatEntity", qualifiedByName = "calculateDisplayName")
     @Mapping(target = "orderStatus", source = "order.orderStatus.status.name")
     @Mapping(target = "orderStatusRus", source = "order.orderStatus.status.rusName")

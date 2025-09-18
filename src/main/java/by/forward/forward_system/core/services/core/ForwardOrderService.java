@@ -28,6 +28,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,6 +59,7 @@ public class ForwardOrderService {
             .collect(Collectors.toMap(NewMessageCountProjection::getId, NewMessageCountProjection::getCount));
     }
 
+    @Deprecated
     public ForwardOrderData findAllProjections(Long currentUserId, Boolean isAdmin) {
         List<ForwardOrderProjection> allProjections = forwardOrderRepository.findAllProjections();
 
@@ -92,6 +94,7 @@ public class ForwardOrderService {
         );
     }
 
+    @Deprecated
     private Map<Long, LocalDateTime> lastMessageCount(List<Long> chatIds) {
         return forwardOrderRepository.findLastMessageDateByChatId(chatIds).stream()
             .collect(Collectors.toMap(LastMessageDateByChatIdProjection::getChatId, LastMessageDateByChatIdProjection::getLastMessageDate));
@@ -251,6 +254,16 @@ public class ForwardOrderService {
             List.of(),
             List.of()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Boolean> getForwardOrderFileSubmissionStatus(Long forwardOrderId) {
+        return forwardOrderRepository.getForwardOrderFileSubmissionStatus(forwardOrderId);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Boolean> getForwardOrderPaidStatus(Long forwardOrderId) {
+        return forwardOrderRepository.getForwardOrderPaidStatus(forwardOrderId);
     }
 
     @Transactional

@@ -40,8 +40,8 @@ public interface MessageMapper {
     @Mapping(target = "createdAt", source = "createdAt", qualifiedByName = "toDisplayableString")
     @Mapping(target = "options", source = "chatMessageOptionsSet")
     @Mapping(target = "messageType", source = "chatMessageType.type")
-    @Mapping(target = "messageReadedByUsernames", expression = "java(whoReadMessage(message.getChat(), message))")
-    @Mapping(target = "isNewMessage", source = "message", qualifiedByName = "isNewMessageForUser")
+    @Mapping(target = "messageReadedByUsernames", ignore = true)
+    @Mapping(target = "isNewMessage", ignore = true)
     @Mapping(target = "fromUserId", source = "fromUser.id")
     @Mapping(target = "fromUserUsername", source = "fromUser.username")
     @Mapping(target = "fromUserIsAdmin", source = "fromUser.authorities", qualifiedByName = "isAdmin")
@@ -110,13 +110,6 @@ public interface MessageMapper {
             .get(message.getFromUser().getId());
 
         return Optional.ofNullable(participantType).map(ParticipantType::getRusName).orElse(null);
-    }
-
-    @Named("isNewMessageForUser")
-    default Boolean isNewMessageForUser(ChatMessageEntity messageEntity) {
-        Map<Long, Boolean> userIdToIsViewed = messageEntity.getChatMessageToUsers().stream()
-            .collect(Collectors.toMap(t -> t.getUser().getId(), ChatMessageToUserEntity::getIsViewed));
-        return !Optional.ofNullable(userIdToIsViewed.get(AuthUtils.getCurrentUserId())).orElse(true);
     }
 
     @Named("isAdmin")

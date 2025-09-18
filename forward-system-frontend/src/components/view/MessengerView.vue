@@ -349,7 +349,7 @@ console.log(isSmallDevice, windowWidth, windowHeight)
   </div>
 
   <Teleport :to="'#' + (isSmallDevice ? offcanvasChatSelectorRefTemplateId : leftColumnId)">
-    <ChatSelector :user-id="user.id" ref="chatSelectorRef" v-if="user"
+    <ChatSelector :user="user" ref="chatSelectorRef" v-if="user"
                   :tab="selectedTab.description.queryParam"
                   @load-more="() => handleLoadMoreChats()"
                   @search-value="value => handleSearchUpdate(value)"

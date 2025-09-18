@@ -272,6 +272,7 @@ public class MessageService {
     }
 
     @Transactional
+    @Deprecated
     public MessageDto handleWsMessage(Long chatId, Long userId, String message, List<Long> attachmentIds) {
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found for id " + chatId));
         UserEntity userEntity = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found for id " + userId));
@@ -317,6 +318,7 @@ public class MessageService {
         return convertChatMessage(chatMessageEntity);
     }
 
+    @Deprecated
     public MessageDto convertChatMessage(ChatMessageEntity chatMessage) {
         MessageDto messageDto = new MessageDto();
         messageDto.setId(chatMessage.getId());

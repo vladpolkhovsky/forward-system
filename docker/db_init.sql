@@ -856,3 +856,23 @@ alter table forward_system.users
 
 alter table forward_system.user_plan
     add target_count bigint    not null default 0;
+
+CREATE INDEX idx_cmtu_composite ON chat_message_to_user(message_id, user_id, is_viewed);
+CREATE INDEX idx_chat_members_composite ON chat_members(chat_id, user_id);
+CREATE INDEX idx_chat_messages_chat_id ON chat_messages(chat_id);
+
+CREATE OR REPLACE VIEW message_view_stats AS
+SELECT
+    cm.id,
+    cm.chat_id as chat_id,
+    COUNT(u.id) AS user_count,
+    array_remove(ARRAY_AGG(u.username), null) AS usernames
+FROM chat_messages cm
+         JOIN chat_members mem ON cm.chat_id = mem.chat_id
+         JOIN users u ON mem.user_id = u.id
+         LEFT JOIN chat_message_to_user cmtu
+                   ON cmtu.message_id = cm.id
+                       AND cmtu.user_id = mem.user_id
+                       AND cmtu.is_viewed is false
+WHERE cmtu.message_id IS NULL
+GROUP BY cm.id;

@@ -15,4 +15,6 @@ public class V3ForwardOrderChatInfo {
     private Long orderId;
     private String code;
     private Long botCount;
+    private Boolean isOrderPaid;
+    private Boolean isAuthorCanSubmitFiles;
 }

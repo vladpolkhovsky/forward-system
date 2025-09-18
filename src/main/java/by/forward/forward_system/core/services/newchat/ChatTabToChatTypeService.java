@@ -19,10 +19,12 @@ public class ChatTabToChatTypeService {
             return List.of("use-saved");
         } else if (tabName.equals("new-orders")) {
             return List.of(ChatType.REQUEST_ORDER_CHAT.getName());
-        } else if (tabName.equals("admin")) {
+        }else if (tabName.equals("admin")) {
             return List.of(ChatType.ADMIN_TALK_CHAT.getName(), ChatType.FORWARD_ORDER_ADMIN_CHAT.getName());
         } else if (tabName.equals("orders")) {
             return List.of(ChatType.ORDER_CHAT.getName(), ChatType.FORWARD_ORDER_CHAT.getName());
+        }  else if (tabName.equals("forward")) {
+            return List.of(ChatType.FORWARD_ORDER_CHAT.getName(), ChatType.FORWARD_ORDER_ADMIN_CHAT.getName());
         } else if (tabName.equals("special")) {
             return List.of(ChatType.SPECIAL_CHAT.getName());
         }
@@ -30,8 +32,7 @@ public class ChatTabToChatTypeService {
         return null;
     }
 
-    ;
-
+    @Deprecated
     public String getChatTabByType(String chatType) {
         if (chatType == null) {
             return null;

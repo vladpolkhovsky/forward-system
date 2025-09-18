@@ -5,6 +5,7 @@ import by.forward.forward_system.core.jpa.model.ForwardOrderEntity;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.LastMessageDateByChatIdProjection;
 import by.forward.forward_system.core.jpa.repository.projections.NewMessageCountProjection;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -16,9 +17,31 @@ import java.util.Set;
 @Repository
 public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity, Long> {
 
+    @EntityGraph(attributePaths = {
+        "chat.chatMetadata"
+    })
     Optional<ForwardOrderEntity> findByOrder_Id(Long orderId);
 
     Optional<ForwardOrderEntity> findByCode(String code);
+
+    @Query("""
+        select foe.id,
+               foe.chat.id as chatId,
+               foe.adminChat.id as adminChatId,
+               foe.isPaymentSend as paid,
+               foe.chat.chatMetadata.authorCanSubmitFiles as authorCanSubmitFiles
+       from ForwardOrderEntity foe
+            where foe.chat.id in :chatIds or foe.adminChat.id in :chatIds
+        """)
+    List<ForwardOrderStatusProjection> findByChatIds(List<Long> chatIds);
+
+    interface ForwardOrderStatusProjection {
+        Long getId();
+        Long getChatId();
+        Long getAdminChatId();
+        Boolean getPaid();
+        Boolean getAuthorCanSubmitFiles();
+    }
 
     @Query(value = """
         select distinct c.id as chatId, c.lastMessageDate as lastMessageDate from ChatEntity c
@@ -105,4 +128,16 @@ public interface ForwardOrderRepository extends JpaRepository<ForwardOrderEntity
              where foe.chat.id in :chatIds and p.id = :userId
         """)
     Set<Long> findChatParticipants(Long userId, List<Long> chatIds);
+
+    @Query("""
+        select foe.chat.chatMetadata.authorCanSubmitFiles from ForwardOrderEntity foe
+                where foe.id = :forwardOrderId
+        """)
+    Optional<Boolean> getForwardOrderFileSubmissionStatus(Long forwardOrderId);
+
+    @Query("""
+        select foe.isPaymentSend from ForwardOrderEntity foe
+                where foe.id = :forwardOrderId
+        """)
+    Optional<Boolean> getForwardOrderPaidStatus(Long forwardOrderId);
 }

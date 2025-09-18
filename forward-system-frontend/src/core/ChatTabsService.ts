@@ -22,6 +22,11 @@ export class ChatTabsService {
             chatTypes: [ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.ORDER_CHAT]
         },
         {
+            tabName: "Прямые заказы",
+            queryParam: "forward",
+            chatTypes: [ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT]
+        },
+        {
             tabName: "Администрация",
             queryParam: "admin",
             chatTypes: [ChatTypeEnum.ADMIN_TALK_CHAT, ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT]

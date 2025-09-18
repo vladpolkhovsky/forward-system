@@ -41,9 +41,33 @@ public class V3ChatInfoRestController {
     }
 
     @PostMapping("/order/forward/delete-all-telegram-chat-customers/{forwardOrderId}")
-    public ResponseEntity<Map<String, Boolean>> saveAdminNote(@PathVariable Long forwardOrderId) {
+    public ResponseEntity<Map<String, Boolean>> deleteAllFromTelegramChat(@PathVariable Long forwardOrderId) {
         Long currentUserId = userUiService.getCurrentUserId();
         forwardOrderService.deleteAllFromTelegramChat(forwardOrderId, currentUserId);
+        return ResponseEntity.ok(Map.of("status", true));
+    }
+
+    @PostMapping("/order/forward/status/paid/change/{forwardOrderId}")
+    public ResponseEntity<Map<String, Boolean>> changeForwardOrderPaidStatus(@PathVariable Long forwardOrderId) {
+        Long currentUserId = userUiService.getCurrentUserId();
+
+        var status = !forwardOrderService.getForwardOrderPaidStatus(forwardOrderId)
+            .orElse(false);
+
+        forwardOrderService.changePaymentStatus(forwardOrderId, status, currentUserId);
+
+        return ResponseEntity.ok(Map.of("status", true));
+    }
+
+    @PostMapping("/order/forward/status/submit-files/change/{forwardOrderId}")
+    public ResponseEntity<Map<String, Boolean>> changeForwardOrderSubmitFileStatus(@PathVariable Long forwardOrderId) {
+        Long currentUserId = userUiService.getCurrentUserId();
+
+        var status = !forwardOrderService.getForwardOrderFileSubmissionStatus(forwardOrderId)
+            .orElse(false);
+
+        forwardOrderService.changeFileSubmissionStatus(forwardOrderId, status, currentUserId);
+
         return ResponseEntity.ok(Map.of("status", true));
     }
 }

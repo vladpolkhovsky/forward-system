@@ -60,8 +60,6 @@ public interface MessageRepository extends JpaRepository<ChatMessageEntity, Long
         "chatMessageAttachmentsSet.attachment",
         "chatMessageOptionsSet",
         "chatMessageOptionsSet.orderParticipant",
-        "chatMessageToUsersSet",
-        "chatMessageToUsersSet.user",
         "fromUser"
     })
     @Query("from ChatMessageEntity where id in :messageIds order by createdAt desc")

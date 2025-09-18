@@ -32,7 +32,19 @@ export class ChatSidebarService {
     }
 
     public static deleteForwardOrderUsers(forwardOrderId: number, readyCallback: ReadyCallback) {
-        ChatSidebarService.fetchData("POST", `api/v3/chat/info/order/forward/delete-all-telegram-chat-customers/${forwardOrderId}`, null, () => {
+        ChatSidebarService.fetchData("POST", `/api/v3/chat/info/order/forward/delete-all-telegram-chat-customers/${forwardOrderId}`, null, () => {
+            readyCallback();
+        });
+    }
+
+    public static changeForwardOrderPaidStatus(forwardOrderId: number, readyCallback: ReadyCallback) {
+        ChatSidebarService.fetchData("POST", `/api/v3/chat/info/order/forward/status/paid/change/${forwardOrderId}`, null, () => {
+            readyCallback();
+        });
+    }
+
+    public static changeForwardOrderFileSubmissionStatus(forwardOrderId: number, readyCallback: ReadyCallback) {
+        ChatSidebarService.fetchData("POST", `/api/v3/chat/info/order/forward/status/submit-files/change/${forwardOrderId}`, null, () => {
             readyCallback();
         });
     }

@@ -175,11 +175,7 @@ public class ChatService {
 
     @Transactional
     public void setMessageViewed(Long chatId, Long userId) {
-        List<ChatMessageToUserEntity> allByUserAndOrder = chatMessageToUserRepository.getAllByUserAndChat(userId, chatId);
-        for (ChatMessageToUserEntity chatMessageToUserEntity : allByUserAndOrder) {
-            chatMessageToUserEntity.setIsViewed(true);
-        }
-        chatMessageToUserRepository.saveAll(allByUserAndOrder);
+        chatMessageToUserRepository.setAllViewedByChatId(userId, chatId);
     }
 
     public boolean isMember(Long chatId, Long userId) {

@@ -19,6 +19,8 @@ export interface ChatShortDto {
     orderTechNumber: string | null,
     orderStatus: string | null,
     orderStatusRus: string | null,
+    isForwardOrder: boolean,
+    isForwardOrderPaid: boolean,
     type: string,
     newMessageCount: number
 }

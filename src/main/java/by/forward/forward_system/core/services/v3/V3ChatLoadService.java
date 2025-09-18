@@ -7,6 +7,8 @@ import by.forward.forward_system.core.jpa.model.ChatEntity;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository.ChatTypeToChatsWithNewMessageCount;
 import by.forward.forward_system.core.jpa.repository.ChatRepository.NewMessageCountProjection;
+import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository;
+import by.forward.forward_system.core.jpa.repository.ForwardOrderRepository.ForwardOrderStatusProjection;
 import by.forward.forward_system.core.jpa.repository.search.ChatNameSearchRepository;
 import by.forward.forward_system.core.jpa.repository.search.ChatNameSearchRepository.ChatNameProjection;
 import by.forward.forward_system.core.jpa.repository.search.TagNameSearchRepository;
@@ -28,7 +30,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
 import static org.apache.commons.lang3.StringUtils.trimToNull;
@@ -42,6 +46,7 @@ public class V3ChatLoadService {
     private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
     private final ChatMapper chatMapper;
+    private final ForwardOrderRepository forwardOrderRepository;
 
     @SneakyThrows
     @Transactional(readOnly = true)
@@ -120,10 +125,16 @@ public class V3ChatLoadService {
         Map<Long, LocalDateTime> byIdLastMessageDate = fetchedChats.stream()
             .collect(Collectors.toMap(ChatEntity::getId, ChatEntity::getLastMessageDate));
 
+        Map<Long, ForwardOrderStatusProjection> byIdForwardOrderStatus = forwardOrderRepository.findByChatIds(ids).stream()
+            .flatMap(t -> Stream.of(Map.entry(t.getChatId(), t), Map.entry(t.getAdminChatId(), t)))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
         List<V3ChatDto> mapped = chatMapper.matToV3ChatDtoMany(fetchedChats).stream()
             .sorted(Comparator.<V3ChatDto>comparingDouble(t -> byIdRank.get(t.getId()))
                 .thenComparing(t -> byIdLastMessageDate.get(t.getId()), LocalDateTime::compareTo).reversed())
             .map(t -> t.withNewMessageCount(Optional.ofNullable(byIdNewMessageCount.get(t.getId())).orElse(0)))
+            .map(t -> t.withIsForwardOrder(byIdForwardOrderStatus.containsKey(t.getId()))
+                .withIsForwardOrderPaid(Optional.ofNullable(byIdForwardOrderStatus.get(t.getId())).map(ForwardOrderStatusProjection::getPaid).orElse(null)))
             .toList();
 
         return new PageImpl<>(mapped, page.getPageable(), page.getTotalElements());

@@ -14,6 +14,7 @@ import type {OrderReviewDto} from "@/core/dto/OrderReviewDto.ts";
 import {ChatTypeEnum} from "@/core/enum/ChatTypeEnum.ts";
 import type {ForwardOrderChatInformation} from "@/core/dto/ForwardOrderChatInformation.ts";
 import InformationText from "@/components/elements/InformationText.vue";
+import InformationTextPlain from "@/components/elements/InformationTextPlain.vue";
 
 interface Props {
   user: UserDto,
@@ -77,6 +78,22 @@ const renew = () => {
 function handleForwardOrderDeleteUsers(forwardOrderId: number) {
   if (confirm("Заменить код и удалить участников?")) {
     ChatSidebarService.deleteForwardOrderUsers(forwardOrderId, () => {
+      renew();
+    });
+  }
+}
+
+function handleForwardOrderSubmitFileStatusChange(forwardOrderId: number) {
+  if (confirm("Изменить возможность автора отправлять файлы?")) {
+    ChatSidebarService.changeForwardOrderFileSubmissionStatus(forwardOrderId, () => {
+      renew();
+    });
+  }
+}
+
+function handleForwardOrderPaidStatusChange(forwardOrderId: number) {
+  if (confirm("Изменить статус оплаты заказа?")) {
+    ChatSidebarService.changeForwardOrderPaidStatus(forwardOrderId, () => {
       renew();
     });
   }
@@ -251,27 +268,61 @@ function handleForwardOrderDeleteUsers(forwardOrderId: number) {
         </div>
       </div>
 
-      <InformationText v-if="chat.orderId && hasAuthorityManager(user.authorities) && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)"
-                       :expand="true" icon="bi-telegram"
-                       :mt="3" tittle="Информация о прямом заказе" :show-icon="true">
+      <InformationTextPlain
+          v-if="chat.orderId && hasAuthorityManager(user.authorities)
+            && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)"
+          icon="bi-telegram" :mt="3" tittle="Информация о прямом заказе" :show-icon="true">
+
         <LoadingSpinner v-if="forwardOrderInfoLoading" :margin-top="true"
                         text="Загружаем информацию о прямом заказе"/>
-        <template class="card mt-3" v-if="forwardOrderChatInformation">
-          <p class="m-0">Кол-во участников чата в телеграмме:
-            <span class="h5">{{ forwardOrderChatInformation.botCount }}</span>
-          </p>
-          <p class="m-0">Код для присоединения к чату:
-            <kbd class="ms-2 d-inline-block">/join {{ forwardOrderChatInformation.code }}</kbd>
-          </p>
-          <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
-                  @click="handleForwardOrderDeleteUsers(forwardOrderChatInformation.forwardOrderId)">Удалить всех и
-            заменить код.
-          </button>
-          <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
-            чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
-          </div>
-        </template>
-      </InformationText>
+
+        <Accordion v-if="forwardOrderChatInformation">
+          <AccordionItem name="Участники" :open="true">
+            <p class="m-0">Кол-во участников чата в телеграмме:
+              <span class="h5">{{ forwardOrderChatInformation.botCount }}</span>
+            </p>
+            <p class="m-0">Код для присоединения к чату:
+              <kbd class="ms-2 d-inline-block">/join {{ forwardOrderChatInformation.code }}</kbd>
+            </p>
+            <button id="delete-all-from-chat" type="submit" class="btn btn-sm btn-danger mt-2"
+                    @click="handleForwardOrderDeleteUsers(forwardOrderChatInformation.forwardOrderId)">Удалить всех и
+              заменить код.
+            </button>
+            <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
+              чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
+            </div>
+          </AccordionItem>
+          <AccordionItem name="Статус прямого заказа" :open="true">
+            <div class="p-2 d-flex gap-2 justify-content-around align-items-center flex-wrap">
+            <span class="badge text-bg-success fs-7"
+                  v-if="forwardOrderChatInformation.isOrderPaid">Заказ оплаче</span>
+              <span class="badge text-bg-danger fs-7" v-else>Заказ не оплачен</span>
+              <span class="badge text-bg-success fs-7"
+                    v-if="forwardOrderChatInformation.isAuthorCanSubmitFiles">Файлы разрешены</span>
+              <span class="badge text-bg-danger fs-7" v-else>Файлы запрещены</span>
+            </div>
+          </AccordionItem>
+          <AccordionItem name="Действия с прямым заказом" :open="false">
+            <button id="change-file-paid-status"
+                    @click="handleForwardOrderPaidStatusChange(forwardOrderChatInformation.forwardOrderId)"
+                    :class="[ 'form-control btn btn-sm', {
+              'btn-danger' : forwardOrderChatInformation.isOrderPaid,
+              'btn-success' : !forwardOrderChatInformation.isOrderPaid
+            }]">{{ !forwardOrderChatInformation.isOrderPaid ?
+                'Пометить заказ как оплаченный' : 'Пометить заказ как не оплаченный'
+              }}</button>
+
+            <button id="change-file-submit-status"
+                    @click="handleForwardOrderSubmitFileStatusChange(forwardOrderChatInformation.forwardOrderId)"
+                    :class="[ 'form-control btn btn-sm mt-2', {
+              'btn-danger' : forwardOrderChatInformation.isAuthorCanSubmitFiles,
+              'btn-success' : !forwardOrderChatInformation.isAuthorCanSubmitFiles
+            }]">{{ !forwardOrderChatInformation.isAuthorCanSubmitFiles ?
+                'Разрешить отправку файлов' : 'Запретить отправлять файлы'
+              }}</button>
+          </AccordionItem>
+        </Accordion>
+      </InformationTextPlain>
 
       <LoadingSpinner v-if="orderReviewsInfoLoading" :margin-top="true"
                       text="Загружаем информацию о проверках"/>

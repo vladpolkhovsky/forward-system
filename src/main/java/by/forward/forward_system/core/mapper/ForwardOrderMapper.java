@@ -16,6 +16,8 @@ public abstract class ForwardOrderMapper {
 
     @Mapping(target = "orderId", source = "order.id")
     @Mapping(target = "forwardOrderId", source = "id")
+    @Mapping(target = "isOrderPaid", source = "isPaymentSend")
+    @Mapping(target = "isAuthorCanSubmitFiles", source = "chat.chatMetadata.authorCanSubmitFiles")
     @Mapping(target = "botCount", source = "id", qualifiedByName = "getForwardOrderBotCount")
     public abstract V3ForwardOrderChatInfo map(ForwardOrderEntity entity);
 

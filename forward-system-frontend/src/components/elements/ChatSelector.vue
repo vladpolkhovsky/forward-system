@@ -5,9 +5,11 @@ import type {ChatShortDto, ChatTag} from "@/core/dto/ChatShortDto.ts";
 import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
 import Pill from "@/components/elements/Pill.vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
+import type {UserDto} from "@/core/dto/UserDto.ts";
+import {AuthorityEnum, hasAuthority} from "@/core/enum/AuthorityEnum.ts";
 
 interface Props {
-  userId: number,
+  user: UserDto,
   tab: string
 }
 
@@ -16,7 +18,7 @@ const noMoreChats = ref(false);
 const searchLine = ref("");
 const selectedChatId = ref<number>(null);
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 interface ChatItem {
   id: number,
@@ -193,8 +195,12 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
 
               <span class="ms-1 fw-bold d-inline-block">{{ item.chat.displayName }}</span>
             </span>
-            <span class="d-inline-block"><OrderStatusIcon v-if="item.chat.orderId" :name="item.chat.orderStatus"
-                                                          :rus-name="item.chat.orderStatusRus"/></span>
+            <span class="d-flex align-items-center gap-2">
+              <OrderStatusIcon v-if="item.chat.orderId" :name="item.chat.orderStatus"
+                :rus-name="item.chat.orderStatusRus"/>
+              <Pill text="Оплачен" color="success"
+                    v-if="item.chat.isForwardOrder && item.chat.isForwardOrderPaid && hasAuthority(user.authorities, AuthorityEnum.MANAGER)" />
+            </span>
           </p>
         </div>
         <div class="card-body p-2 d-flex flex-column gap-2" v-if="countVisibleTags(item)">
@@ -202,14 +208,14 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
                v-if="getPrimaryVisibleTags(item).length > 0">
             <template v-for="tag in getPrimaryVisibleTags(item)">
               <Pill :text="tag.name"
-                    :color="(tag.metadata.isPersonalTag ? (props.userId == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
+                    :color="(tag.metadata.isPersonalTag ? (user.id == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
             </template>
           </div>
           <div class="d-inline-flex gap-1 flex-wrap fs-7"
                v-if="getNotPrimaryVisibleTags(item).length > 0">
             <template v-for="tag in getNotPrimaryVisibleTags(item)">
               <Pill :text="tag.name"
-                    :color="(tag.metadata.isPersonalTag ? (props.userId == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
+                    :color="(tag.metadata.isPersonalTag ? (user.id == tag.metadata.userId ? tag.metadata.cssColorName : 'secondary') : tag.metadata.cssColorName)"></Pill>
             </template>
           </div>
         </div>
