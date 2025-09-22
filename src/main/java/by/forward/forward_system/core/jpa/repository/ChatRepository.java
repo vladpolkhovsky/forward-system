@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
@@ -133,4 +134,9 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
         String getType();
         Integer getCount();
     }
+
+    @Query(value = """
+            select cp.id from ChatEntity c join c.participants cp where c.id = :chatId
+        """)
+    Set<Long> findChatParticipantIds(Long chatId);
 }

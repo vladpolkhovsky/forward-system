@@ -113,13 +113,9 @@ public class ChatService {
         return getChat(chatEntity);
     }
 
+    @Transactional(readOnly = true)
     public Set<Long> getChatMembers(Long chatId) {
-        ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("Chat not found with id " + chatId));
-
-        HashSet<Long> ids = new HashSet<>();
-
-
-        return ids;
+        return chatRepository.findChatParticipantIds(chatId);
     }
 
     public ChatDto getChat(ChatEntity chatEntity) {
