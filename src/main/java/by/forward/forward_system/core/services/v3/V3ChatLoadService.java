@@ -1,9 +1,12 @@
 package by.forward.forward_system.core.services.v3;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.V3ChatDto;
+import by.forward.forward_system.core.dto.messenger.v3.chat.V3ChatFileAttachmentDto;
 import by.forward.forward_system.core.dto.messenger.v3.chat.V3ChatSearchCriteria;
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.jpa.model.ChatAttachmentByChatView;
 import by.forward.forward_system.core.jpa.model.ChatEntity;
+import by.forward.forward_system.core.jpa.repository.ChatAttachmentByChatViewRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository.ChatTypeToChatsWithNewMessageCount;
 import by.forward.forward_system.core.jpa.repository.ChatRepository.NewMessageCountProjection;
@@ -13,14 +16,15 @@ import by.forward.forward_system.core.jpa.repository.search.ChatNameSearchReposi
 import by.forward.forward_system.core.jpa.repository.search.ChatNameSearchRepository.ChatNameProjection;
 import by.forward.forward_system.core.jpa.repository.search.TagNameSearchRepository;
 import by.forward.forward_system.core.jpa.repository.search.TagNameSearchRepository.TagNameProjection;
+import by.forward.forward_system.core.mapper.ChatAttachmentByChatViewMapper;
 import by.forward.forward_system.core.mapper.ChatMapper;
 import by.forward.forward_system.core.utils.AuthUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -30,12 +34,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.apache.commons.lang3.StringUtils.defaultIfBlank;
-import static org.apache.commons.lang3.StringUtils.trimToNull;
 
 @Service
 @RequiredArgsConstructor
@@ -43,10 +43,11 @@ public class V3ChatLoadService {
 
     private final TagNameSearchRepository tagSearchRepository;
     private final ChatNameSearchRepository chatNameSearchRepository;
-    private final ObjectMapper objectMapper;
     private final ChatRepository chatRepository;
     private final ChatMapper chatMapper;
     private final ForwardOrderRepository forwardOrderRepository;
+    private final ChatAttachmentByChatViewRepository chatAttachmentByChatViewRepository;
+    private final ChatAttachmentByChatViewMapper chatAttachmentByChatViewMapper;
 
     @SneakyThrows
     @Transactional(readOnly = true)
@@ -63,21 +64,23 @@ public class V3ChatLoadService {
         }
 
         String tagNameSearch = Optional.ofNullable(criteria.getTagNameQuery())
-            .map(query -> RegExUtils.replaceAll(query,"[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
-            .map(query -> RegExUtils.replaceAll(query," +", " "))
+            .map(String::toLowerCase)
+            .map(query -> RegExUtils.replaceAll(query, "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
+            .map(query -> RegExUtils.replaceAll(query, " +", " "))
             .map(StringUtils::trimToNull)
             .stream()
             .flatMap(query -> Arrays.stream(StringUtils.split(query)))
-            .map(StringUtils::capitalize)
+            .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(" | "));
 
         String chatNameSearch = Optional.ofNullable(criteria.getTagNameQuery())
-            .map(query -> RegExUtils.replaceAll(query,"[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
-            .map(query -> RegExUtils.replaceAll(query," +", " "))
+            .map(String::toLowerCase)
+            .map(query -> RegExUtils.replaceAll(query, "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
+            .map(query -> RegExUtils.replaceAll(query, " +", " "))
             .map(StringUtils::trimToNull)
             .stream()
             .flatMap(query -> Arrays.stream(StringUtils.split(query)))
-            .map(StringUtils::capitalize)
+            .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(" | "));
 
         if (StringUtils.isNotBlank(tagNameSearch) || StringUtils.isNotBlank(chatNameSearch)) {
@@ -140,10 +143,17 @@ public class V3ChatLoadService {
         return new PageImpl<>(mapped, page.getPageable(), page.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
     public Map<String, Long> getNewMessageCount(Long userId) {
         var typeToCount = chatRepository.findChatTypeToChatsWithNewMessageCount(userId);
         var typeToCountMap = typeToCount.stream().collect(Collectors.toMap(ChatTypeToChatsWithNewMessageCount::getType, ChatTypeToChatsWithNewMessageCount::getCount));
         return Arrays.stream(ChatType.values())
             .collect(Collectors.toMap(ChatType::getName, t -> typeToCountMap.getOrDefault(t.getName(), 0).longValue()));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<V3ChatFileAttachmentDto> fetchChatFiles(Long chatId, Pageable pageable) {
+        return chatAttachmentByChatViewRepository.findAllByChatId(chatId, pageable)
+            .map(chatAttachmentByChatViewMapper::map);
     }
 }

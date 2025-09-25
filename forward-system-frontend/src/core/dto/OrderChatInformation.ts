@@ -9,7 +9,9 @@ export interface OrderChatInformation {
     disciplineName: string,
     deadline: string,
     intermediateDeadline: string,
-    additionalDates: AdditionalDate[]
+    additionalDates: AdditionalDate[],
+    expertGroupId: number,
+    expertGroupName: string,
     authorUsername: string,
     managerUsername: string,
     verificationSystem: string,

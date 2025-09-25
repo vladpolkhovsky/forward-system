@@ -7,7 +7,10 @@ import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.dto.rest.search.OrderSearchCriteria;
 import by.forward.forward_system.core.enums.OrderPaymentStatus;
+import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
+import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
+import by.forward.forward_system.core.jpa.repository.OrderParticipantRepository;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderIdProjection;
 import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
@@ -38,6 +41,7 @@ public class NewOrderService {
     private final OrderMapper orderMapper;
     private final NewOrderPaymentService newOrderPaymentService;
     private final OrderChatHandlerService chatHandlerService;
+    private final OrderParticipantRepository orderParticipantRepository;
 
     @Transactional(readOnly = true)
     public List<AuthorOrderDto> getAuthorOrders(Long userId) {
@@ -80,7 +84,8 @@ public class NewOrderService {
     public Page<V3OrderFullDto> search(OrderSearchCriteria criteria, Pageable pageable) {
         Specification<OrderEntity> specification = OrderSpecification.buildSearchIdsSpecification(criteria);
 
-        Page<OrderIdProjection> byCriteria = orderRepository.findBy(specification, q -> q.project("id").as(OrderIdProjection.class).page(pageable));
+        Page<OrderIdProjection> byCriteria = orderRepository.findBy(specification,
+            q -> q.project("id").as(OrderIdProjection.class).page(pageable));
 
         List<Long> idsByCriteria = byCriteria.map(OrderIdProjection::getId).toList();
         List<OrderEntity> fetchedByIds = orderRepository.findAllByIds(idsByCriteria);
@@ -98,5 +103,16 @@ public class NewOrderService {
             .map(order -> Optional.ofNullable(newMessageCount.get(order.getId()))
                 .map(data -> order.withOrderChatId(data.getChatId())
                     .withOrderChatIdNewMessages(data.getNewMessageCount())).orElse(order));
+    }
+
+    @Transactional
+    public void deleteExpertFromOrder(Long orderId) {
+        orderRepository.findById(orderId).ifPresent(order -> {
+            List<OrderParticipantEntity> experts = order.getOrderParticipants().stream()
+                .filter(t -> t.getParticipantsType().getType() == ParticipantType.EXPERT)
+                .toList();
+            order.getOrderParticipants().removeAll(experts);
+            orderParticipantRepository.deleteAll(experts);
+        });
     }
 }

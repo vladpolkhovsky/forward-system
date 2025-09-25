@@ -141,6 +141,16 @@
                 </div>
 
                 <div class="mb-3 mt-3 row">
+                    <label class="col-sm-2 col-form-label" for="orderExpertGroup">Группа проверки</label>
+                    <div class="col-sm-10">
+                        <select class="form-control" id="orderExpertGroup" th:field="*{orderExpertGroupId}">
+                            <option th:value="${ null }" selected>Не назначена</option>
+                            <option th:each="orderExpertGroup : ${orderExpertGroups}" th:value="${orderExpertGroup.getId()}" th:text="${orderExpertGroup.getName()}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3 mt-3 row">
                     <label class="col-sm-2 col-form-label" for="orderSource">Аккаунт<strong
                             class="text-danger">*</strong></label>
                     <div class="col-sm-10">

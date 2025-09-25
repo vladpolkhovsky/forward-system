@@ -306,6 +306,8 @@ public class OrderUiService {
             orderEntity.getOther(),
             orderEntity.getViolationsInformation(),
             orderEntity.getOrderSource(),
+            Optional.ofNullable(orderEntity.getExpertCalendarGroup()).map(CalendarGroupEntity::getId).orElse(null),
+            Optional.ofNullable(orderEntity.getExpertCalendarGroup()).map(CalendarGroupEntity::getName).orElse(null),
             orderEntity.getTakingCost(),
             orderEntity.getAuthorCost(),
             orderEntity.getCreatedAt(),
@@ -369,6 +371,7 @@ public class OrderUiService {
         orderEntity.setTakingCost(orderUiDto.getTakingCost());
         orderEntity.setAuthorCost(orderUiDto.getAuthorCost());
         orderEntity.setCreatedAt(orderUiDto.getCreatedAt());
+        orderEntity.setExpertCalendarGroup(CalendarGroupEntity.of(orderUiDto.getOrderExpertGroupId()));
 
         return orderEntity;
     }

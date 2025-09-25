@@ -183,6 +183,18 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
     @Query("from OrderEntity o where o.techNumber like concat('%', :techNumber, '%') order by cast(o.techNumber as int) desc")
     Page<OrderEntity> findOrderIdsByTechNumber(String techNumber, Pageable pageable);
 
+    @EntityGraph(attributePaths = {
+        "orderStatus",
+        "discipline",
+        "createdBy",
+        "expertCalendarGroup"
+    })
+    @Query("""
+        from OrderEntity o where o.expertCalendarGroup.id in :groupIds
+            and o.orderStatus.name in ('CREATED' , 'DISTRIBUTION', 'ADMIN_REVIEW', 'IN_PROGRESS' , 'REVIEW', 'GUARANTEE', 'FINALIZATION')
+        """)
+    List<OrderEntity> findByExpertGroupIn(List<Long> groupIds);
+
     interface ActiveOrderCountProjection {
         Long getUserId();
         Long getOrderId();

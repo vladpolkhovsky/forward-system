@@ -17,6 +17,8 @@ public class V3ChatOrderInfoDto {
     private String status;
     private String statusRusName;
     private Long disciplineId;
+    private Long expertGroupId;
+    private String expertGroupName;
     private String disciplineName;
     private String deadline;
     private String intermediateDeadline;

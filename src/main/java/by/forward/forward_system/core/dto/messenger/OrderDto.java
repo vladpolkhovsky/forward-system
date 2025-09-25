@@ -29,6 +29,8 @@ public class OrderDto {
     private String other;
     private String violationsInformation;
     private OrderSourceType orderSource;
+    private Long orderExpertGroupId;
+    private String orderExpertGroupName;
     private Integer authorCost;
     private Integer takingCost;
     private LocalDateTime createdAt;

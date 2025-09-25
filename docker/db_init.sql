@@ -857,22 +857,43 @@ alter table forward_system.users
 alter table forward_system.user_plan
     add target_count bigint    not null default 0;
 
-CREATE INDEX idx_cmtu_composite ON chat_message_to_user(message_id, user_id, is_viewed);
-CREATE INDEX idx_chat_members_composite ON chat_members(chat_id, user_id);
-CREATE INDEX idx_chat_messages_chat_id ON chat_messages(chat_id);
+CREATE INDEX idx_cmtu_composite ON forward_system.chat_message_to_user(message_id, user_id, is_viewed);
+CREATE INDEX idx_chat_members_composite ON forward_system.chat_members(chat_id, user_id);
+CREATE INDEX idx_chat_messages_chat_id ON forward_system.chat_messages(chat_id);
 
-CREATE OR REPLACE VIEW message_view_stats AS
+CREATE OR REPLACE VIEW forward_system.message_view_stats AS
 SELECT
     cm.id,
     cm.chat_id as chat_id,
     COUNT(u.id) AS user_count,
     array_remove(ARRAY_AGG(u.username), null) AS usernames
-FROM chat_messages cm
-         JOIN chat_members mem ON cm.chat_id = mem.chat_id
-         JOIN users u ON mem.user_id = u.id
-         LEFT JOIN chat_message_to_user cmtu
+FROM forward_system.chat_messages cm
+         JOIN forward_system.chat_members mem ON cm.chat_id = mem.chat_id
+         JOIN forward_system.users u ON mem.user_id = u.id
+         LEFT JOIN forward_system.chat_message_to_user cmtu
                    ON cmtu.message_id = cm.id
                        AND cmtu.user_id = mem.user_id
                        AND cmtu.is_viewed is false
 WHERE cmtu.message_id IS NULL
 GROUP BY cm.id;
+
+alter table forward_system.orders
+    add expert_calendar_group_id bigint references forward_system.calendar_group (id);
+
+CREATE OR REPLACE VIEW forward_system.attachments_by_message as
+select a.id, cm.id as message_id, cm.chat_id, cm.from_user_id, a.filename, cm.created_at from forward_system.attachments a
+    inner join forward_system.chat_message_attachments cma on cma.attachment_id = a.id
+    inner join forward_system.chat_messages cm on cm.id = cma.message_id
+order by cm.created_at desc
+
+alter table forward_system.chats drop column tsvector_chat_name;
+alter table forward_system.tags drop column tsvector_tag_name;
+
+CREATE AGGREGATE forward_system.tsvector_agg(tsvector) (
+   STYPE = pg_catalog.tsvector,
+   SFUNC = pg_catalog.tsvector_concat,
+   INITCOND = ''
+);
+
+alter table forward_system.chats add tsvector_chat_name tsvector default ''::tsvector
+alter table forward_system.tags add tsvector_tag_name tsvector default ''::tsvector

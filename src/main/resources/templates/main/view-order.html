@@ -145,6 +145,13 @@
         </div>
     </div>
     <div class="row mb-3 mt-3">
+        <label class="col-sm-2 col-form-label" for="orderExpertGroup">Группа проверки</label>
+        <div class="col-sm-10">
+            <input class="form-control-plaintext" id="orderExpertGroup" readonly th:value="${order.getOrderExpertGroupName()}"
+                   type="text">
+        </div>
+    </div>
+    <div class="row mb-3 mt-3">
         <label class="col-sm-2 col-form-label" for="takingCost">Стоимость взятия</label>
         <div class="col-sm-10">
             <input class="form-control-plaintext" id="takingCost" readonly th:value="${order.getTakingCost()}"

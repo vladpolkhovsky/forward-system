@@ -14,25 +14,24 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping(value = "/api/order")
 @AllArgsConstructor
 public class OrderRestController {
 
-    private final OrderService orderService;
-
     private final NewOrderService newOrderService;
-
-    @PostMapping(value = "/add-participants/{orderId}", consumes = MediaType.ALL_VALUE)
-    public ResponseEntity<Boolean> addParticipant(@PathVariable("orderId") Long orderId,
-                                                  @RequestBody AddParticipantRequestDto addParticipantRequestDto) {
-        orderService.addParticipant(orderId, addParticipantRequestDto);
-        return ResponseEntity.ok(true);
-    }
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<V3OrderDto> getOrderById(@PathVariable Long id) {
         return ResponseEntity.ok(newOrderService.getOrderById(id));
+    }
+
+    @PostMapping(value = "/remove-expert/{id}")
+    public ResponseEntity<Map<String, Object>> deleteExpertFromOrder(@PathVariable Long id) {
+        newOrderService.deleteExpertFromOrder(id);
+        return ResponseEntity.ok(Map.of("code", 200));
     }
 
     @GetMapping(value = "/search")

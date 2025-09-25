@@ -137,6 +137,7 @@ public class OrderService {
         orderEntity.setVerifyPlanOnAccept(BooleanUtils.toBoolean(order.getVerifyPlanOnAccept()));
         orderEntity.setAuthorCost(order.getAuthorCost());
         orderEntity.setTakingCost(order.getTakingCost());
+        orderEntity.setExpertCalendarGroup(order.getExpertCalendarGroup());
 
         if (!changes.isEmpty()) {
             String changesText = convertChangesToText(changes);
@@ -470,6 +471,10 @@ public class OrderService {
         orderDto.setOther(orderEntity.getOther());
         orderDto.setViolationsInformation(orderEntity.getViolationsInformation());
         orderDto.setOrderSource(orderEntity.getOrderSource());
+        orderDto.setOrderExpertGroupId(Optional.ofNullable(orderEntity.getExpertCalendarGroup())
+            .map(CalendarGroupEntity::getId).orElse(null));
+        orderDto.setOrderExpertGroupName(Optional.ofNullable(orderEntity.getExpertCalendarGroup())
+            .map(CalendarGroupEntity::getName).orElse(null));
         orderDto.setVerifyPlanOnAccept(orderEntity.getVerifyPlanOnAccept());
         orderDto.setAuthorCost(orderEntity.getAuthorCost());
         orderDto.setTakingCost(orderEntity.getTakingCost());

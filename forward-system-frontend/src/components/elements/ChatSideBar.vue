@@ -15,6 +15,14 @@ import {ChatTypeEnum} from "@/core/enum/ChatTypeEnum.ts";
 import type {ForwardOrderChatInformation} from "@/core/dto/ForwardOrderChatInformation.ts";
 import InformationText from "@/components/elements/InformationText.vue";
 import InformationTextPlain from "@/components/elements/InformationTextPlain.vue";
+import type {ReviewCreateRequestDto} from "@/core/dto/ReviewCreateRequestDto.ts";
+import {AttachmentsService} from "@/core/AttachmentsService.ts";
+import {ReviewService} from "@/core/ReviewService.ts";
+import {OrderService} from "@/core/OrderService.ts";
+import type {OrderShortDto} from "@/core/dto/OrderShortDto.ts";
+import {ParticipantTypeEnum} from "@/core/enum/ParticipantTypeEnum.ts";
+import type {ChatFileAttachmentDto} from "@/core/dto/ChatFileAttachmentDto.ts";
+import {ChatService} from "@/core/ChatService.ts";
 
 interface Props {
   user: UserDto,
@@ -24,12 +32,17 @@ interface Props {
 const props = defineProps<Props>();
 const orderChatInformation = ref<OrderChatInformation>();
 const forwardOrderChatInformation = ref<ForwardOrderChatInformation>();
+const fetchedOrder = ref<OrderShortDto>();
 const orderReviews = ref<OrderReviewDto[]>([]);
+const chatFiles = ref<ChatFileAttachmentDto[]>([]);
 
 const loading = ref(true);
 const orderChatInfoLoading = ref(true);
+const orderLoading = ref(true);
 const orderReviewsInfoLoading = ref(true);
+const loadingChatDocuments = ref(true);
 const forwardOrderInfoLoading = ref(true);
+const createReviewRequest = ref<ReviewCreateRequestDto>({});
 
 onMounted(() => {
   renew();
@@ -44,16 +57,36 @@ const renew = () => {
 
   orderChatInfoLoading.value = true;
   orderReviewsInfoLoading.value = true;
+  orderLoading.value = true;
+  loadingChatDocuments.value = true;
 
   orderReviews.value = null;
   orderChatInformation.value = null;
   forwardOrderChatInformation.value = null;
 
+  createReviewRequest.value.fileId = null;
+  createReviewRequest.value.orderId = null;
+  createReviewRequest.value.chatId = null;
+  createReviewRequest.value.requestText = null;
+
+  ChatService.fetchChatFiles(props.chat.id, page => {
+    chatFiles.value = page.content;
+    loadingChatDocuments.value = false;
+  });
+
   if (props.chat.orderId) {
+    OrderService.fetchOrder(props.chat.orderId, order => {
+      fetchedOrder.value = order;
+      orderLoading.value = false;
+    });
+
     ChatSidebarService.loadChatOrderInformation(props.chat.orderId, orderChatInfo => {
       if (props.chat.orderId == orderChatInfo.id) {
         orderChatInformation.value = orderChatInfo;
         orderChatInfoLoading.value = false;
+
+        createReviewRequest.value.chatId = props.chat.id;
+        createReviewRequest.value.orderId = orderChatInfo.id;
       }
     });
 
@@ -97,6 +130,41 @@ function handleForwardOrderPaidStatusChange(forwardOrderId: number) {
       renew();
     });
   }
+}
+
+function handleReviewFileChange(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.item(0) ?? null;
+
+  if (!file) {
+    return
+  }
+
+  let formData = new FormData();
+  formData.append("file", file, "Проверка " + file.name);
+
+  AttachmentsService.upload(formData, (id) => {
+    createReviewRequest.value.fileId = id;
+  });
+}
+
+function handleSubmitCreateReviewRequest() {
+  ReviewService.createReviewRequest(createReviewRequest.value, () => {
+    renew();
+  });
+}
+
+function getExpertName() {
+  const experts = fetchedOrder.value.participants
+      .filter(t => t.type == ParticipantTypeEnum.EXPERT)
+      .map(t => t.user.username);
+  return experts.length > 0 ? experts.join("; ") : "<Не назначен>";
+}
+
+function handleDeleteExpertFromOrder() {
+  OrderService.deleteExpertFromOrder(fetchedOrder.value.id, () => {
+    renew();
+  });
 }
 
 </script>
@@ -245,6 +313,27 @@ function handleForwardOrderPaidStatusChange(forwardOrderId: number) {
                        :value="orderChatInformation.managerUsername">
               </div>
             </AccordionItem>
+            <AccordionItem name="Экспертный отдел" :open="false"
+                           v-if="hasAuthorityManager(user.authorities) && orderChatInformation.expertGroupId">
+              <LoadingSpinner text="Загружаем информацию о заказе" v-if="orderLoading"/>
+              <template v-else>
+                <div class="input-group mb-1">
+                  <span class="input-group-text">Экспертная группа</span>
+                  <input type="text" class="form-control form-control-sm disabled" disabled
+                         :value="orderChatInformation.expertGroupName">
+                </div>
+                <div class="input-group mb-1">
+                  <span class="input-group-text">Назначенный эксперт</span>
+                  <input type="text" class="form-control form-control-sm disabled" disabled
+                         :value="getExpertName()">
+                </div>
+                <div class="input-group mb-0">
+                  <button class="btn btn-sm btn-danger" @click="handleDeleteExpertFromOrder">Удалить эксперта из
+                    заказа
+                  </button>
+                </div>
+              </template>
+            </AccordionItem>
             <AccordionItem name="Действия с заказом" :open="false" v-if="hasAuthorityManager(user.authorities)">
               <div class="input-group mb-1">
                 <a class="btn btn-sm btn-primary" :href="`/update-order/${orderChatInformation.id}`"
@@ -308,21 +397,60 @@ function handleForwardOrderPaidStatusChange(forwardOrderId: number) {
                     :class="[ 'form-control btn btn-sm', {
               'btn-danger' : forwardOrderChatInformation.isOrderPaid,
               'btn-success' : !forwardOrderChatInformation.isOrderPaid
-            }]">{{ !forwardOrderChatInformation.isOrderPaid ?
-                'Пометить заказ как оплаченный' : 'Пометить заказ как не оплаченный'
-              }}</button>
+            }]">{{
+                !forwardOrderChatInformation.isOrderPaid ?
+                    'Пометить заказ как оплаченный' : 'Пометить заказ как не оплаченный'
+              }}
+            </button>
 
             <button id="change-file-submit-status"
                     @click="handleForwardOrderSubmitFileStatusChange(forwardOrderChatInformation.forwardOrderId)"
                     :class="[ 'form-control btn btn-sm mt-2', {
               'btn-danger' : forwardOrderChatInformation.isAuthorCanSubmitFiles,
               'btn-success' : !forwardOrderChatInformation.isAuthorCanSubmitFiles
-            }]">{{ !forwardOrderChatInformation.isAuthorCanSubmitFiles ?
-                'Разрешить отправку файлов' : 'Запретить отправлять файлы'
-              }}</button>
+            }]">{{
+                !forwardOrderChatInformation.isAuthorCanSubmitFiles ?
+                    'Разрешить отправку файлов' : 'Запретить отправлять файлы'
+              }}
+            </button>
           </AccordionItem>
         </Accordion>
       </InformationTextPlain>
+
+      <LoadingSpinner v-if="orderChatInfoLoading" :margin-top="true"
+                      text="Загружаем информацию группе проверки"/>
+      <div class="card mt-3" v-if="orderChatInformation">
+        <div class="card-body p-2">
+          <h5 class="card-title m-0">
+            <i class="bi bi-journal-arrow-up me-1"></i>Создать запрос на проверку
+          </h5>
+        </div>
+        <form action="/api/review/create-by-order-group" enctype="multipart/form-data" method="post"
+              class="p-2"
+              @submit.prevent="handleSubmitCreateReviewRequest"
+              v-if="orderChatInformation.expertGroupId">
+          <div class="form-floating mb-2">
+            <textarea class="form-control" id="request-note" name="request-note" rows="5" required
+                      v-model="createReviewRequest.requestText"
+                      style="min-height: 100px" minlength="20"></textarea>
+            <label for="request-note">Описание для эксперта</label>
+            <div class="form-text" id="request-note-help-text">Минимум 20 символов</div>
+          </div>
+          <div class="mb-2">
+            <label for="request-file" class="form-label">Файл на проверку</label>
+            <input type="file" required class="form-control" id="request-file" name="request-file"
+                   @change="handleReviewFileChange">
+            <div class="form-text" id="request-file-help-text">Прикрепите файл для проверки экспертом</div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-sm d-block"
+                  :disabled="!(createReviewRequest.fileId && createReviewRequest.orderId && createReviewRequest.chatId)"
+          >Отправить запрос на проверку
+          </button>
+        </form>
+        <div v-else class="alert alert-warning m-2" role="alert">
+          Данному заказу не назначена группа экспертов. Создать запрос на проверку невозможно.
+        </div>
+      </div>
 
       <LoadingSpinner v-if="orderReviewsInfoLoading" :margin-top="true"
                       text="Загружаем информацию о проверках"/>
@@ -389,6 +517,26 @@ function handleForwardOrderPaidStatusChange(forwardOrderId: number) {
       </div>
     </template>
 
+    <div class="mt-3">
+      <Accordion>
+        <AccordionItem name="Приложенные в чат документы" :open="false">
+          <LoadingSpinner v-if="loadingChatDocuments" text="Загружаем файлы"/>
+          <template v-else>
+            <div class="card" v-if="chatFiles.length == 0">
+              <div class="card-body p-2">
+                Чат не содержит файлов.
+              </div>
+            </div>
+            <div class="card mb-2" v-for="file in chatFiles" :key="file.attachment.id" v-if="chatFiles.length > 0">
+              <div class="card-body p-2">
+                <h5 class="card-title fs-7 m-0"><a target="_blank" :href="'/load-file/' + file.attachment.id">{{ file.attachment.name }}</a></h5>
+                <p class="card-text m-0 fs-7">{{ file.createdAt }} / {{ file.user.username }}</p>
+              </div>
+            </div>
+          </template>
+        </AccordionItem>
+      </Accordion>
+    </div>
   </div>
 
   <LoadingSpinner v-else text="Загружаем информацию" :margin-top="true"/>

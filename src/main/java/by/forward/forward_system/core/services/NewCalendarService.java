@@ -1,5 +1,7 @@
 package by.forward.forward_system.core.services;
 
+import by.forward.forward_system.core.dto.messenger.v3.V3OrderDto;
+import by.forward.forward_system.core.dto.messenger.v3.chat.info.V3ChatOrderInfoDto;
 import by.forward.forward_system.core.dto.rest.calendar.AuthorToGroupRequestDto;
 import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupDto;
 import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupParticipantStatusDto;
@@ -10,12 +12,15 @@ import by.forward.forward_system.core.jpa.model.CalendarGroupParticipantStatusEn
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.CalendarGroupParticipantStatusRepository;
 import by.forward.forward_system.core.jpa.repository.CalendarGroupRepository;
+import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.mapper.CalendarGroupMapper;
+import by.forward.forward_system.core.mapper.OrderMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,6 +35,8 @@ public class NewCalendarService {
     private final CalendarGroupMapper calendarGroupMapper;
     private final UserRepository userRepository;
     private final CalendarGroupParticipantStatusRepository calendarGroupParticipantStatusRepository;
+    private final OrderRepository orderRepository;
+    private final OrderMapper orderMapper;
 
     @Transactional
     public CalendarGroupDto save(CalendarGroupDto request) {
@@ -66,19 +73,19 @@ public class NewCalendarService {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
         var dateToUserId = group.stream()
-                .map(entity -> Map.entry(entity.getId().getDate(), entity.getId().getUserId()))
-                .toList();
+            .map(entity -> Map.entry(entity.getId().getDate(), entity.getId().getUserId()))
+            .toList();
 
         var groupByDate = dateToUserId.stream()
-                .collect(Collectors.groupingBy(entry -> entry.getKey().format(dateTimeFormatter)))
-                .entrySet().stream()
-                .map(entry -> Map.entry(entry.getKey(), entry.getValue().stream().map(Map.Entry::getValue).toList()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            .collect(Collectors.groupingBy(entry -> entry.getKey().format(dateTimeFormatter)))
+            .entrySet().stream()
+            .map(entry -> Map.entry(entry.getKey(), entry.getValue().stream().map(Map.Entry::getValue).toList()))
+            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         return CalendarGroupParticipantStatusDto.builder()
-                .groupId(groupId)
-                .days(groupByDate)
-                .build();
+            .groupId(groupId)
+            .days(groupByDate)
+            .build();
     }
 
     public CalendarGroupParticipantStatusSwitchDto switchGroupParticipantStatus(Long groupId, Long userId, LocalDate date) {
@@ -89,11 +96,11 @@ public class NewCalendarService {
         if (byId.isPresent()) {
             calendarGroupParticipantStatusRepository.deleteById(id);
             return CalendarGroupParticipantStatusSwitchDto.builder()
-                    .userId(userId)
-                    .groupId(groupId)
-                    .isWorking(false)
-                    .date(dateString)
-                    .build();
+                .userId(userId)
+                .groupId(groupId)
+                .isWorking(false)
+                .date(dateString)
+                .build();
         }
 
 
@@ -101,23 +108,34 @@ public class NewCalendarService {
         calendarGroupParticipantStatusRepository.save(statusEntity);
 
         return CalendarGroupParticipantStatusSwitchDto.builder()
-                .userId(userId)
-                .groupId(groupId)
-                .isWorking(true)
-                .date(dateString)
-                .build();
+            .userId(userId)
+            .groupId(groupId)
+            .isWorking(true)
+            .date(dateString)
+            .build();
     }
 
+    @Transactional(readOnly = true)
     public List<CalendarGroupDto> getGroups() {
+        List<CalendarGroupEntity> groups = calendarGroupRepository.findAll();
+
+        List<Long> groupIds = groups.stream().map(CalendarGroupEntity::getId).toList();
+        Map<Long, List<V3ChatOrderInfoDto>> activeOrderByGroupId = orderRepository.findByExpertGroupIn(groupIds).stream()
+            .map(orderMapper::mapToChatOrderInfo)
+            .collect(Collectors.groupingBy(V3ChatOrderInfoDto::getExpertGroupId));
+
         return calendarGroupRepository.findAll().stream()
-                .map(calendarGroupMapper::map)
-                .sorted(Comparator.comparing(CalendarGroupDto::getName))
-                .toList();
+            .map(calendarGroupMapper::map)
+            .map(g -> g.withActiveOrders(activeOrderByGroupId.getOrDefault(g.getId(), List.of()).stream()
+                .sorted(Comparator.comparing(t -> new BigInteger(t.getTechNumber())))
+                .toList()))
+            .sorted(Comparator.comparing(CalendarGroupDto::getName))
+            .toList();
     }
 
     public Optional<CalendarGroupDto> getGroup(Long groupId) {
         return calendarGroupRepository.findById(groupId)
-                .map(calendarGroupMapper::map);
+            .map(calendarGroupMapper::map);
     }
 
     @Transactional

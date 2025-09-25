@@ -77,7 +77,7 @@ public class V3ChatMessageLoadService {
 
     @NotNull
     private static Function<V3MessageDto, V3MessageDto> enrichReadByUser(Map<Long, Set<String>> viewedById, String currentUserUsername) {
-        return t -> t.withIsNewMessage(Optional.ofNullable(viewedById.get(t.getId()))
+        return t -> t.withIsNewMessage(!Optional.ofNullable(viewedById.get(t.getId()))
                 .orElse(Set.of()).contains(currentUserUsername))
             .withMessageReadedByUsernames(Optional.ofNullable(viewedById.get(t.getId()))
                 .orElse(Set.of()));

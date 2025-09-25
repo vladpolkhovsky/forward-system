@@ -33,6 +33,8 @@ public class OrderUiDto {
     private String other;
     private String violationsInformation;
     private OrderSourceType orderSource;
+    private Long orderExpertGroupId;
+    private String orderExpertGroupName;
     private Integer takingCost;
     private Integer authorCost;
     private LocalDateTime createdAt;

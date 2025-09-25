@@ -1,6 +1,9 @@
 package by.forward.forward_system.core.web.rest.chat;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.*;
+import by.forward.forward_system.core.jpa.model.ChatAttachmentByChatView;
+import by.forward.forward_system.core.jpa.model.ChatAttachmentByChatView_;
+import by.forward.forward_system.core.jpa.model.ChatMessageAttachmentEntity_;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.v3.V3ChatLoadService;
@@ -8,12 +11,15 @@ import by.forward.forward_system.core.services.v3.V3ChatMessageLoadService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -43,6 +49,13 @@ public class V3ChatRestController {
     @GetMapping(value = "/id/{chatId}", produces = JSON_MEDIA_TYPE)
     public ResponseEntity<V3ChatDto> findById(@PathVariable Long chatId) {
         return ResponseEntity.ok(v3ChatLoadService.findById(chatId));
+    }
+
+    @GetMapping(value = "/files/{chatId}", produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<Page<V3ChatFileAttachmentDto>> fetchChatFiles(@PathVariable Long chatId) {
+        Pageable pagable = PageRequest.of(0, 100,
+            Sort.by(Sort.Direction.DESC, ChatAttachmentByChatView_.CREATED_AT));
+        return ResponseEntity.ok(v3ChatLoadService.fetchChatFiles(chatId, pagable));
     }
 
     @GetMapping(value = "/message/id/{messageId}", produces = JSON_MEDIA_TYPE)

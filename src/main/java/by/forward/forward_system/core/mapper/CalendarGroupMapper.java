@@ -9,6 +9,7 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface CalendarGroupMapper {
 
+    @Mapping(target = "activeOrders", ignore = true)
     CalendarGroupDto map(CalendarGroupEntity calendarGroupEntity);
 
     @Mapping(target = "participants", ignore = true)

@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.model;
 
+import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,4 +32,13 @@ public class CalendarGroupEntity {
             joinColumns = @JoinColumn(name = "group_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id"))
     private Set<UserEntity> participants = new LinkedHashSet<>();
+
+    public static CalendarGroupEntity of(Long id) {
+        if (id == null) {
+            return null;
+        }
+        CalendarGroupEntity calendarGroupEntity = new CalendarGroupEntity();
+        calendarGroupEntity.setId(id);
+        return calendarGroupEntity;
+    }
 }

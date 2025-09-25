@@ -1,13 +1,11 @@
 package by.forward.forward_system.core.web.rest;
 
 import by.forward.forward_system.core.dto.rest.authors.AuthorDisciplinesDto;
-import by.forward.forward_system.core.dto.rest.authors.AuthorDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorFullDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.services.NewAuthorService;
 import by.forward.forward_system.core.services.NewOrderService;
 import by.forward.forward_system.core.utils.AuthUtils;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

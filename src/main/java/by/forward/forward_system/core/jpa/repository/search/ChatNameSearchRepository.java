@@ -17,7 +17,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         select
         	c.id,
         	c.chat_name as name,
-        	ts_rank(to_tsvector(string_agg(distinct t.name, ' ') || ' ' || c.chat_name), to_tsquery('pg_catalog.russian', :chatNameQuery)) as rank
+        	ts_rank((forward_system.tsvector_agg(distinct t.tsvector_tag_name) || c.tsvector_chat_name), to_tsquery('simple', :chatNameQuery)) as rank
         from forward_system.chats c
         inner join forward_system.chat_members cm on
             c.id = cm.chat_id and cm.user_id = :currentUserId
@@ -30,7 +30,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         group by
         	c.id
         having
-        	ts_rank(to_tsvector(string_agg(t.name, ' ') || ' ' || c.chat_name), to_tsquery('pg_catalog.russian', :chatNameQuery)) > 0.03
+        	ts_rank((forward_system.tsvector_agg(distinct t.tsvector_tag_name) || c.tsvector_chat_name), to_tsquery('simple', :chatNameQuery)) > 0.03
         order by
         	rank desc, c.last_message_date desc
         """)
@@ -44,7 +44,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         select
         	c.id,
         	c.chat_name as name,
-        	ts_rank(to_tsvector(string_agg(distinct t.name, ' ') || ' ' || c.chat_name), to_tsquery('pg_catalog.russian', :chatNameQuery)) as rank
+        	ts_rank(c.tsvector_chat_name, to_tsquery('simple', :chatNameQuery)) as rank
         from forward_system.chats c
         inner join forward_system.chat_members cm on
             c.id = cm.chat_id and cm.user_id = :currentUserId
@@ -53,7 +53,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         group by
         	c.id
         having
-        	ts_rank(to_tsvector(string_agg(t.name, ' ') || ' ' || c.chat_name), to_tsquery('pg_catalog.russian', :chatNameQuery)) > 0.03
+        	ts_rank(c.tsvector_chat_name, to_tsquery('simple', :chatNameQuery)) > 0.03
         order by
         	rank desc, c.last_message_date desc
         """)

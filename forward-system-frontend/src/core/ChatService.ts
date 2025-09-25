@@ -4,9 +4,11 @@ import type {ChatShortDto} from "@/core/dto/ChatShortDto.ts";
 import type {MessageDto} from "@/core/dto/MessageDto.ts";
 import type {NewMessageDto} from "@/core/dto/NewMessageDto.ts";
 import type {NewMessageCountDto} from "@/core/dto/NewMessageCountDto.ts";
+import type {ChatFileAttachmentDto} from "@/core/dto/ChatFileAttachmentDto.ts";
 
 export type JsonCallback = (json: object) => void;
 export type SearchChatCallback = (page: PageableDto<ChatShortDto>) => void;
+export type ChatFilesCallback = (page: PageableDto<ChatFileAttachmentDto>) => void;
 export type ChatCallback = (chat: ChatShortDto) => void;
 export type MessagePageCallback = (page: PageableDto<MessageDto>) => void;
 export type MessageCallback = (message: MessageDto) => void;
@@ -172,6 +174,13 @@ export class ChatService {
         ChatService.fetchData("POST", "/api/v3/chat/send", body, (json) => {
             console.log('message send', json)
             readyCallback();
+        })
+    }
+
+    public static fetchChatFiles(chatId: number, callback: ChatFilesCallback) {
+        ChatService.fetchData("GET", `/api/v3/chat/files/${chatId}`, null, (json) => {
+            console.log('fetched files', json)
+            callback(json as PageableDto<ChatFileAttachmentDto>)
         })
     }
 

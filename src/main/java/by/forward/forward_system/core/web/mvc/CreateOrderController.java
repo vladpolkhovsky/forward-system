@@ -1,6 +1,7 @@
 package by.forward.forward_system.core.web.mvc;
 
 import by.forward.forward_system.core.dto.messenger.OrderDto;
+import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupDto;
 import by.forward.forward_system.core.dto.ui.*;
 import by.forward.forward_system.core.enums.OrderSourceType;
 import by.forward.forward_system.core.enums.OrderStatus;
@@ -9,6 +10,7 @@ import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
+import by.forward.forward_system.core.services.NewCalendarService;
 import by.forward.forward_system.core.services.core.*;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
@@ -43,10 +45,13 @@ public class CreateOrderController {
     private final BotNotificationService botNotificationService;
     private final UserService userService;
     private final OrderChatHandlerService orderChatHandlerService;
+    private final NewCalendarService newCalendarService;
 
     @GetMapping("/create-order")
     public String createOrder(Model model) {
         userUiService.checkAccessManager();
+
+        List<CalendarGroupDto> groups = newCalendarService.getGroups();
 
         model.addAttribute("menuName", "Создать заказ");
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -55,6 +60,7 @@ public class CreateOrderController {
         model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         model.addAttribute("disciplines", disciplineService.allDisciplines());
         model.addAttribute("orderSources", OrderSourceType.values());
+        model.addAttribute("orderExpertGroups", groups);
 
         return "main/create-order";
     }
@@ -98,6 +104,8 @@ public class CreateOrderController {
     public String updateOrder(Model model, @PathVariable Long id) {
         orderService.checkOrderAccessEdit(id, userUiService.getCurrentUserId());
 
+        List<CalendarGroupDto> groups = newCalendarService.getGroups();
+
         model.addAttribute("menuName", "Изменение заказа");
         model.addAttribute("disciplines", disciplineService.allDisciplines());
         model.addAttribute("userShort", userUiService.getCurrentUser());
@@ -105,6 +113,7 @@ public class CreateOrderController {
         model.addAttribute("lastTechNumber", orderUiService.getLastTechNumber());
         model.addAttribute("actionUrl", "/update-order/" + id);
         model.addAttribute("orderSources", OrderSourceType.values());
+        model.addAttribute("orderExpertGroups", groups);
 
         return "main/create-order";
     }

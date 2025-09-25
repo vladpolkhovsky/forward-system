@@ -82,4 +82,6 @@ public interface ChatMapper {
     ChatMetadataDto mapToChatMetadataDto(ChatMetadataEntity chatMetadataEntity);
 
     List<V3ChatDto> matToV3ChatDtoMany(List<ChatEntity> fetchedChats);
+
+
 }

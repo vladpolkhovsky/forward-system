@@ -4,6 +4,7 @@ import type {OrderFullDto} from "@/core/dto/OrderFullDto.ts";
 
 export type OrderCallback = (json: OrderShortDto) => void;
 export type OrderListCallback = (json: PageableDto<OrderFullDto>) => void;
+export type ReadyCallback = () => void;
 
 export interface OrderSearch {
     techNumber: number,
@@ -28,6 +29,11 @@ export class OrderService {
         fetch(`/api/order/search?${urlSearchParams.toString()}`, { method: 'GET', })
             .then(value => value.json())
             .then(json => callback(json as PageableDto<OrderFullDto>))
+    }
+
+    public static deleteExpertFromOrder(id: number, callback: ReadyCallback) {
+        fetch(`/api/order/remove-expert/${id}`, { method: "POST" })
+            .then(_ => callback());
     }
 
     private static removeNullProperties<T extends object>(obj: T): Partial<T> {

@@ -96,6 +96,8 @@ public abstract class OrderMapper {
     @Mapping(target = "user", source = "user")
     public abstract V3ParticipantDto map(OrderParticipantEntity orderParticipantEntity);
 
+    @Mapping(target = "expertGroupName", source = "expertCalendarGroup.name")
+    @Mapping(target = "expertGroupId", source = "expertCalendarGroup.id")
     @Mapping(target = "managerUsername", source = "orderEntity", qualifiedByName = "getManager")
     @Mapping(target = "authorUsername", source = "orderEntity", qualifiedByName = "getAuthor")
     @Mapping(target = "disciplineName", source = "discipline.name")

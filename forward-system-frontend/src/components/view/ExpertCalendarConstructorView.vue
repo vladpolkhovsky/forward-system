@@ -6,10 +6,13 @@ import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 import type {CalendarGroupDto} from "@/core/dto/CalendarGroupDto.ts";
 import ExpertCalendarGridConstructor from "@/components/elements/ExpertCalendarGridConstructor.vue";
 import AuthorSelector from "@/components/elements/AuthorSelector.vue";
+import type {OrderChatInformation} from "@/core/dto/OrderChatInformation.ts";
+import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
 
 interface CalendarGroup {
   id: number
   name: String,
+  activeOrders: OrderChatInformation[],
   selectedAuthorIds: Set<number>
 }
 
@@ -59,6 +62,7 @@ function calendarGroupDtoToCalendarGroup(dto: CalendarGroupDto): CalendarGroup {
   return {
     name: dto.name,
     id: dto.id,
+    activeOrders: dto.activeOrders,
     selectedAuthorIds: new Set(dto.participants.map(value => value.id))
   }
 }
@@ -209,6 +213,15 @@ async function handelDeleteGroup() {
                 {{ getAuthorById(authorInGroupId).username }}
               </li>
             </ol>
+            <p class="text-muted fw-semibold h5 mt-3" v-if="selectedGroup.activeOrders.length > 0">Активные заказы группы: <span
+                class="text-dark fw-bold">{{ selectedGroup.name }}</span></p>
+            <ul class="ms-3" v-if="selectedGroup.activeOrders.length > 0">
+              <li v-for="activeOrder in selectedGroup.activeOrders">
+                <a target="_blank" :href="'/update-order/' + activeOrder.id" class="fw-medium">
+                  ТЗ {{ activeOrder.techNumber }} <OrderStatusIcon :name="activeOrder.status" :rus-name="activeOrder.statusRusName" />
+                </a>
+              </li>
+            </ul>
             <div class="d-grid gap-2 d-md-block">
               <button class="btn btn-sm btn-danger mb-3" @click="handelDeleteGroup">Удалить группу</button>
             </div>

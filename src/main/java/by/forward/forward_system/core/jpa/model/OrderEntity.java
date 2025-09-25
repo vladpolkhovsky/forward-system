@@ -38,6 +38,10 @@ public class OrderEntity {
     @JoinColumn(name = "discipline_id", nullable = false)
     private DisciplineEntity discipline;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "expert_calendar_group_id")
+    private CalendarGroupEntity expertCalendarGroup;
+
     @Column(name = "subject", nullable = false, length = 2048)
     private String subject;
 

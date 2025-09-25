@@ -81,6 +81,11 @@ public class MessageService {
 
     @Transactional
     public Long sendMessage(Long fromUserId, Long chatId, String message, List<Long> attachmentIds) {
+        return sendMessage(fromUserId, false, chatId, message, attachmentIds);
+    }
+
+    @Transactional
+    public Long sendMessage(Long fromUserId, boolean isSystemMessage, Long chatId, String message, List<Long> attachmentIds) {
         attachmentIds = ListUtils.emptyIfNull(attachmentIds);
         message = StringUtils.trimToNull(message);
 
@@ -93,7 +98,7 @@ public class MessageService {
 
         ChatMessageTypeEntity messageType = ChatMessageType.MESSAGE.entity();
 
-        return sendMessage(from, chat, message, false, messageType, attachments, List.of()).getId();
+        return sendMessage(from, chat, message, isSystemMessage, messageType, attachments, List.of()).getId();
     }
 
     @Transactional

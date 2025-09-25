@@ -31,7 +31,8 @@ public class V3ChatInfoService {
 
     @Transactional(readOnly = true)
     public V3ChatOrderInfoDto loadOrderInfo(Long orderId) {
-        return orderRepository.findById(orderId).map(orderMapper::mapToChatOrderInfo).get();
+        return orderRepository.findById(orderId)
+            .map(orderMapper::mapToChatOrderInfo).get();
     }
 
     @Transactional(readOnly = true)

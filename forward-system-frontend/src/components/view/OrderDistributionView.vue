@@ -273,8 +273,7 @@ const isStatusNotCreatedAndDistribution = computed(() => {
                               :disabled="isStatusNotCreatedAndDistribution"
                               v-if="participant.type == ParticipantTypeEnum.AUTHOR || participant.type == ParticipantTypeEnum.DECLINE_AUTHOR"
                               @click="handleRemoveAuthorFromParticipants(order.id, participant.user.id)">
-                        <i class="bi bi-person-x me-1"></i> Удалить автора из заказ
-                      </button>
+                        <i class="bi bi-person-x me-1"></i> Удалить автора из заказ</button>
                     </div>
                   </li>
                 </ul>
