@@ -89,7 +89,7 @@ onMounted(() => {
             </span>
           </a>
         </li>
-        <li class="me-3">
+        <li class="me-3" v-if="false">
           <a class="nav-link px-2 link-dark fw-medium text-dark position-relative"
              href="/forward/main#main-view">
             <i class="bi bi-telegram me-2"></i>Прямые заказы

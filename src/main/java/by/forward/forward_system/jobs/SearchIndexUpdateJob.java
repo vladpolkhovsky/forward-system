@@ -46,7 +46,7 @@ public class SearchIndexUpdateJob {
         Pageable pageable = PageRequest.of(0, (int) PAGE_SIZE, Sort.by(ChatEntity_.ID));
         while (indexUpdater.updateChatPageIndexes(pageable)) {
             log.info("[Индексации имён чата] Страница {} обработана.", pageable);
-            pageable.next();
+            pageable = pageable.next();
         }
         log.info("Финиш индексации имён чата");
     }
@@ -57,7 +57,7 @@ public class SearchIndexUpdateJob {
         Pageable pageable = PageRequest.of(0, (int) PAGE_SIZE, Sort.by(ChatEntity_.ID));
         while (indexUpdater.updateChatTagPageIndexes(pageable)) {
             log.info("[Индексация имён тегов] Страница {} обработана.", pageable);
-            pageable.next();
+            pageable = pageable.next();
         }
         log.info("Финиш индексации имён тегов");
 
