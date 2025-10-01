@@ -42,7 +42,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -789,7 +788,7 @@ public class OrderService {
 
         ChatEntity chatEntity = chatRepository.findById(orderMainChat).orElseThrow(() -> new RuntimeException("Main chat not found"));
 
-        Long orderHost = getOrderHost(chatEntity.getOrder().getId());
+        Long orderHost = getNotificationPerson(chatEntity.getOrder().getId());
         if (orderHost != null) {
             botNotificationService.sendBotNotification(orderHost, "Эксперт проверил работу. ТЗ №" + chatEntity.getOrder().getTechNumber());
         }
@@ -991,10 +990,15 @@ public class OrderService {
         return orderRepository.findOrdersWithUserInParticipant(currentUserId, Constants.ORDER_PAGE_SIZE, Constants.ORDER_PAGE_SIZE * (page - 1), participantTypes);
     }
 
-    public Long getOrderHost(Long orderId) {
+    public Long getNotificationPerson(Long orderId) {
         List<OrderParticipantEntity> orderParticipantsByOrderId = orderParticipantRepository.getOrderParticipantsByOrderId(orderId);
         for (OrderParticipantEntity orderParticipantEntity : orderParticipantsByOrderId) {
             if (orderParticipantEntity.getParticipantsType().getType().equals(ParticipantType.HOST)) {
+                return orderParticipantEntity.getUser().getId();
+            }
+        }
+        for (OrderParticipantEntity orderParticipantEntity : orderParticipantsByOrderId) {
+            if (orderParticipantEntity.getParticipantsType().getType().equals(ParticipantType.CATCHER)) {
                 return orderParticipantEntity.getUser().getId();
             }
         }

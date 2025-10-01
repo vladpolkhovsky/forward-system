@@ -72,7 +72,7 @@ function fetchGroup(groupId: number) {
 function createCalendarTables() {
   dateGrid.value = [];
 
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 6; i++) {
     const line: DateState[] = [];
 
     // Создаём новую дату на основе begin + i недель БЕЗ мутации
