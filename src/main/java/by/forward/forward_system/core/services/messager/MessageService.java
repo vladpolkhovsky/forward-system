@@ -80,6 +80,11 @@ public class MessageService {
     }
 
     @Transactional
+    public Long sendMessage(Long fromUserId, Long chatId, String message) {
+        return sendMessage(fromUserId, false, chatId, message, List.of());
+    }
+
+    @Transactional
     public Long sendMessage(Long fromUserId, Long chatId, String message, List<Long> attachmentIds) {
         return sendMessage(fromUserId, false, chatId, message, attachmentIds);
     }

@@ -154,6 +154,14 @@ function handleSubmitCreateReviewRequest() {
   });
 }
 
+function handleDeleteReview(reviewId: number) {
+  if (confirm("Удалить запрос на проверку?")) {
+    ReviewService.deleteReviewRequest(reviewId, props.chat.id, () => {
+      renew();
+    });
+  }
+}
+
 function getExpertName() {
   const experts = fetchedOrder.value.participants
       .filter(t => t.type == ParticipantTypeEnum.EXPERT)
@@ -357,6 +365,23 @@ function handleDeleteExpertFromOrder() {
         </div>
       </div>
 
+      <InformationText v-if="chat.orderId && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT
+          || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)" :expand="true"
+                       icon="bi-patch-exclamation" :mt="3" tittle="Статус прямого заказе" :show-icon="true">
+
+        <LoadingSpinner v-if="forwardOrderInfoLoading" :margin-top="true"
+                        text="Загружаем информацию о прямом заказе"/>
+        <div class="p-2 d-flex gap-2 justify-content-around align-items-center flex-wrap"
+             v-if="forwardOrderChatInformation">
+            <span class="badge text-bg-success fs-7"
+                  v-if="forwardOrderChatInformation.isOrderPaid">Заказ оплаче</span>
+          <span class="badge text-bg-danger fs-7" v-else>Заказ не оплачен</span>
+          <span class="badge text-bg-success fs-7"
+                v-if="forwardOrderChatInformation.isAuthorCanSubmitFiles">Файлы разрешены</span>
+          <span class="badge text-bg-danger fs-7" v-else>Файлы запрещены</span>
+        </div>
+      </InformationText>
+
       <InformationTextPlain
           v-if="chat.orderId && hasAuthorityManager(user.authorities)
             && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)"
@@ -379,16 +404,6 @@ function handleDeleteExpertFromOrder() {
             </button>
             <div class="form-text" id="delete-all-from-chat-help-text">При нажатии удалит всех участников
               чата. Изменится код для вступления в чат. Полезно если к чату присоединился не тот человек.
-            </div>
-          </AccordionItem>
-          <AccordionItem name="Статус прямого заказа" :open="true">
-            <div class="p-2 d-flex gap-2 justify-content-around align-items-center flex-wrap">
-            <span class="badge text-bg-success fs-7"
-                  v-if="forwardOrderChatInformation.isOrderPaid">Заказ оплаче</span>
-              <span class="badge text-bg-danger fs-7" v-else>Заказ не оплачен</span>
-              <span class="badge text-bg-success fs-7"
-                    v-if="forwardOrderChatInformation.isAuthorCanSubmitFiles">Файлы разрешены</span>
-              <span class="badge text-bg-danger fs-7" v-else>Файлы запрещены</span>
             </div>
           </AccordionItem>
           <AccordionItem name="Действия с прямым заказом" :open="false">
@@ -505,6 +520,10 @@ function handleDeleteExpertFromOrder() {
                     <a class="btn btn-sm btn-primary d-block m-2" target="_blank"
                        :href="'/expert-review-order-view/' + review.orderId + '/' + review.id">
                       Открыть карточку запроса ({{ (review.isApproved ? 'Проверено' : 'Не проверено') }})</a>
+                    <a class="btn btn-sm btn-danger d-block m-2" target="_blank"
+                       v-if="hasAuthorityManager(user.authorities)"
+                       @click="handleDeleteReview(review.id)">
+                      Удалить запрос на проверку</a>
                   </li>
                 </ul>
               </AccordionItem>
@@ -529,7 +548,9 @@ function handleDeleteExpertFromOrder() {
             </div>
             <div class="card mb-2" v-for="file in chatFiles" :key="file.attachment.id" v-if="chatFiles.length > 0">
               <div class="card-body p-2">
-                <h5 class="card-title fs-7 m-0"><a target="_blank" :href="'/load-file/' + file.attachment.id">{{ file.attachment.name }}</a></h5>
+                <h5 class="card-title fs-7 m-0"><a target="_blank" :href="'/load-file/' + file.attachment.id">{{
+                    file.attachment.name
+                  }}</a></h5>
                 <p class="card-text m-0 fs-7">{{ file.createdAt }} / {{ file.user.username }}</p>
               </div>
             </div>

@@ -35,4 +35,20 @@ export class ReviewService {
             })
             .catch(err => alert(err['message']))
     }
+
+    static deleteReviewRequest(reviewId: number, chatId: number, callback: ReadyCallback) {
+        fetch(`/api/review/delete/${reviewId}?chatId=${chatId}`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json; charset=UTF-8"
+            }
+        }).then(value => value.json())
+            .then(value => {
+                callback()
+                if (value['code'] != 200) {
+                    throw new Error(value['message']);
+                }
+            })
+            .catch(err => alert(err['message']))
+    }
 }

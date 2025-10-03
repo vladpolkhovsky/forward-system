@@ -34,6 +34,12 @@ public class ReviewRestController {
         return ResponseEntity.ok(Map.of("code", 200));
     }
 
+    @PostMapping(value = "/delete/{reviewId}", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
+    public ResponseEntity<Map<String, Object>> createReview(@PathVariable Long reviewId, @RequestParam("chatId") Long chatId) {
+        newReviewService.deleteReview(reviewId, chatId);
+        return ResponseEntity.ok(Map.of("code", 200));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> distributionExceptionHandler(IllegalArgumentException ex) {
         return ResponseEntity.badRequest()

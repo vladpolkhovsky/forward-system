@@ -4,10 +4,12 @@ import by.forward.forward_system.core.dto.messenger.v3.V3OrderReviewDto;
 import by.forward.forward_system.core.dto.messenger.v3.V3ReviewCreateRequest;
 import by.forward.forward_system.core.dto.messenger.v3.V3SearchOrderReviewDto;
 import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupParticipantStatusDto;
+import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.mapper.ReviewMapper;
+import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import by.forward.forward_system.core.utils.ChatNames;
@@ -39,6 +41,7 @@ public class NewReviewService {
     private final MessageService messageService;
     private final ChatRepository chatRepository;
     private final OrderParticipantRepository orderParticipantRepository;
+    private final BotNotificationService botNotificationService;
 
     @Transactional(readOnly = true)
     public Page<V3SearchOrderReviewDto> search(String techNumber, Pageable pageable) {
@@ -123,5 +126,28 @@ public class NewReviewService {
             Пользователь %s создал запрос на проверку файла.
             Файл для проверки прикреплён к данному сообщению.
             """.formatted(username), List.of(createRequest.getFileId()));
+
+        order.setOrderStatus(OrderStatus.REVIEW.toEntity());
+
+        botNotificationService.sendBotNotification(expert.getId(),
+            "У вас новый запрос на проверку работы!");
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, Long chatId) {
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new IllegalArgumentException("review with id " + reviewId + " not found"));
+
+        if (reviewEntity.getIsReviewed()) {
+            throw new IllegalArgumentException("Данный запрос уже проверен. Нельзя удалить.");
+        }
+
+        reviewRepository.delete(reviewEntity);
+
+        String username = AuthUtils.getCurrentUserDetails().getUsername();
+        String message = """
+            Пользователь %s удалил запрос на проверку.
+            """.formatted(username);
+
+        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, message, List.of());
     }
 }
