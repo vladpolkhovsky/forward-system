@@ -521,7 +521,7 @@ function handleDeleteExpertFromOrder() {
                        :href="'/expert-review-order-view/' + review.orderId + '/' + review.id">
                       Открыть карточку запроса ({{ (review.isApproved ? 'Проверено' : 'Не проверено') }})</a>
                     <a class="btn btn-sm btn-danger d-block m-2" target="_blank"
-                       v-if="hasAuthorityManager(user.authorities)"
+                       v-if="hasAuthorityManager(user.authorities) && !review.isApproved"
                        @click="handleDeleteReview(review.id)">
                       Удалить запрос на проверку</a>
                   </li>
