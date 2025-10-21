@@ -143,9 +143,15 @@ function handleLoadMoreChats() {
   page = page + 1;
 }
 
-function handleLoadMoreChatMessages(page: number) {
-  chatService.loadChatMessages(selectedChat.value.id, page, page => {
-    chatWindowRef.value.appendMessageToTop(selectedChat.value.id, page.content);
+function handleLoadMoreChatMessages(pageNumber: number) {
+  chatService.loadChatMessages(selectedChat.value.id, pageNumber, page => {
+
+    if (pageNumber == 0) {
+      chatWindowRef.value.appendMessageToBottom(selectedChat.value.id, page.content);
+    } else {
+      chatWindowRef.value.appendMessageToTop(selectedChat.value.id, page.content);
+    }
+
     chatWindowRef.value.setMessagesAdded();
 
     if (page.last) {

@@ -142,7 +142,7 @@ export class ChatService {
     public static fetchMessageById(messageId: number, messageCallback: MessageCallback) {
         console.log("force fetch message id = ", messageId)
         ChatService.fetchData("GET", `/api/v3/chat/message/id/${messageId}`, null, (json) => {
-            let messages = json as MessageDto[];
+            let messages = [json as MessageDto];
             let chatId = messages.map(t => t.chatId)[0];
             messageCallback(chatId, messages);
         })
