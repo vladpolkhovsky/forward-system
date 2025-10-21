@@ -1,6 +1,6 @@
 package by.forward.forward_system.core.utils;
 
-import by.forward.forward_system.core.auth.DatabaseUserDetails;
+import by.forward.forward_system.core.dto.auth.UserDto;
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,7 +16,7 @@ public class AuthUtils {
 
     public Long getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ((DatabaseUserDetails) authentication.getPrincipal()).getId();
+        return ((UserDto) authentication.getPrincipal()).getId();
     }
 
 }

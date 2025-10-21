@@ -45,6 +45,11 @@ dependencies {
 	implementation("org.bouncycastle:bcpkix-jdk18on:1.76")
 	implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.10.3")
 
+	// JWT
+	implementation("io.jsonwebtoken:jjwt-api:0.12.5")
+	implementation("io.jsonwebtoken:jjwt-impl:0.12.5")
+	implementation("io.jsonwebtoken:jjwt-jackson:0.12.5")
+
 	implementation("org.telegram:telegrambots-springboot-longpolling-starter:7.2.1")
 	implementation("org.telegram:telegrambots-longpolling:7.10.0")
 	implementation("org.telegram:telegrambots-client:7.2.1")

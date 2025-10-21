@@ -49,11 +49,4 @@ public class ForwardSystemApplication {
             System.exit(-1);
         }).start();
     }
-
-    @Bean
-    ApplicationRunner applicationRunner(@Autowired PasswordEncoder passwordEncoder) {
-        return args -> {
-            System.out.println(passwordEncoder.encode("author-1"));
-        };
-    }
 }

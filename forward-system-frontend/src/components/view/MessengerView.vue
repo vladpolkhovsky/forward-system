@@ -145,7 +145,7 @@ function handleLoadMoreChats() {
 
 function handleLoadMoreChatMessages(page: number) {
   chatService.loadChatMessages(selectedChat.value.id, page, page => {
-    page.content.forEach(chatWindowRef.value.appendMessageToTop);
+    chatWindowRef.value.appendMessageToTop(selectedChat.value.id, page.content);
     chatWindowRef.value.setMessagesAdded();
 
     if (page.last) {
@@ -221,8 +221,8 @@ function initChatService() {
             notificationAudio.play();
           }
           if (selectedChat?.value?.id == chat.id) {
-            ChatService.fetchMessageById(message.id, (msg) => {
-              chatWindowRef?.value?.appendMessageToBottom(msg);
+            ChatService.fetchMessageById(message.id, (chatId, message) => {
+              chatWindowRef?.value?.appendMessageToBottom(chatId, message);
               chatService.sendMessageViewed(chat.id);
             });
           }

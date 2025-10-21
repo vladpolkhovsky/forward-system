@@ -11,7 +11,7 @@ export type SearchChatCallback = (page: PageableDto<ChatShortDto>) => void;
 export type ChatFilesCallback = (page: PageableDto<ChatFileAttachmentDto>) => void;
 export type ChatCallback = (chat: ChatShortDto) => void;
 export type MessagePageCallback = (page: PageableDto<MessageDto>) => void;
-export type MessageCallback = (message: MessageDto) => void;
+export type MessageCallback = (chatId: number, message: MessageDto[]) => void;
 export type NewMessageCallback = (message: NewMessageDto, chat: ChatShortDto) => void;
 export type ReadyCallback = () => void;
 export type NewMessageCountCallback = (newMessageDto: NewMessageCountDto) => void;
@@ -142,7 +142,9 @@ export class ChatService {
     public static fetchMessageById(messageId: number, messageCallback: MessageCallback) {
         console.log("force fetch message id = ", messageId)
         ChatService.fetchData("GET", `/api/v3/chat/message/id/${messageId}`, null, (json) => {
-            messageCallback(json as MessageDto);
+            let messages = json as MessageDto[];
+            let chatId = messages.map(t => t.chatId)[0];
+            messageCallback(chatId, messages);
         })
     }
 

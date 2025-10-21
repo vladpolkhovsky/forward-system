@@ -16,4 +16,9 @@ public interface UserMapper {
     UserDto map(UserEntity userEntity);
 
     List<UserDto> mapMany(List<UserEntity> list);
+
+    @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now().toString())")
+    @Mapping(target = "roles", source = "authorities")
+    by.forward.forward_system.core.dto.auth.UserDto mapToAuthDto(UserEntity byUsername);
+
 }

@@ -90,3 +90,9 @@ site:
 
 topic:
   create-chat-topic: "create-chat"
+
+jwt:
+  cookie:
+    name: JWT_TOKEN
+  signing:
+    key: example-jwt-token-signing-key-with-width-more-then-256-bit

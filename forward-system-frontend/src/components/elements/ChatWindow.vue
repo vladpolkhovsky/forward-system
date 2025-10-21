@@ -78,22 +78,16 @@ onMounted(() => {
   }, 30000);
 });
 
-const appendMessageToTop = (message: MessageDto) => {
-  if (message.chatId == props.chat.id) {
-    messages.value.unshift(message);
+const appendMessageToTop = (chatId: number, message: MessageDto[]) => {
+  if (chatId == props.chat.id) {
+    messages.value.unshift(...message);
     messages.value.sort((a, b) => a.id - b.id);
   }
-  nextTick(() => {
-    bodyRef.value?.scroll({
-      behavior: 'smooth',
-      top: bodyRef.value.scrollHeight
-    });
-  });
 }
 
-const appendMessageToBottom = (message: MessageDto) => {
-  if (message.chatId == props.chat.id) {
-    messages.value.push(message);
+const appendMessageToBottom = (chatId: number, message: MessageDto[]) => {
+  if (chatId == props.chat.id) {
+    messages.value.push(...message);
     messages.value.sort((a, b) => a.id - b.id);
   }
   nextTick(() => {
