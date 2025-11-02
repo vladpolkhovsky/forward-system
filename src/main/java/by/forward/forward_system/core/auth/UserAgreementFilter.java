@@ -33,6 +33,7 @@ public class UserAgreementFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         if (((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/user-agreement") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/login") ||
+            ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/download-file/") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/logout") ||
             ((HttpServletRequest) servletRequest).getRequestURL().toString().contains("/static")) {
             filterChain.doFilter(servletRequest, servletResponse);
