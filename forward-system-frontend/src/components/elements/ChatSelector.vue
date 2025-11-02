@@ -175,7 +175,7 @@ function getPrimaryVisibleTags(item: ChatItem): ChatTag[] {
 <template>
   <div class="row mt-2 mb-2 montserrat">
     <div class="input-group">
-      <input type="text" class="form-control" placeholder="Поиск чата" v-model="searchLine">
+      <input type="text" class="form-control" placeholder="Поиск чата" v-model="searchLine" @keydown.enter="handleSearch">
       <button class="btn btn-outline-primary bi bi-search" type="button" @click="handleSearch"></button>
     </div>
   </div>

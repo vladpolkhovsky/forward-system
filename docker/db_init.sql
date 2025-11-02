@@ -816,7 +816,6 @@ alter table forward_system.chats
     add column tsvector_chat_name tsvector generated always as (to_tsvector('pg_catalog.russian', chat_name)) stored;
 
 CREATE INDEX idx_tags_tsvector ON forward_system.tags USING gin (tsvector_tag_name);
-
 CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_chat_name);
 
 insert into forward_system.tags (id, name, type, is_primary, css_color_name)
@@ -884,7 +883,7 @@ CREATE OR REPLACE VIEW forward_system.attachments_by_message as
 select a.id, cm.id as message_id, cm.chat_id, cm.from_user_id, a.filename, cm.created_at from forward_system.attachments a
     inner join forward_system.chat_message_attachments cma on cma.attachment_id = a.id
     inner join forward_system.chat_messages cm on cm.id = cma.message_id
-order by cm.created_at desc
+order by cm.created_at desc;
 
 alter table forward_system.chats drop column tsvector_chat_name;
 alter table forward_system.tags drop column tsvector_tag_name;
@@ -895,5 +894,8 @@ CREATE AGGREGATE forward_system.tsvector_agg(tsvector) (
    INITCOND = ''
 );
 
-alter table forward_system.chats add tsvector_chat_name tsvector default ''::tsvector
-alter table forward_system.tags add tsvector_tag_name tsvector default ''::tsvector
+alter table forward_system.chats add tsvector_chat_name tsvector default ''::tsvector;
+alter table forward_system.tags add tsvector_tag_name tsvector default ''::tsvector;
+
+CREATE INDEX idx_tags_tsvector ON forward_system.tags USING gin (tsvector_tag_name);
+CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_chat_name);
