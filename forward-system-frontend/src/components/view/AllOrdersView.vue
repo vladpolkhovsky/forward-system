@@ -8,6 +8,10 @@ import type {OrderFullDto} from "@/core/dto/OrderFullDto.ts";
 import type {PageableDto} from "@/core/dto/PageableDto.ts";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 import FullOrderCard from "@/components/elements/FullOrderCard.vue";
+import OrderStatusIcon from "@/components/elements/OrderStatusIcon.vue";
+import {ParticipantTypeEnum} from "@/core/enum/ParticipantTypeEnum.ts";
+import type {ParticipantType} from "@/core/type/ParticipantType.ts";
+import type {OrderParticipantDto} from "@/core/dto/OrderParticipantDto.ts";
 
 interface OrderSearchModel {
   techNumber: number,
@@ -19,7 +23,7 @@ interface OrderSearchModel {
 
 const search = ref<OrderSearchModel>({
   status: null,
-  size: 25,
+  size: 50,
   page: 0,
   techNumber: null,
   showClosed: false
@@ -28,6 +32,8 @@ const search = ref<OrderSearchModel>({
 const loading = ref(true);
 const filterChanged = ref(false);
 const loadedPage = ref<PageableDto<OrderFullDto>>();
+
+const useTableView = ref(false);
 
 onMounted(() => {
   callSearch();
@@ -63,6 +69,23 @@ function selectPage(page: number) {
     filterChanged.value = false;
     callSearch();
   })
+}
+
+
+function isDistributionStatus(order: OrderFullDto) {
+  return order.orderStatus == OrderStatusEnum.DISTRIBUTION
+      || order.orderStatus == OrderStatusEnum.CREATED;
+}
+
+function getResponsibleManager(order: OrderFullDto) {
+  if (isDistributionStatus(order)) {
+    return findUserWithRole(ParticipantTypeEnum.CATCHER, order)?.user?.username ?? order.createdBy.username;
+  }
+  return findUserWithRole(ParticipantTypeEnum.HOST, order)?.user?.username ?? order.createdBy.username;
+}
+
+function findUserWithRole(pt: ParticipantType, order: OrderFullDto): OrderParticipantDto {
+  return order.participants?.filter(t => t.type == pt)?.[0] ?? null;
 }
 
 </script>
@@ -112,7 +135,13 @@ function selectPage(page: number) {
       <button class="btn btn-sm btn-primary text-center" @click="handleSearch">Поиск</button>
     </div>
     <div class="row mb-2" v-if="loadedPage">
-      <nav>
+      <nav class="d-flex gap-3">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" id="table-view" v-model="useTableView">
+          <label class="form-check-label" for="table-view">
+            Табличный вид
+          </label>
+        </div>
         <ul class="pagination pagination-sm flex-wrap">
           <li class="page-item disabled">
             <a class="page-link">Всего элементов: {{ loadedPage.totalElements }}</a>
@@ -125,14 +154,43 @@ function selectPage(page: number) {
         </ul>
       </nav>
     </div>
+    <div class="row mb-2" v-if="loadedPage">
+
+    </div>
     <div class="row mb-2" v-if="loading">
       <LoadingSpinner text="Загружаем заказы..."/>
     </div>
-    <div class="row mb-2" v-else>
-      <div class="col-12">
-        <FullOrderCard :order="order" :key="order.id" v-for="order in loadedPage.content"/>
+    <template v-else>
+      <div class="row mb-2" v-if="useTableView">
+        <table class="table table-striped table-bordered text-center">
+          <thead>
+          <tr>
+            <th scope="col">№</th>
+            <th scope="col">Статус</th>
+            <th scope="col">Дисциплина</th>
+            <th scope="col">Стоимость / для автора</th>
+            <th scope="col">Срок сдачи</th>
+            <th scope="col">Ответсвенный менеджер</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr :key="order.id" v-for="order in loadedPage.content">
+            <th scope="row"><a :href="`/view-order/` + order.id" target="_blank">{{ order.techNumber }}</a></th>
+            <td><OrderStatusIcon :name="order.orderStatus" :rus-name="order.orderStatusRus"/></td>
+            <td>{{ order.disciplineName }}</td>
+            <td>{{ order.orderCost }} / {{ order.orderAuthorCost }}</td>
+            <td>{{ order.deadline }}</td>
+            <td>{{ getResponsibleManager(order) }}</td>
+          </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+      <div class="row mb-2" v-else>
+        <div class="col-12">
+          <FullOrderCard :order="order" :key="order.id" v-for="order in loadedPage.content"/>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
