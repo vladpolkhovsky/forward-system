@@ -14,6 +14,7 @@ const props = defineProps({
   <Pill color="secondary" :text="props.rusName" v-if="props.name == OrderStatusEnum.DISTRIBUTION"/>
   <Pill color="secondary" :text="props.rusName" v-if="props.name == OrderStatusEnum.ADMIN_REVIEW"/>
   <Pill color="primary" :text="props.rusName" v-if="props.name == OrderStatusEnum.IN_PROGRESS"/>
+  <Pill color="primary" :text="props.rusName" v-if="props.name == OrderStatusEnum.REVIEW"/>
   <Pill color="danger" :text="props.rusName" v-if="props.name == OrderStatusEnum.FINALIZATION"/>
   <Pill color="success" :text="props.rusName" v-if="props.name == OrderStatusEnum.GUARANTEE"/>
   <Pill color="info" :text="props.rusName" v-if="props.name == OrderStatusEnum.CLOSED"/>
