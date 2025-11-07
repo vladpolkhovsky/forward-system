@@ -41,6 +41,12 @@ public class AdminMenuController {
     private final OrderService orderService;
     private final PlanService planService;
 
+    @GetMapping(value = "/order-send-log")
+    public String getDistributionLogs() {
+        userUiService.checkAccessAdmin();
+        return "main/admin/order-send-log";
+    }
+
     @GetMapping(value = "/order-review")
     public String orderReview(Model model) {
         userUiService.checkAccessAdmin();

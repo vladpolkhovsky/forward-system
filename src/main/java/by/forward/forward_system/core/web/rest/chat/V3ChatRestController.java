@@ -53,9 +53,9 @@ public class V3ChatRestController {
 
     @GetMapping(value = "/files/{chatId}", produces = JSON_MEDIA_TYPE)
     public ResponseEntity<Page<V3ChatFileAttachmentDto>> fetchChatFiles(@PathVariable Long chatId) {
-        Pageable pagable = PageRequest.of(0, 100,
+        Pageable pageable = PageRequest.of(0, 100,
             Sort.by(Sort.Direction.DESC, ChatAttachmentByChatView_.CREATED_AT));
-        return ResponseEntity.ok(v3ChatLoadService.fetchChatFiles(chatId, pagable));
+        return ResponseEntity.ok(v3ChatLoadService.fetchChatFiles(chatId, pageable));
     }
 
     @GetMapping(value = "/message/id/{messageId}", produces = JSON_MEDIA_TYPE)

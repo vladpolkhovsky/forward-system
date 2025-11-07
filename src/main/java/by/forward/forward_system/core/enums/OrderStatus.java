@@ -6,6 +6,7 @@ import lombok.Getter;
 @Getter
 public enum OrderStatus {
     CREATED("CREATED", "Создан"),
+    WAITING("WAITING", "Ожидание"),
     DISTRIBUTION("DISTRIBUTION", "На распределении"),
     ADMIN_REVIEW("ADMIN_REVIEW", "На проверке админа"),
     IN_PROGRESS("IN_PROGRESS", "В работе"),

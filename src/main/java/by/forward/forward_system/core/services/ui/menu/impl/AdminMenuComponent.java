@@ -28,6 +28,7 @@ public class AdminMenuComponent implements MenuComponent {
         List<MenuEntry.MenuItem> list = Arrays.asList(
             new MenuEntry.MenuItem("Подтвердить заказы на рассмотрении", "/order-review", true, updateRequestOrderService.countUpdateRequests()),
             new MenuEntry.MenuItem("Просмотр статистики предложения заказов", "/req-stat-redirect", false, null),
+            new MenuEntry.MenuItem("Лог предложения заказов", "/order-send-log", false, null),
             new MenuEntry.MenuItem("Создать план", "/create-plan", false, null),
             new MenuEntry.MenuItem("Просмотр планов", "/view-plan", false, null),
             new MenuEntry.MenuItem("Конструктор расписания экспертов", "/calendar-constructor", false, null)

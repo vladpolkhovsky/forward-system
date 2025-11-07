@@ -106,6 +106,7 @@ function findUserWithRole(pt: ParticipantType, order: OrderFullDto): OrderPartic
           <select class="form-select" id="orderStatus" v-model="search.status">
             <option selected :value="null">Все стадии</option>
             <option :value="OrderStatusEnum.CREATED">Создан</option>
+            <option :value="OrderStatusEnum.WAITING">Ожидание</option>
             <option :value="OrderStatusEnum.DISTRIBUTION">Распределение</option>
             <option :value="OrderStatusEnum.ADMIN_REVIEW">На проверке</option>
             <option :value="OrderStatusEnum.IN_PROGRESS">В работе</option>

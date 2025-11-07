@@ -129,6 +129,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
     })
     @Query(value = """
             select u from OrderEntity u
+            """)
+    List<OrderEntity> getOrders();
+
+    @EntityGraph(attributePaths = {
+        "discipline",
+        "orderStatus",
+        "createdBy"
+    })
+    @Query(value = """
+            select u from OrderEntity u
                 join u.orderParticipants op on op.participantsType.name = 'MAIN_AUTHOR' and op.user.id = :userId
             """)
     List<OrderEntity> getOrderWhereAuthorIs(long userId);

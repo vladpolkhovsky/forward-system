@@ -1,5 +1,6 @@
 export enum OrderStatusEnum {
     CREATED = "CREATED",
+    WAITING = "WAITING",
     DISTRIBUTION = "DISTRIBUTION",
     ADMIN_REVIEW = "ADMIN_REVIEW",
     IN_PROGRESS = "IN_PROGRESS",
