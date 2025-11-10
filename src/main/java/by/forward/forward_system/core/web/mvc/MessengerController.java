@@ -35,13 +35,26 @@ public class MessengerController {
 
     @Deprecated
     @GetMapping(value = "/new-messenger")
-    public RedirectView newMessenger(Model model) {
-        return new RedirectView("/new-messenger-v3");
+    public RedirectView newMessenger(@RequestParam(value = "tab", required = false) String tab,
+                                     @RequestParam(value = "chatId", required = false) String chatId) {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (tab != null) {
+            stringBuilder.append("tab=").append(tab);
+        }
+        if (chatId != null) {
+            if (tab != null) {
+                stringBuilder.append("&");
+            }
+            stringBuilder.append("chatId=").append(chatId);
+        }
+        if (!stringBuilder.isEmpty()) {
+            return new RedirectView("/new-messenger-v3?" + stringBuilder + "#center");
+        }
+        return new RedirectView("/new-messenger-v3#center");
     }
 
     @GetMapping(value = "/new-messenger-v3")
-    public String newMessengerV3(Model model) {
-        model.addAttribute("userShort", userUiService.getCurrentUser());
+    public String newMessengerV3() {
         return "messenger-v3/messenger-v3";
     }
 
