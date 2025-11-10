@@ -41,7 +41,7 @@ onMounted(() => {
           <div class="card-body">
             <p class="fs-5 fw-bold text-center">Напишу на 4-5</p>
             <ul class="list-group list-group-flush">
-              <li class="list-group-item text-bg-primary fw-medium" v-for="discipline in disciplines.good">{{ discipline }}</li>
+              <li class="list-group-item text-bg-primary fw-medium" v-for="discipline in disciplines.good">{{ discipline.name }}</li>
             </ul>
           </div>
         </div>
@@ -51,7 +51,7 @@ onMounted(() => {
           <div class="card-body">
             <p class="fs-5 fw-bold text-center">Могу рассмотреть</p>
             <ul class="list-group list-group-flush">
-              <li class="list-group-item text-bg-secondary fw-medium" v-for="discipline in disciplines.maybe">{{ discipline }}</li>
+              <li class="list-group-item text-bg-secondary fw-medium" v-for="discipline in disciplines.maybe">{{ discipline.name }}</li>
             </ul>
           </div>
         </div>
