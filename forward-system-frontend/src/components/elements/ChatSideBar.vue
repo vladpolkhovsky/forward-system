@@ -367,7 +367,7 @@ function handleDeleteExpertFromOrder() {
 
       <InformationText v-if="chat.orderId && (chat.type == ChatTypeEnum.FORWARD_ORDER_CHAT
           || chat.type == ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT)" :expand="true"
-                       icon="bi-patch-exclamation" :mt="3" tittle="Статус прямого заказе" :show-icon="true">
+                       icon="bi-patch-exclamation" :mt="3" tittle="Статус прямого заказа" :show-icon="true">
 
         <LoadingSpinner v-if="forwardOrderInfoLoading" :margin-top="true"
                         text="Загружаем информацию о прямом заказе"/>

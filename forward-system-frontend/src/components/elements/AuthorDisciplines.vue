@@ -31,7 +31,7 @@ onMounted(() => {
           <div class="card-body">
             <p class="fs-5 fw-bold text-center">Напишу на 5</p>
             <ul class="list-group list-group-flush">
-              <li class="list-group-item text-bg-success fw-medium" v-for="discipline in disciplines.excellent">{{ discipline }}</li>
+              <li class="list-group-item text-bg-success fw-medium" v-for="discipline in disciplines.excellent">{{ discipline.name }}</li>
             </ul>
           </div>
         </div>
