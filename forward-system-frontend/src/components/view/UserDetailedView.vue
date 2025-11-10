@@ -5,8 +5,6 @@ import type {UserDto} from "@/core/dto/UserDto.ts";
 import UserAccountInfo from "@/components/elements/UserAccountInfo.vue";
 import AuthorDisciplines from "@/components/elements/AuthorDisciplines.vue";
 import {AuthorityEnum, hasAuthority} from "@/core/enum/AuthorityEnum.ts";
-import AuthorRating from "@/components/elements/AuthorRating.vue";
-import AuthorMedals from "@/components/elements/AuthorMedals.vue";
 import LoadingSpinner from "@/components/elements/LoadingSpinner.vue";
 import {UserService} from "@/core/UserService.ts";
 
@@ -39,8 +37,6 @@ onMounted(() => {
       <div class="col-12">
         <UserAccountInfo :user="userData"/>
         <AuthorDisciplines :user-id="userData.id" v-if="hasAuthority(userData.authorities, AuthorityEnum.AUTHOR)"/>
-        <AuthorRating :user-id="userData.id" v-if="hasAuthority(userData.authorities, AuthorityEnum.AUTHOR)"/>
-        <AuthorMedals :user-id="userData.id" v-if="hasAuthority(userData.authorities, AuthorityEnum.AUTHOR)"/>
       </div>
     </div>
   </div>
