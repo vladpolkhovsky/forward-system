@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class SearchIndexUpdateJob {
 
-    private static final long PAGE_SIZE = 500;
+    private static final long PAGE_SIZE = 700;
 
     private final IndexUpdater indexUpdater;
 
@@ -40,9 +40,13 @@ public class SearchIndexUpdateJob {
         new Thread(() -> updateTagIndexJob()).start();
     }
 
-    @Scheduled(cron = "0 0 */6 * * *")
+    @Scheduled(cron = "0 10 */1 * * *")
     public void updateChatIndexJob() {
         log.info("Страт индексации имён чата");
+        if (!indexUpdater.hasEmptyChats()) {
+            log.info("Нет незаполненных индексов имён чата");
+            return;
+        }
         Pageable pageable = PageRequest.of(0, (int) PAGE_SIZE, Sort.by(ChatEntity_.ID));
         while (indexUpdater.updateChatPageIndexes(pageable)) {
             log.info("[Индексации имён чата] Страница {} обработана.", pageable);
@@ -51,16 +55,19 @@ public class SearchIndexUpdateJob {
         log.info("Финиш индексации имён чата");
     }
 
-    @Scheduled(cron = "0 0 */12 * * *")
+    @Scheduled(cron = "0 20 */1 * * *")
     public void updateTagIndexJob() {
         log.info("Страт индексации имён тегов");
+        if (!indexUpdater.hasEmptyTags()) {
+            log.info("Нет незаполненных индексов имён тегов");
+            return;
+        }
         Pageable pageable = PageRequest.of(0, (int) PAGE_SIZE, Sort.by(ChatEntity_.ID));
         while (indexUpdater.updateChatTagPageIndexes(pageable)) {
             log.info("[Индексация имён тегов] Страница {} обработана.", pageable);
             pageable = pageable.next();
         }
         log.info("Финиш индексации имён тегов");
-
     }
 
     @Component
@@ -119,6 +126,16 @@ public class SearchIndexUpdateJob {
                 .toList();
 
             return Stream.concat(numbers.stream(), others.stream()).distinct().toList();
+        }
+
+        @Transactional(readOnly = true)
+        public boolean hasEmptyChats() {
+            return chatIndexRepository.hasEmpty();
+        }
+
+        @Transactional(readOnly = true)
+        public boolean hasEmptyTags() {
+            return chatTagIndexRepository.hasEmpty();
         }
     }
 }

@@ -103,6 +103,25 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
         """)
     List<NewMessageCountProjection> findNewMessageCount(List<Long> chatIds, Long userId);
 
+    @Query("""
+        SELECT a.id as authorId, m.id as managerId
+        FROM UserEntity a, UserEntity m
+        WHERE a.roles LIKE '%AUTHOR%'
+          AND m.roles LIKE '%MANAGER%'
+          AND a.deleted = false
+          AND m.deleted = false
+          AND NOT EXISTS (
+            SELECT cm FROM ChatMetadataEntity cm
+            WHERE cm.user.id = a.id AND cm.manager.id = m.id
+          )
+        """)
+    List<NotCreatedChatProjection> checkNotCreatedChats();
+
+    interface NotCreatedChatProjection {
+        Long getAuthorId();
+        Long getManagerId();
+    }
+
     interface NewMessageCountProjection {
         Long getChatId();
         Integer getNewMessageCount();
