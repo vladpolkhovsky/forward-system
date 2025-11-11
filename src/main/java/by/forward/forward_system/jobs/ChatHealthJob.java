@@ -11,6 +11,10 @@ import by.forward.forward_system.core.services.core.AuthorService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,36 +31,53 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 public class ChatHealthJob {
 
-    private final ChatRepository chatRepository;
-    private final AuthorService authorService;
-    private final ChatTypeRepository chatTypeRepository;
-    private final UserRepository userRepository;
+    private final ChatHealthChecker chatHealthChecker;
+
+    @EventListener
+    public void onApplicationReady(ApplicationReadyEvent event) {
+        new Thread(() -> chatHealthChecker.check()).start();
+    }
 
     @Scheduled(cron = "0 45 */4 * * *")
-    @Transactional(readOnly = true)
     public void chatHealthJob() {
-        log.info("Начало поиска не созданных чатов");
+        chatHealthChecker.check();
+    }
 
-        ChatTypeEntity type = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).get();
-        List<NotCreatedChatProjection> notCreatedChats = chatRepository.checkNotCreatedChats();
+    @Slf4j
+    @Component
+    @AllArgsConstructor
+    public static class ChatHealthChecker {
 
-        Set<Long> ids = notCreatedChats.stream()
-            .flatMap(t -> Stream.of(t.getAuthorId(), t.getManagerId()))
-            .collect(Collectors.toSet());
+        private final ChatRepository chatRepository;
+        private final AuthorService authorService;
+        private final ChatTypeRepository chatTypeRepository;
+        private final UserRepository userRepository;
 
-        Map<Long, UserEntity> byId = userRepository.findAllById(ids).stream()
-            .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
+        @Transactional(readOnly = true)
+        public void check() {
+            log.info("Начало поиска не созданных чатов");
 
-        notCreatedChats.forEach(notCreatedChat -> {
-            UserEntity author = byId.get(notCreatedChat.getAuthorId());
-            UserEntity manager = byId.get(notCreatedChat.getManagerId());
+            ChatTypeEntity type = chatTypeRepository.findById(ChatType.REQUEST_ORDER_CHAT.getName()).get();
+            List<NotCreatedChatProjection> notCreatedChats = chatRepository.checkNotCreatedChats();
 
-            List<UserEntity> chatMembers = List.of(author, manager);
-            String newOrderChatName = ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUsername(), manager.getUsername());
-            authorService.addChatToUser(chatMembers, newOrderChatName, "Здесь будут появляться новые заказы.\nОжидайте, когда ваш менеджер вышлет вам новый заказ на рассмотрение.",
-                type, manager, author);
-        });
+            Set<Long> ids = notCreatedChats.stream()
+                .flatMap(t -> Stream.of(t.getAuthorId(), t.getManagerId()))
+                .collect(Collectors.toSet());
 
-        log.info("Всего найдено {} не созданных чатов: {}", notCreatedChats.size(), notCreatedChats);
+            Map<Long, UserEntity> byId = userRepository.findAllById(ids).stream()
+                .collect(Collectors.toMap(UserEntity::getId, Function.identity()));
+
+            notCreatedChats.forEach(notCreatedChat -> {
+                UserEntity author = byId.get(notCreatedChat.getAuthorId());
+                UserEntity manager = byId.get(notCreatedChat.getManagerId());
+
+                List<UserEntity> chatMembers = List.of(author, manager);
+                String newOrderChatName = ChatNames.NEW_ORDER_CHAT_NAME.formatted(author.getUsername(), manager.getUsername());
+                authorService.addChatToUser(chatMembers, newOrderChatName, "Здесь будут появляться новые заказы.\nОжидайте, когда ваш менеджер вышлет вам новый заказ на рассмотрение.",
+                    type, manager, author);
+            });
+
+            log.info("Всего найдено {} не созданных чатов.", notCreatedChats.size());
+        }
     }
 }
