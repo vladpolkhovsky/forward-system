@@ -27,7 +27,7 @@ public class CreateChatListener {
 
     @RetryableTopic(
         attempts = "5",
-        backoff = @Backoff(value = 7000L, multiplier = 2),
+        backoff = @Backoff(value = 7000L, maxDelay = 60000, multiplier = 2),
         kafkaTemplate = "createChatEventKafkaTemplate",
         exclude = {DataIntegrityViolationException.class}
     )
