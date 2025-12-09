@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type {DistributionPerson} from "@/core/dto/DistributionPerson.ts";
 import {onMounted, ref, watch} from "vue";
+import dayjs from "dayjs";
 
 interface Props {
   persons: DistributionPerson[]
@@ -9,6 +10,7 @@ interface Props {
 const props = defineProps<Props>();
 const sorted = ref<DistributionPerson[]>(props.persons);
 const waitMinutes = ref<number>();
+const startTimeAt = ref<Date>(dayjs().add(10, 'minute').toDate());
 
 onMounted(() => {
   refreshOrder();
@@ -50,6 +52,7 @@ function handleDown(index: number) {
 
 defineExpose({
   waitMinutes,
+  startTimeAt,
   sorted
 })
 
@@ -75,6 +78,13 @@ defineExpose({
                v-model="waitMinutes"
                placeholder="1 час = 60 мин, пишем 60. 2ч = 120 и тд.">
       </div>
+      <div class="input-group input-group-sm mt-3">
+        <span class="input-group-text">Начать распределение в (дата и время)</span>
+        <input type="datetime-local" class="form-control" min="5" max="1440"
+               v-model="startTimeAt"
+               placeholder="Отсавьте пустым, если нужно начать сразу же">
+      </div>
+      <div class="form-text">Оставьте пустым, тогда распределение начнётся сразу после создания</div>
     </div>
   </div>
 </template>

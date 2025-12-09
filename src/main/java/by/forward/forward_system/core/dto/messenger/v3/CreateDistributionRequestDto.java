@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -14,6 +15,7 @@ import java.util.List;
 public class CreateDistributionRequestDto {
     private String text;
     private Boolean isQueueDistribution;
+    private LocalDateTime startTimeAt;
     private Long queueDistributionWaitMinutes;
     private List<DistributionPersonDto> persons;
 }

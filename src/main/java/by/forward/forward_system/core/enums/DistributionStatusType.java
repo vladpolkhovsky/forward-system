@@ -6,9 +6,10 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum DistributionStatusType {
+    PLANNED("Запланировано"),
     IN_PROGRESS("В процессе"),
-    ENDED("Завершен"),
-    ENDED_BY_MANAGER("Завершен принудительно");
+    ENDED("Завершено"),
+    ENDED_BY_MANAGER("Завершено принудительно");
 
     private final String rusName;
 }

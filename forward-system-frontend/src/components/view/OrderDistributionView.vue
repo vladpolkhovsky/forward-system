@@ -163,7 +163,8 @@ function handleSendDistribution() {
     text: distributionText.value,
     isQueueDistribution: useQueueDistribution.value,
     persons: persons,
-    queueDistributionWaitMinutes: queueDistributionEditRef.value?.waitMinutes ?? null
+    queueDistributionWaitMinutes: queueDistributionEditRef.value?.waitMinutes ?? null,
+    startTimeAt: queueDistributionEditRef.value?.startTimeAt ?? null
   } as DistributionRequest;
 
   DistributionService.sendDistributionRequest(order.value.id, request, () => {

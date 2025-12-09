@@ -4,5 +4,6 @@ export interface DistributionRequest {
     text: string,
     isQueueDistribution: boolean,
     queueDistributionWaitMinutes: number,
+    startTimeAt: Date,
     persons: DistributionPerson[]
 }

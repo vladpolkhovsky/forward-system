@@ -23,6 +23,7 @@ public interface QueueDistributionMapper {
     @Mapping(target = "statusType", source = "status")
     @Mapping(target = "orderId", source = "order.id")
     @Mapping(target = "createdAt", source = "createdAt", dateFormat = "dd.MM.yyyy HH:mm")
+    @Mapping(target = "startTimeAt", source = "startTimeAt", dateFormat = "dd.MM.yyyy HH:mm")
     DistributionLogDto mapToLog(QueueDistributionEntity entity);
 
     @Mapping(target = "userId", source = "user.id")

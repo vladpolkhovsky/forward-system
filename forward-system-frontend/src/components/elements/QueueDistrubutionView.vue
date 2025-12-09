@@ -25,6 +25,12 @@ function handleDistributionStop(distributionId: number) {
   })
 }
 
+function formatLogItemHeader(logItem: DistributionLogDto): string {
+  if (logItem.statusType == 'PLANNED') {
+    return `Распределение от ${logItem.createdAt}, запустится ${logItem.startTimeAt} (${logItem.statusTypeRus})`;
+  }
+  return `Распределение от ${logItem.startTimeAt} (${logItem.statusTypeRus})`;
+}
 </script>
 
 <template>
@@ -32,7 +38,7 @@ function handleDistributionStop(distributionId: number) {
     <div class="card-body p-2">
       <h6 class="card-title">Автоматические распределения</h6>
       <Accordion>
-        <AccordionItem :name="`Распределение от ${logItem.createdAt} (${logItem.statusTypeRus})`"
+        <AccordionItem :name="formatLogItemHeader(logItem)"
                        :open="index == logItems.length - 1"
                        v-for="(logItem, index) in logItems">
           <ol class="list-group list-group-numbered">
@@ -52,11 +58,12 @@ function handleDistributionStop(distributionId: number) {
             </li>
           </ol>
           <button class="btn btn-sm btn-danger mt-1 p-1"
-                  v-if="logItem.statusType == 'IN_PROGRESS'"
+                  v-if="logItem.statusType == 'IN_PROGRESS' || logItem.statusType == 'PLANNED'"
                   :disabled="disabled"
                   type="button"
                   @click="handleDistributionStop(logItem.id)">
-            <i class="bi bi-sign-stop me-1"></i> Завершить принудительно</button>
+            <i class="bi bi-sign-stop me-1"></i> Завершить принудительно
+          </button>
         </AccordionItem>
       </Accordion>
     </div>

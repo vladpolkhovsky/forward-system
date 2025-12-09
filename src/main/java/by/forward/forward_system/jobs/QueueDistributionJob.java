@@ -25,6 +25,13 @@ public class QueueDistributionJob {
 
     @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
     @Transactional
+    public void plannedToInProgress() {
+        List<QueueDistributionEntity> plannedAndShouldStart = queueDistributionRepository.findPlannedAndShouldStart(LocalDateTime.now());
+        plannedAndShouldStart.forEach(newDistributionService::toInProgress);
+    }
+
+    @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+    @Transactional
     public void process() {
         LocalDateTime beginAt = LocalDateTime.now();
         List<QueueDistributionEntity> inProgress = queueDistributionRepository.findInProgress();

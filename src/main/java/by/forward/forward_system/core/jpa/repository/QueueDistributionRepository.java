@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -35,6 +36,19 @@ public interface QueueDistributionRepository extends JpaRepository<QueueDistribu
     })
     @Query(value = "FROM QueueDistributionEntity where status = 'IN_PROGRESS'")
     List<QueueDistributionEntity> findInProgress();
+
+    @EntityGraph(attributePaths = {
+        "order",
+        "order.orderStatus",
+        "order.discipline",
+        "order.createdBy",
+        "order.orderParticipants",
+        "order.orderParticipants.user",
+        "order.orderParticipants.participantsType",
+        "createdBy"
+    })
+    @Query(value = "FROM QueueDistributionEntity where status = 'PLANNED' and startTimeAt < :now")
+    List<QueueDistributionEntity> findPlannedAndShouldStart(LocalDateTime now);
 
     @Query(value = """
         select count(*) > 0 from QueueDistributionEntity q

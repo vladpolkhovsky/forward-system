@@ -8,5 +8,6 @@ export interface DistributionLogDto {
     statusType: string,
     statusTypeRus: string,
     createdBy: UserDto,
-    createdAt: string
+    createdAt: string,
+    startTimeAt: string,
 }

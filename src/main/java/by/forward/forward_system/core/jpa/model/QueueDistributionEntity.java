@@ -41,6 +41,9 @@ public class QueueDistributionEntity {
     @OrderBy("distributionOrder")
     private List<QueueDistributionItemEntity> items = new ArrayList<>();
 
+    @Column(name = "start_time_at", nullable = false)
+    private LocalDateTime startTimeAt;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

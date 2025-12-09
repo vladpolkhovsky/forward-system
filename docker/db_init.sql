@@ -902,3 +902,12 @@ CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_
 
 insert into forward_system.order_statuses
 values ('CREATED');
+
+alter table forward_system.queue_distribution
+    add start_time_at timestamp;
+
+update forward_system.queue_distribution
+    set start_time_at = queue_distribution.created_at;
+
+alter table forward_system.queue_distribution
+    alter column start_time_at set not null;

@@ -21,4 +21,5 @@ public class DistributionLogDto {
     private String statusTypeRus;
     private UserDto createdBy;
     private String createdAt;
+    private String startTimeAt;
 }

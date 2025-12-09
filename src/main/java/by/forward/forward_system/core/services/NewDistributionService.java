@@ -49,7 +49,7 @@ public class NewDistributionService {
 
             distribution.getItems().stream()
                 .filter(item -> item.getStatus() == DistributionItemStatusType.IN_PROGRESS
-                                || item.getStatus() == DistributionItemStatusType.TALK)
+                    || item.getStatus() == DistributionItemStatusType.TALK)
                 .forEach(item -> {
                     item.setStatus(DistributionItemStatusType.SKIPPED);
                     messageService.sendMessageToNewOrderChat(item.getUser().getId(),
@@ -241,6 +241,12 @@ public class NewDistributionService {
             user.getId(), """
                 Автоматическое распределение заказа №%s завершилось. Найден автор, который приянял запрос.
                 """.formatted(item.getQueueDistribution().getOrder().getTechNumber())));
+
+        getUsersThatCanTalkAboutOrder(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
+            user.getId(), """
+                Заказ №%s уже распределен другому автору. Ожидайте новых заказов!
+                """.formatted(item.getQueueDistribution().getOrder().getTechNumber())));
+
         item.getQueueDistribution().setStatus(DistributionStatusType.ENDED);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
@@ -274,7 +280,7 @@ public class NewDistributionService {
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
             item.getQueueDistribution().getCreatedBy().getId(),
             true,
-            "Превышено время ожидания ответа. Заказ распределён.",
+            "Превышено время ожидания ответа. Заказ предложен следующему автору, но ещё актуален. Если вы готовы взять заказ, сообщите об этом в чат.",
             Map.of()
         );
     }
@@ -285,8 +291,6 @@ public class NewDistributionService {
             user.getId(), """
                 Автоматическое распределение заказа №%s завершилось. Автор не найден.
                 """.formatted(distribution.getOrder().getTechNumber())));
-
-        distribution.setStatus(DistributionStatusType.ENDED);
     }
 
     @Transactional
@@ -336,9 +340,10 @@ public class NewDistributionService {
         queueDistributionEntity.setCreatedBy(UserEntity.of(managerId));
         queueDistributionEntity.setOrder(order);
         queueDistributionEntity.setQueueDistributionWaitMinutes(createDistributionRequestDto.getQueueDistributionWaitMinutes());
-        queueDistributionEntity.setStatus(DistributionStatusType.IN_PROGRESS);
+        queueDistributionEntity.setStatus(DistributionStatusType.PLANNED);
         queueDistributionEntity.setCreatedByUserMessage(StringUtils.trimToNull(createDistributionRequestDto.getText()));
         queueDistributionEntity.setCreatedAt(LocalDateTime.now());
+        queueDistributionEntity.setStartTimeAt(Optional.ofNullable(createDistributionRequestDto.getStartTimeAt()).orElse(LocalDateTime.now()));
 
         for (int i = 0; i < authorIds.size(); i++) {
             Long authorId = authorIds.get(i);
@@ -374,6 +379,16 @@ public class NewDistributionService {
         }
     }
 
+    private static final List<DistributionItemStatusType> SHOULD_BE_NOTIFIED_WHEN_AUTHOR_FOUND =
+        List.of(DistributionItemStatusType.TALK, DistributionItemStatusType.NO_RESPONSE);
+
+    private static List<UserEntity> getUsersThatCanTalkAboutOrder(QueueDistributionEntity distribution) {
+        return distribution.getItems().stream()
+            .filter(item -> SHOULD_BE_NOTIFIED_WHEN_AUTHOR_FOUND.contains(item.getStatus()))
+            .map(QueueDistributionItemEntity::getUser)
+            .toList();
+    }
+
     private static List<UserEntity> getUsersThatShouldBeNotified(QueueDistributionEntity distribution) {
         List<OrderParticipantEntity> participants = distribution.getOrder().getOrderParticipants();
 
@@ -384,5 +399,10 @@ public class NewDistributionService {
         return Stream.concat(Stream.of(distribution.getOrder().getCreatedBy()), catchers)
             .distinct()
             .toList();
+    }
+
+    @Transactional
+    public void toInProgress(QueueDistributionEntity distribution) {
+        distribution.setStatus(DistributionStatusType.IN_PROGRESS);
     }
 }
