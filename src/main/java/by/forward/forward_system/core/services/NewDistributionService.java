@@ -291,6 +291,8 @@ public class NewDistributionService {
             user.getId(), """
                 Автоматическое распределение заказа №%s завершилось. Автор не найден.
                 """.formatted(distribution.getOrder().getTechNumber())));
+        
+        distribution.setStatus(DistributionStatusType.ENDED);
     }
 
     @Transactional
