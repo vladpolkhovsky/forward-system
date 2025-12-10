@@ -54,6 +54,11 @@ public class MessageService {
 
     @Transactional
     public void sendMessageToNewOrderChat(Long authorId, Long managerId, Boolean isSystemMessage, String message, Map<String, String> optionNameToUrl, boolean markAsNew) {
+        sendMessageToNewOrderChat(authorId, managerId, isSystemMessage, message, optionNameToUrl, markAsNew, false);
+    }
+
+    @Transactional
+    public void sendMessageToNewOrderChat(Long authorId, Long managerId, Boolean isSystemMessage, String message, Map<String, String> optionNameToUrl, boolean markAsNew, boolean triggerSendNotification) {
         Optional<ChatEntity> newOrderChat = chatRepository.findChatEntityByUserAndManagerId(authorId, managerId);
         if (newOrderChat.isPresent()) {
             ChatEntity chatEntity = newOrderChat.get();
@@ -74,7 +79,8 @@ public class MessageService {
                 ChatMessageType.MESSAGE.entity(),
                 List.of(),
                 options,
-                markAsNew
+                markAsNew,
+                triggerSendNotification
             );
         }
     }
@@ -216,7 +222,7 @@ public class MessageService {
             chatMessageToUserEntity.setChat(chatEntity);
             chatMessageToUserEntity.setMessage(chatMessageEntity);
 
-            boolean isViewed = markMessagesAsNew ? false : true;
+            boolean isViewed = !markMessagesAsNew;
             chatMessageToUserEntity.setIsViewed(isViewed);
             chatMessageToUserEntity.setCreatedAt(now);
 
