@@ -41,14 +41,15 @@ public class NewDistributionService {
     private final MessageService messageService;
     private final OrderRepository orderRepository;
 
-
     @Transactional
     public void stopDistribution(Long distributionId) {
         queueDistributionRepository.findById(distributionId).ifPresent(distribution -> {
             distribution.setStatus(DistributionStatusType.ENDED_BY_MANAGER);
 
             distribution.getItems().stream()
-                .filter(item -> item.getStatus() == DistributionItemStatusType.IN_PROGRESS
+                .filter(item -> item.getStatus() == DistributionItemStatusType.NO_RESPONSE
+                    || item.getStatus() == DistributionItemStatusType.IN_PROGRESS
+                    || item.getStatus() == DistributionItemStatusType.SKIPPED
                     || item.getStatus() == DistributionItemStatusType.TALK)
                 .forEach(item -> {
                     item.setStatus(DistributionItemStatusType.SKIPPED);
@@ -63,7 +64,10 @@ public class NewDistributionService {
 
             distribution.getItems().stream()
                 .filter((item -> item.getStatus() == DistributionItemStatusType.WAITING))
-                .forEach(item -> item.setStatus(DistributionItemStatusType.SKIPPED));
+                .forEach(item -> {
+                    item.setStatus(DistributionItemStatusType.SKIPPED);
+                    deleteAuthorParticipant(distribution.getOrder().getId(), item.getUser().getId());
+                });
 
             getUsersThatShouldBeNotified(distribution).forEach(user -> botNotificationService.sendBotNotification(
                 user.getId(), """
@@ -229,7 +233,10 @@ public class NewDistributionService {
 
         item.getQueueDistribution().getItems().stream()
             .filter(cItem -> cItem.getStatus() == DistributionItemStatusType.WAITING)
-            .forEach(cItem -> cItem.setStatus(DistributionItemStatusType.SKIPPED));
+            .forEach(cItem -> {
+                cItem.setStatus(DistributionItemStatusType.SKIPPED);
+                deleteAuthorParticipant(cItem.getQueueDistribution().getOrder().getId(), cItem.getUser().getId());
+            });
 
         getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
             user.getId(), """
@@ -240,11 +247,6 @@ public class NewDistributionService {
         getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
             user.getId(), """
                 Автоматическое распределение заказа №%s завершилось. Найден автор, который приянял запрос.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber())));
-
-        getUsersThatCanTalkAboutOrder(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Заказ №%s уже распределен другому автору. Ожидайте новых заказов!
                 """.formatted(item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.getQueueDistribution().setStatus(DistributionStatusType.ENDED);
@@ -291,7 +293,7 @@ public class NewDistributionService {
             user.getId(), """
                 Автоматическое распределение заказа №%s завершилось. Автор не найден.
                 """.formatted(distribution.getOrder().getTechNumber())));
-        
+
         distribution.setStatus(DistributionStatusType.ENDED);
     }
 
