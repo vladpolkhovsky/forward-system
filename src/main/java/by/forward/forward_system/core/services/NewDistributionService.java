@@ -66,7 +66,7 @@ public class NewDistributionService {
                 .filter((item -> item.getStatus() == DistributionItemStatusType.WAITING))
                 .forEach(item -> {
                     item.setStatus(DistributionItemStatusType.SKIPPED);
-                    deleteAuthorParticipant(distribution.getOrder().getId(), item.getUser().getId());
+                    deleteAuthorParticipantOnStop(distribution.getOrder(), item.getUser().getId());
                 });
 
             getUsersThatShouldBeNotified(distribution).forEach(user -> botNotificationService.sendBotNotification(
@@ -96,6 +96,12 @@ public class NewDistributionService {
             .filter(t -> t.getParticipantsType().getType() == ParticipantType.AUTHOR || t.getParticipantsType().getType() == ParticipantType.DECLINE_AUTHOR)
             .filter(t -> Objects.equals(t.getUser().getId(), authorId))
             .forEach(participantRepository::delete);
+    }
+
+    @Transactional
+    public void deleteAuthorParticipantOnStop(OrderEntity orderEntity, Long authorId) {
+        orderEntity.getOrderParticipants()
+            .removeIf(op -> Objects.equals(op.getUser().getId(), authorId));
     }
 
     @Transactional
@@ -235,7 +241,7 @@ public class NewDistributionService {
             .filter(cItem -> cItem.getStatus() == DistributionItemStatusType.WAITING)
             .forEach(cItem -> {
                 cItem.setStatus(DistributionItemStatusType.SKIPPED);
-                deleteAuthorParticipant(cItem.getQueueDistribution().getOrder().getId(), cItem.getUser().getId());
+                deleteAuthorParticipantOnStop(cItem.getQueueDistribution().getOrder(), cItem.getUser().getId());
             });
 
         getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
