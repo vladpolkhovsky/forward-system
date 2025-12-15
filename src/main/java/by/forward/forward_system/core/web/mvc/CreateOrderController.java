@@ -252,6 +252,7 @@ public class CreateOrderController {
     @GetMapping(value = "/view-order/{orderId}")
     public String viewOrder(Model model, @PathVariable Long orderId) {
         orderService.checkOrderAccessView(orderId, userUiService.getCurrentUserId());
+        userUiService.checkAccessManager();
 
         OrderDto order = orderService.getOrder(orderId);
         Long orderMainChatId = orderService.getOrderMainChat(orderId);
@@ -515,5 +516,13 @@ public class CreateOrderController {
         orderService.checkOrderAccessEdit(orderId, userUiService.getCurrentUserId());
         model.addAttribute("userShort", userUiService.getCurrentUser());
         return "main/order-distribution";
+    }
+
+    @GetMapping("/order-redirect-by-authority")
+    public RedirectView orderRedirectByAuthority(@RequestParam("orderId") Long orderId) {
+        if (userUiService.isCurrentUserAuthor()){
+            return new RedirectView("/order-info/" + orderId);
+        }
+        return  new RedirectView("/view-order/" + orderId);
     }
 }

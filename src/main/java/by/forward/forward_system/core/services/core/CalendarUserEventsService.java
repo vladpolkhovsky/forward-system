@@ -164,7 +164,7 @@ public class CalendarUserEventsService {
         }
 
         private String createViewOrderUrl(Long orderId) {
-            return "/view-order/" + orderId;
+            return "/order-redirect-by-authority?orderId=" + orderId;
         }
 
         @JsonInclude(JsonInclude.Include.NON_NULL)
