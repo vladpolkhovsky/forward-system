@@ -423,6 +423,10 @@ public class OrderService {
 
         for (UserEntity host : hosts) {
             addParticipant(orderEntity, hostParticipant, host.getId(), null);
+            botNotificationService.sendBotNotification(host.getId(), """
+                Заказ №%s подтверждён администратором и закреплён за Вами.
+                Перейдите в диалог, поздоровайтесь с автором и ознакомьтесь с требованиями заказа!
+                """.formatted(orderEntity.getTechNumber()));
         }
 
         List<ParticipantType> userTypeInChat = Arrays.asList(ParticipantType.MAIN_AUTHOR, ParticipantType.HOST);
