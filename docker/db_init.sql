@@ -911,3 +911,6 @@ update forward_system.queue_distribution
 
 alter table forward_system.queue_distribution
     alter column start_time_at set not null;
+
+create unique index if not exists forward_system_chat_metadata_uniq_index
+    on forward_system.chat_metadata (user_id, manager_id);
