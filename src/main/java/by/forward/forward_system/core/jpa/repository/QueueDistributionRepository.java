@@ -62,5 +62,5 @@ public interface QueueDistributionRepository extends JpaRepository<QueueDistribu
     void deleteAllByOrder_Id(Long orderId);
 
     @Query(value = "SELECT id from QueueDistributionEntity where status = :status and order.id = :orderId")
-    List<Long> findByOrderIdAndStatus(Long orderId, String status);
+    List<Long> findByOrderIdAndStatus(Long orderId, DistributionStatusType status);
 }

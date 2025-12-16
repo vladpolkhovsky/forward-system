@@ -76,8 +76,8 @@ public class NewDistributionService {
 
     @Transactional
     public void stopAllDistributions(Long orderId) {
-        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS.name()).forEach(this::stopDistribution);
-        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED.name()).forEach(this::stopDistribution);
+        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS).forEach(this::stopDistribution);
+        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED).forEach(this::stopDistribution);
     }
 
     @Transactional
