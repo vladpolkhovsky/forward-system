@@ -18,6 +18,7 @@ import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderSendRe
 import by.forward.forward_system.core.jpa.repository.projections.ChatAttachmentProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.mapper.TagMapper;
+import by.forward.forward_system.core.services.NewDistributionService;
 import by.forward.forward_system.core.services.TagService;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.ChatCreatorService;
@@ -59,7 +60,6 @@ public class OrderService {
     private final ChatRepository chatRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
     private final ChatService chatService;
-    private final ChatTypeRepository chatTypeRepository;
     private final AttachmentService attachmentService;
     private final OrderAttachmentRepository orderAttachmentRepository;
     private final UserUiService userUiService;
@@ -69,7 +69,6 @@ public class OrderService {
     private final BotNotificationService botNotificationService;
     private final UpdateOrderRequestRepository updateOrderRequestRepository;
     private final ReviewRepository reviewRepository;
-    private final OrderRequestStatisticRepository orderRequestStatisticRepository;
     private final ForwardOrderRepository forwardOrderRepository;
     private final ChatMetadataRepository chatMetadataRepository;
     private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
@@ -80,6 +79,7 @@ public class OrderService {
     private final TagService tagService;
     private final QueueDistributionRepository queueDistributionRepository;
     private final QueueDistributionItemRepository queueDistributionItemRepository;
+    private final NewDistributionService newDistributionService;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -225,82 +225,6 @@ public class OrderService {
             messageType, Collections.emptyList(), Collections.emptyList());
     }
 
-    public void addParticipant(Long orderId, AddParticipantRequestDto addParticipantRequestDto) {
-        OrderEntity orderEntity = getById(orderId).orElseThrow(() -> new RuntimeException("Order not found with id " + orderId));
-
-        ParticipantType participantType = ParticipantType.byName(addParticipantRequestDto.role());
-        if (participantType.equals(ParticipantType.AUTHOR)) {
-            addAuthorParticipant(orderEntity, addParticipantRequestDto.selected(), addParticipantRequestDto.message());
-        }
-        if (participantType.equals(ParticipantType.CATCHER)) {
-            addCatcherParticipant(orderEntity, addParticipantRequestDto.selected().get(0));
-        }
-    }
-
-    private OrderEntity addCatcherParticipant(OrderEntity orderEntity, AddParticipantRequestDto.Selected selected) {
-        OrderParticipantsTypeEntity orderParticipantsTypeEntity = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).get();
-        OrderParticipantEntity removeOrderParticipantEntity = null;
-
-        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
-            if (orderParticipant.getParticipantsType().getType().equals(ParticipantType.CATCHER)) {
-                removeOrderParticipantEntity = orderParticipant;
-                break;
-            }
-        }
-
-        if (removeOrderParticipantEntity != null) {
-            orderEntity.getOrderParticipants().remove(removeOrderParticipantEntity);
-            orderParticipantRepository.delete(removeOrderParticipantEntity);
-        }
-
-        addParticipant(orderEntity, orderParticipantsTypeEntity, selected.id(), null);
-
-        return orderRepository.save(orderEntity);
-    }
-
-    private void addAuthorParticipant(OrderEntity orderEntity, List<AddParticipantRequestDto.Selected> selected, String message) {
-        OrderParticipantsTypeEntity orderParticipantsTypeEntity = orderParticipantsTypeRepository.findById(ParticipantType.AUTHOR.getName()).get();
-
-        for (OrderParticipantEntity orderParticipant : orderEntity.getOrderParticipants()) {
-            AddParticipantRequestDto.Selected cSelected = null;
-            boolean isFound = false;
-            for (AddParticipantRequestDto.Selected c : selected) {
-                if (orderParticipant.getUser().getId().equals(c.id())) {
-                    isFound = true;
-                    cSelected = c;
-                    break;
-                }
-            }
-            if (isFound) {
-                selected.remove(cSelected);
-            }
-        }
-
-        for (AddParticipantRequestDto.Selected c : selected) {
-            Integer fee = c.fee() == -1 ? orderEntity.getAuthorCost() : c.fee();
-            addParticipant(orderEntity, orderParticipantsTypeEntity, c.id(), fee);
-            sendNewOrderRequest(
-                c.id(),
-                AuthUtils.getCurrentUserId(),
-                orderEntity.getId(),
-                new BigDecimal(orderEntity.getTechNumber()),
-                orderEntity.getWorkType(),
-                orderEntity.getDiscipline().getName(),
-                orderEntity.getSubject(),
-                message
-            );
-        }
-
-        orderRepository.save(orderEntity);
-
-        changeStatus(orderEntity.getId(), OrderStatus.CREATED, OrderStatus.DISTRIBUTION);
-    }
-
-    private boolean isAssignedAuthor(OrderParticipantEntity orderParticipant) {
-        return orderParticipant.getParticipantsType().getType().equals(ParticipantType.AUTHOR)
-               || orderParticipant.getParticipantsType().getType().equals(ParticipantType.DECLINE_AUTHOR);
-    }
-
     private void sendDeclineMessage(Long userId, Long managerId, String techNumber) {
         UserEntity userEntity = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found with id " + userId));
@@ -335,65 +259,6 @@ public class OrderService {
         List<Long> list = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
 
         websocketMassageService.sendMessageToUsers(list, messageDto);
-    }
-
-    public void sendNewOrderRequest(Long userId, Long managerId, Long orderId, String message) {
-        OrderSendRequestProjection orderProjection = orderRepository.findOrderProjectionToOrderSendRequest(orderId);
-        sendNewOrderRequest(userId,
-            managerId,
-            orderId,
-            orderProjection.getTechNumber(),
-            orderProjection.getWorkType(),
-            orderProjection.getDiscipline(),
-            orderProjection.getSubject(),
-            message);
-    }
-
-    private void sendNewOrderRequest(Long authorId, Long managerId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject, String message) {
-        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(authorId, managerId);
-
-        ChatMessageTypeEntity chatMessageType = ChatMessageType.NEW_ORDER.entity();
-        OrderParticipantsTypeEntity participantsType = ParticipantType.AUTHOR.toEntity();
-
-        ChatMessageOptionEntity chatMessageOptionEntity = new ChatMessageOptionEntity();
-        chatMessageOptionEntity.setOptionName("Ознакомиться с ТЗ/требованиями");
-        chatMessageOptionEntity.setContent("/request-order/" + orderId);
-        chatMessageOptionEntity.setOptionResolved(false);
-        chatMessageOptionEntity.setOrderParticipant(participantsType);
-
-        if (newOrdersChatByUser.isPresent()) {
-            messageService.sendMessage(
-                UserEntity.of(ChatNames.SYSTEM_USER_ID),
-                newOrdersChatByUser.get(),
-                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
-                true,
-                chatMessageType,
-                Collections.emptyList(),
-                Collections.singletonList(chatMessageOptionEntity)
-            );
-
-            OrderRequestStatisticEntity orderRequestStatisticEntity = new OrderRequestStatisticEntity();
-            orderRequestStatisticEntity.setAuthor(authorId);
-            orderRequestStatisticEntity.setManager(managerId);
-            orderRequestStatisticEntity.setOrderId(orderId);
-            orderRequestStatisticEntity.setCreatedAt(LocalDateTime.now());
-
-            orderRequestStatisticRepository.save(orderRequestStatisticEntity);
-
-            if (!StringUtils.isBlank(message)) {
-                messageService.sendMessage(
-                    UserEntity.of(managerId),
-                    newOrdersChatByUser.get(),
-                    message,
-                    false,
-                    chatMessageType,
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    true,
-                    false
-                );
-            }
-        }
     }
 
     private void addParticipant(OrderEntity orderEntity, OrderParticipantsTypeEntity orderParticipantsTypeEntity, Long userId, Integer fee) {
@@ -586,6 +451,8 @@ public class OrderService {
         }
 
         changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
+
+        newDistributionService.stopAllDistributions(update.getOrderId());
     }
 
     private void makeDefaultChat(List<UserEntity> participants, OrderEntity orderEntity) {

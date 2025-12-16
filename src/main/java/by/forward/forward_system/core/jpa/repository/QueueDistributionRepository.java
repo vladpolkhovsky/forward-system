@@ -1,5 +1,6 @@
 package by.forward.forward_system.core.jpa.repository;
 
+import by.forward.forward_system.core.enums.DistributionStatusType;
 import by.forward.forward_system.core.jpa.model.QueueDistributionEntity;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -59,4 +60,7 @@ public interface QueueDistributionRepository extends JpaRepository<QueueDistribu
 
     @Modifying
     void deleteAllByOrder_Id(Long orderId);
+
+    @Query(value = "SELECT id from QueueDistributionEntity where status = :status and order.id = :orderId")
+    List<Long> findByOrderIdAndStatus(Long orderId, String status);
 }

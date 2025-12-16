@@ -4,20 +4,16 @@ import by.forward.forward_system.core.dto.messenger.v3.CreateDistributionRequest
 import by.forward.forward_system.core.dto.messenger.v3.DistributionLogDto;
 import by.forward.forward_system.core.dto.messenger.v3.DistributionPersonDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorFullDto;
-import by.forward.forward_system.core.enums.DistributionItemStatusType;
-import by.forward.forward_system.core.enums.DistributionStatusType;
-import by.forward.forward_system.core.enums.OrderStatus;
-import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.enums.*;
 import by.forward.forward_system.core.jpa.model.*;
-import by.forward.forward_system.core.jpa.repository.OrderParticipantRepository;
-import by.forward.forward_system.core.jpa.repository.OrderRepository;
+import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderSendRequestProjection;
-import by.forward.forward_system.core.jpa.repository.QueueDistributionRepository;
 import by.forward.forward_system.core.mapper.QueueDistributionMapper;
 import by.forward.forward_system.core.services.core.OrderService;
 import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.AuthUtils;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -25,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -34,12 +31,13 @@ import java.util.stream.Stream;
 public class NewDistributionService {
 
     private final OrderParticipantRepository participantRepository;
-    private final OrderService orderService;
     private final QueueDistributionRepository queueDistributionRepository;
     private final QueueDistributionMapper queueDistributionMapper;
     private final BotNotificationService botNotificationService;
     private final MessageService messageService;
     private final OrderRepository orderRepository;
+    private final ChatRepository chatRepository;
+    private final OrderRequestStatisticRepository orderRequestStatisticRepository;
 
     @Transactional
     public void stopDistribution(Long distributionId) {
@@ -73,8 +71,13 @@ public class NewDistributionService {
                 user.getId(), """
                     Автоматическое распредление по заказу №%s принудительно завершено.
                     """.formatted(distribution.getOrder().getTechNumber())));
-
         });
+    }
+
+    @Transactional
+    public void stopAllDistributions(Long orderId) {
+        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS.name()).forEach(this::stopDistribution);
+        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED.name()).forEach(this::stopDistribution);
     }
 
     @Transactional
@@ -385,7 +388,7 @@ public class NewDistributionService {
 
     private void sendRequestToAuthors(List<OrderParticipantEntity> participants, Long managerId, OrderEntity order, String message) {
         for (OrderParticipantEntity participant : participants) {
-            orderService.sendNewOrderRequest(participant.getUser().getId(), managerId, order.getId(), message);
+            sendNewOrderRequest(participant.getUser().getId(), managerId, order.getId(), message);
         }
     }
 
@@ -414,5 +417,64 @@ public class NewDistributionService {
     @Transactional
     public void toInProgress(QueueDistributionEntity distribution) {
         distribution.setStatus(DistributionStatusType.IN_PROGRESS);
+    }
+
+    public void sendNewOrderRequest(Long userId, Long managerId, Long orderId, String message) {
+        OrderSendRequestProjection orderProjection = orderRepository.findOrderProjectionToOrderSendRequest(orderId);
+        sendNewOrderRequest(userId,
+            managerId,
+            orderId,
+            orderProjection.getTechNumber(),
+            orderProjection.getWorkType(),
+            orderProjection.getDiscipline(),
+            orderProjection.getSubject(),
+            message);
+    }
+
+    private void sendNewOrderRequest(Long authorId, Long managerId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject, String message) {
+        Optional<ChatEntity> newOrdersChatByUser = chatRepository.findChatEntityByUserAndManagerId(authorId, managerId);
+
+        ChatMessageTypeEntity chatMessageType = ChatMessageType.NEW_ORDER.entity();
+        OrderParticipantsTypeEntity participantsType = ParticipantType.AUTHOR.toEntity();
+
+        ChatMessageOptionEntity chatMessageOptionEntity = new ChatMessageOptionEntity();
+        chatMessageOptionEntity.setOptionName("Ознакомиться с ТЗ/требованиями");
+        chatMessageOptionEntity.setContent("/request-order/" + orderId);
+        chatMessageOptionEntity.setOptionResolved(false);
+        chatMessageOptionEntity.setOrderParticipant(participantsType);
+
+        if (newOrdersChatByUser.isPresent()) {
+            messageService.sendMessage(
+                UserEntity.of(ChatNames.SYSTEM_USER_ID),
+                newOrdersChatByUser.get(),
+                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
+                true,
+                chatMessageType,
+                Collections.emptyList(),
+                Collections.singletonList(chatMessageOptionEntity)
+            );
+
+            OrderRequestStatisticEntity orderRequestStatisticEntity = new OrderRequestStatisticEntity();
+            orderRequestStatisticEntity.setAuthor(authorId);
+            orderRequestStatisticEntity.setManager(managerId);
+            orderRequestStatisticEntity.setOrderId(orderId);
+            orderRequestStatisticEntity.setCreatedAt(LocalDateTime.now());
+
+            orderRequestStatisticRepository.save(orderRequestStatisticEntity);
+
+            if (!StringUtils.isBlank(message)) {
+                messageService.sendMessage(
+                    UserEntity.of(managerId),
+                    newOrdersChatByUser.get(),
+                    message,
+                    false,
+                    chatMessageType,
+                    Collections.emptyList(),
+                    Collections.emptyList(),
+                    true,
+                    false
+                );
+            }
+        }
     }
 }
