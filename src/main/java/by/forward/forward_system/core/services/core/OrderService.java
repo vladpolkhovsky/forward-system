@@ -43,6 +43,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -397,9 +398,6 @@ public class OrderService {
             .filter(user -> !update.getAuthors().contains(user.getId()))
             .toList();
 
-        for (UserEntity declinedAuthor : declinedAuthors) {
-            sendDeclineMessage(declinedAuthor.getId(), update.getFromUserId(), orderEntity.getTechNumber());
-        }
 
         orderParticipantRepository.deleteAll(orderEntity.getOrderParticipants());
         orderEntity.getOrderParticipants().clear();
@@ -456,7 +454,14 @@ public class OrderService {
 
         changeStatus(update.getOrderId(), OrderStatus.ADMIN_REVIEW, OrderStatus.IN_PROGRESS);
 
-        newDistributionService.stopAllDistributions(update.getOrderId());
+        Set<Long> deletedParticipants = newDistributionService.stopAllDistributions(update.getOrderId());
+        declinedAuthors = declinedAuthors.stream()
+            .filter(u -> !deletedParticipants.contains(u.getId()))
+            .toList();
+
+        for (UserEntity declinedAuthor : declinedAuthors) {
+            sendDeclineMessage(declinedAuthor.getId(), update.getFromUserId(), orderEntity.getTechNumber());
+        }
     }
 
     private void makeDefaultChat(List<UserEntity> participants, OrderEntity orderEntity) {

@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -40,7 +41,9 @@ public class NewDistributionService {
     private final OrderRequestStatisticRepository orderRequestStatisticRepository;
 
     @Transactional
-    public void stopDistribution(Long distributionId) {
+    public List<Long> stopDistribution(Long distributionId) {
+        List<Long> deletedParticipants = new ArrayList<>();
+
         queueDistributionRepository.findById(distributionId).ifPresent(distribution -> {
             distribution.setStatus(DistributionStatusType.ENDED_BY_MANAGER);
 
@@ -65,6 +68,7 @@ public class NewDistributionService {
                 .forEach(item -> {
                     item.setStatus(DistributionItemStatusType.SKIPPED);
                     deleteAuthorParticipantOnStop(distribution.getOrder(), item.getUser().getId());
+                    deletedParticipants.add(item.getUser().getId());
                 });
 
             getUsersThatShouldBeNotified(distribution).forEach(user -> botNotificationService.sendBotNotification(
@@ -72,12 +76,20 @@ public class NewDistributionService {
                     Автоматическое распредление по заказу №%s принудительно завершено.
                     """.formatted(distribution.getOrder().getTechNumber())));
         });
+
+        return deletedParticipants;
     }
 
     @Transactional
-    public void stopAllDistributions(Long orderId) {
-        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS).forEach(this::stopDistribution);
-        queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED).forEach(this::stopDistribution);
+    public Set<Long> stopAllDistributions(Long orderId) {
+        List<Long> deletedParticipants1 = queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS).stream().map(this::stopDistribution)
+            .flatMap(Collection::stream)
+            .toList();
+        List<Long> deletedParticipants2 = queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED).stream().map(this::stopDistribution)
+            .flatMap(Collection::stream)
+            .toList();
+        return Stream.concat(deletedParticipants1.stream(), deletedParticipants2.stream())
+            .collect(Collectors.toSet());
     }
 
     @Transactional
