@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 @RequiredArgsConstructor
 public class BotNotificationJob {
 
-    private static final int WAIT_MINS = 10;
+    private static final int WAIT_MINS = 5;
 
     private final BotNotificationService botNotificationService;
     private final NotificationOutboxRepository notificationOutboxRepository;
@@ -49,7 +49,8 @@ public class BotNotificationJob {
         try {
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
             List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository
-                .getAllMessagesByChatIdAndOlderThen(event.chatId(), LocalDateTime.now().minusSeconds(7));
+                .getAllMessagesByChatIdAndOlderThen(event.chatId(), LocalDateTime.now());
+            log.info("Для чата {} найдено {} записей о необходимости отправки", event.chatId(), allMessagesOlderThen.size());
             process(allMessagesOlderThen);
         } catch (Exception ex) {
             log.error("Error in notifyByChatId chatId={}", event.chatId(), ex);
@@ -76,6 +77,20 @@ public class BotNotificationJob {
             userToOutbox.putIfAbsent(notificationOutboxEntity.getUser(), new ArrayList<>());
             userToOutbox.get(notificationOutboxEntity.getUser()).add(notificationOutboxEntity);
         }
+
+        userToOutbox.forEach((userEntity, ent) -> {
+            List<Long> chatIds = ent.stream()
+                .map(NotificationOutboxEntity::getChat)
+                .map(ChatEntity::getId)
+                .distinct()
+                .toList();
+            List<Long> messageIds = ent.stream()
+                .map(NotificationOutboxEntity::getMessage)
+                .map(ChatMessageEntity::getId)
+                .distinct()
+                .toList();
+            log.info("Для пользователя {} отпралены сообщения из чатов {}, сообщения {}.", userEntity.getId(), chatIds, messageIds);
+        });
 
         int sandedMessageCount = 0;
         for (Map.Entry<UserEntity, List<NotificationOutboxEntity>> userEntityListEntry : userToOutbox.entrySet()) {
