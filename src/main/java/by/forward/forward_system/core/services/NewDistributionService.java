@@ -351,6 +351,14 @@ public class NewDistributionService {
                 Map.of()
             );
         }
+
+        OrderRequestStatisticEntity requestStatistic = new OrderRequestStatisticEntity();
+        requestStatistic.setAuthor(item.getUser().getId());
+        requestStatistic.setManager(item.getQueueDistribution().getCreatedBy().getId());
+        requestStatistic.setOrderId(item.getQueueDistribution().getOrder().getId());
+        requestStatistic.setCreatedAt(LocalDateTime.now());
+
+        orderRequestStatisticRepository.save(requestStatistic);
     }
 
     private void createQueueDistribution(CreateDistributionRequestDto createDistributionRequestDto, OrderEntity order, Long managerId) {
