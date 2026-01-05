@@ -23,7 +23,7 @@ public class HelpMenuComponent implements MenuComponent {
     @Override
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = List.of(
-            new MenuEntry.MenuItem("Скачать памятку", "/load-server-file/help", false, null)
+            new MenuEntry.MenuItem("Скачать памятку для автора", "/load-server-file/help", false, null)
         );
 
         return new MenuEntry("Помощь", list, 8);
