@@ -11,7 +11,6 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.*;
-import org.springframework.security.web.header.Header;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,11 +101,10 @@ public class FilesController {
     @GetMapping(value = "/load-server-file/help")
     @SneakyThrows
     public ResponseEntity<Resource> loadHelpFile() {
-        Resource resource = new ClassPathResource("/static/help/help-v1.docx");
+        Resource resource = new ClassPathResource("/static/help-file/help-v1.docx");
 
         Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFile().toPath().toString());
         String filename = "Памятка для авторов.docx";
-
 
         return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
     }
