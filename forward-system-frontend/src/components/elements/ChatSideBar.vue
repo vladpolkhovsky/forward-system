@@ -374,7 +374,7 @@ function handleDeleteExpertFromOrder() {
         <div class="p-2 d-flex gap-2 justify-content-around align-items-center flex-wrap"
              v-if="forwardOrderChatInformation">
             <span class="badge text-bg-success fs-7"
-                  v-if="forwardOrderChatInformation.isOrderPaid">Заказ оплаче</span>
+                  v-if="forwardOrderChatInformation.isOrderPaid">Заказ оплачен</span>
           <span class="badge text-bg-danger fs-7" v-else>Заказ не оплачен</span>
           <span class="badge text-bg-success fs-7"
                 v-if="forwardOrderChatInformation.isAuthorCanSubmitFiles">Файлы разрешены</span>

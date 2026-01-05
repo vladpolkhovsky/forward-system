@@ -99,6 +99,17 @@ public class FilesController {
         return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
     }
 
+    @GetMapping(value = "/load-server-file/help")
+    @SneakyThrows
+    public ResponseEntity<Resource> loadHelpFile() {
+        Resource resource = new ClassPathResource("/static/help/help.pdf");
+
+        Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFile().toPath().toString());
+        String filename = "Памятка для авторов.pdf";
+
+        return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
+    }
+
     ResponseEntity<Resource> asResponseEntity(Resource resource, String filename, MediaType mimeType) {
         ContentDisposition contentDisposition = ContentDisposition.builder("contentDisposition")
             .filename(filename, StandardCharsets.UTF_8)

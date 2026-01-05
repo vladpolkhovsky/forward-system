@@ -145,6 +145,11 @@ function handleLoadMoreChats() {
 
 function handleLoadMoreChatMessages(pageNumber: number) {
   chatService.loadChatMessages(selectedChat.value.id, pageNumber, page => {
+    let chatId = page.content?.[0]?.chatId ?? null;
+
+    if (selectedChat.value.id != chatId) {
+      return;
+    }
 
     if (pageNumber == 0) {
       chatWindowRef.value.appendMessageToBottom(selectedChat.value.id, page.content);

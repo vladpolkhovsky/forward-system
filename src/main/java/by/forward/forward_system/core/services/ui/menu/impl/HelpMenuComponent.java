@@ -2,7 +2,6 @@ package by.forward.forward_system.core.services.ui.menu.impl;
 
 import by.forward.forward_system.core.dto.ui.MenuEntry;
 import by.forward.forward_system.core.enums.auth.Authority;
-import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.menu.MenuComponent;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,9 +13,7 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class AuthorMenuComponent implements MenuComponent {
-
-    private final OrderUiService orderUiService;
+public class HelpMenuComponent implements MenuComponent {
 
     @Override
     public boolean checkAccess(Collection<? extends GrantedAuthority> authorities) {
@@ -25,13 +22,10 @@ public class AuthorMenuComponent implements MenuComponent {
 
     @Override
     public MenuEntry getMenuEntry() {
-        List<MenuEntry.MenuItem> list = Arrays.asList(
-            new MenuEntry.MenuItem("Мои заказы", "/view-my-order-author", true, orderUiService.countMyOrdersAuthor()),
-            new MenuEntry.MenuItem("Мои выплаты", "/author-view-payment", false, null),
-            new MenuEntry.MenuItem("Мои статусы выплат по заказам", "/accountant/order-payment-status", false, null),
-            new MenuEntry.MenuItem("Памятка", "/load-server-file/help", false, null)
+        List<MenuEntry.MenuItem> list = List.of(
+            new MenuEntry.MenuItem("Скачать памятку", "/load-server-file/help", false, null)
         );
 
-        return new MenuEntry("Автор", list, 2);
+        return new MenuEntry("Помощь", list, 8);
     }
 }
