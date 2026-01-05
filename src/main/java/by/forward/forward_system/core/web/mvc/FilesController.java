@@ -107,6 +107,7 @@ public class FilesController {
         Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFile().toPath().toString());
         String filename = "Памятка для авторов.docx";
 
+
         return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
     }
 
