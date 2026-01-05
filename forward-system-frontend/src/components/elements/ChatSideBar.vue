@@ -437,7 +437,7 @@ function handleDeleteExpertFromOrder() {
       <div class="card mt-3" v-if="orderChatInformation">
         <div class="card-body p-2">
           <h5 class="card-title m-0">
-            <i class="bi bi-journal-arrow-up me-1"></i>Создать запрос на проверку
+            <i class="bi bi-journal-arrow-up me-1"></i> Создать запрос на проверку
           </h5>
         </div>
         <form action="/api/review/create-by-order-group" enctype="multipart/form-data" method="post"
