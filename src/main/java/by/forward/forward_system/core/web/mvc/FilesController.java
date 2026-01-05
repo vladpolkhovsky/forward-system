@@ -103,8 +103,8 @@ public class FilesController {
     public ResponseEntity<Resource> loadHelpFile() {
         Resource resource = new ClassPathResource("/static/help-file/help-v1.docx");
 
-        Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFile().toPath().toString());
         String filename = "Памятка для авторов.docx";
+        Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFilename());
 
         return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
     }
