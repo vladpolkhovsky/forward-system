@@ -101,9 +101,9 @@ public class FilesController {
     @GetMapping(value = "/load-server-file/help")
     @SneakyThrows
     public ResponseEntity<Resource> loadHelpFile() {
-        Resource resource = new ClassPathResource("/static/help-file/help-v1.docx");
+        Resource resource = new ClassPathResource("/static/help-file/help-v2.docx");
 
-        String filename = "Памятка для авторов.docx";
+        String filename = "Памятка для авторов (от 12.01.2026).docx";
         Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(resource.getFilename());
 
         return asResponseEntity(resource, filename, mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM));
