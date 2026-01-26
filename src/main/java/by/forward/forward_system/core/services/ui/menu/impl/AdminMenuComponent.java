@@ -37,3 +37,4 @@ public class AdminMenuComponent implements MenuComponent {
         return new MenuEntry("Админ", list, 1);
     }
 }
+
