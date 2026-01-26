@@ -73,7 +73,7 @@ public class V3ChatLoadService {
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(" | "));
 
-        String chatNameSearch = Optional.ofNullable(criteria.getTagNameQuery())
+        String chatNameSearch = Optional.ofNullable(criteria.getChatNameQuery())
             .map(String::toLowerCase)
             .map(query -> RegExUtils.replaceAll(query, "[^a-zA-Zа-яА-ЯёЁ0-9]+", " "))
             .map(query -> RegExUtils.replaceAll(query, " +", " "))
