@@ -31,7 +31,8 @@ public class AdminMenuComponent implements MenuComponent {
             new MenuEntry.MenuItem("Лог предложения заказов", "/order-send-log", false, null),
             new MenuEntry.MenuItem("Создать план", "/create-plan", false, null),
             new MenuEntry.MenuItem("Просмотр планов", "/view-plan", false, null),
-            new MenuEntry.MenuItem("Конструктор расписания экспертов", "/calendar-constructor", false, null)
+            new MenuEntry.MenuItem("Конструктор расписания экспертов", "/calendar-constructor", false, null),
+            new MenuEntry.MenuItem("Добавление / удаление участников чата", "/add-manager-to-chat", false, null)
         );
         return new MenuEntry("Админ", list, 1);
     }

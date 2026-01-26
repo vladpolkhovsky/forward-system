@@ -199,4 +199,21 @@ export class ChatService {
             jsonCallback(value);
         })
     }
+
+    public static simpleSearchChat(type: ChatType, id: string | null, name: string | null, callback: (chats: ChatShortDto[]) => void) {
+        if (id != null) {
+            this.fetchData("GET", `/api/v3/chat/id/${id}`, null, json => {
+                callback([(json as ChatShortDto)])
+            });
+        }
+        else if (name != null) {
+            let request = {
+                chatNameQuery: name,
+                chatTypes: [type]
+            };
+            ChatService.fetchData("POST", `/api/v3/chat/search?page=0&size=50`, request, json => {
+                callback((json as PageableDto<ChatShortDto>).content)
+            })
+        }
+    }
 }

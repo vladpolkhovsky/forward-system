@@ -47,6 +47,12 @@ public class AdminMenuController {
         return "main/admin/order-send-log";
     }
 
+    @GetMapping(value = "/add-manager-to-chat")
+    public String addManagerToChat() {
+        userUiService.checkAccessAdmin();
+        return "main/admin/add-manager-to-chat";
+    }
+
     @GetMapping(value = "/order-review")
     public String orderReview(Model model) {
         userUiService.checkAccessAdmin();

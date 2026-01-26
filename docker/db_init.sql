@@ -900,9 +900,6 @@ alter table forward_system.tags add tsvector_tag_name tsvector default ''::tsvec
 CREATE INDEX idx_tags_tsvector ON forward_system.tags USING gin (tsvector_tag_name);
 CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_chat_name);
 
-insert into forward_system.order_statuses
-values ('CREATED');
-
 alter table forward_system.queue_distribution
     add start_time_at timestamp;
 

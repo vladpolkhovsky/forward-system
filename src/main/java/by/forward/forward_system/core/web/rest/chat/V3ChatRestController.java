@@ -1,14 +1,15 @@
 package by.forward.forward_system.core.web.rest.chat;
 
 import by.forward.forward_system.core.dto.messenger.v3.chat.*;
-import by.forward.forward_system.core.jpa.model.ChatAttachmentByChatView;
-import by.forward.forward_system.core.jpa.model.ChatAttachmentByChatView_;
-import by.forward.forward_system.core.jpa.model.ChatMessageAttachmentEntity_;
+import by.forward.forward_system.core.jpa.model.*;
+import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.services.messager.ChatService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.services.v3.V3ChatLoadService;
 import by.forward.forward_system.core.services.v3.V3ChatMessageLoadService;
 import by.forward.forward_system.core.utils.AuthUtils;
+import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -33,6 +35,8 @@ public class V3ChatRestController {
     private final V3ChatLoadService v3ChatLoadService;
     private final V3ChatMessageLoadService v3ChatMessageLoadService;
     private final MessageService messageService;
+    private final UserRepository userRepository;
+    private final ChatRepository chatRepository;
 
     @PostMapping(value = "/search", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
     public ResponseEntity<Page<V3ChatDto>> search(@RequestBody V3ChatSearchCriteria criteria, @PageableDefault(size = 50, page = 0) Pageable pageable) {
@@ -72,5 +76,25 @@ public class V3ChatRestController {
     @GetMapping(value = "/count", consumes = JSON_MEDIA_TYPE, produces = JSON_MEDIA_TYPE)
     public ResponseEntity<Map<String, Long>> getCount() {
         return ResponseEntity.ok(v3ChatLoadService.getNewMessageCount(AuthUtils.getCurrentUserId()));
+    }
+
+    @Transactional
+    @PostMapping(value = "/{chatId}/{userId}")
+    public ResponseEntity<Void> handleAddToChat(@PathVariable Long chatId, @PathVariable Long userId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+        ChatEntity chat = chatRepository.findById(chatId).orElseThrow();
+        chat.getParticipants().add(user);
+        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользовтаель %s добавлен в чат".formatted(user.getUsername()), List.of());
+        return ResponseEntity.ok().build();
+    }
+
+    @Transactional
+    @DeleteMapping(value = "/{chatId}/{userId}")
+    public ResponseEntity<Void> handleDeleteFromChat(@PathVariable Long chatId, @PathVariable Long userId) {
+        UserEntity user = userRepository.findById(userId).orElseThrow();
+        ChatEntity chat = chatRepository.findById(chatId).orElseThrow();
+        chat.getParticipants().removeIf(p -> p.getId().equals(userId));
+        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользовтаель %s удалён из чата".formatted(user.getUsername()), List.of());
+        return ResponseEntity.ok().build();
     }
 }
