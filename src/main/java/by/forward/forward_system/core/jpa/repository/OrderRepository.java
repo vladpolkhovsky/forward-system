@@ -154,7 +154,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
     @Query(value = """
         select u from OrderEntity u
             join u.orderParticipants op on op.user.id = :userId
-            where u.orderStatus.name in ('CREATED' , 'DISTRIBUTION', 'ADMIN_REVIEW', 'IN_PROGRESS' , 'REVIEW', 'GUARANTEE', 'FINALIZATION')
+            where u.orderStatus.name in ('CREATED', 'WAITING', 'DISTRIBUTION', 'ADMIN_REVIEW', 'IN_PROGRESS' , 'REVIEW', 'GUARANTEE', 'FINALIZATION')
                     or (:showClosed is true and u.orderStatus.name = 'CLOSED')
         """)
     List<OrderEntity> getOrderWhereManagerIs(long userId, boolean showClosed);
