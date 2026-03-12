@@ -465,6 +465,7 @@ public class CreateOrderController {
         userUiService.checkAccessManager();
 
         List<SimpleOrderProjection> allOrdersInStatus = orderUiService.findAllOrdersInStatusProjection(Arrays.asList(
+            OrderStatus.WAITING.getName(),
             OrderStatus.IN_PROGRESS.getName(),
             OrderStatus.REVIEW.getName(),
             OrderStatus.FINALIZATION.getName(),
