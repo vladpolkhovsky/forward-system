@@ -18,6 +18,10 @@ services:
         max-file: "5"
     env_file:
       - .env
+    environment:
+      app.notification.server.url: ${NOTIFICATION_URL}
+      app.notification.server.login: ${NOTIFICATION_LOGIN}
+      app.notification.server.password: ${NOTIFICATION_PASSWORD}
     restart: always
     ports:
       - "8080:8081"
@@ -64,7 +68,7 @@ services:
       LE_FQDN: ${LE_DOMAIN}
     networks:
       - nginx-net
-      - external-nginx-net
+      - nginx-le-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -202,5 +206,5 @@ services:
 networks:
   nginx-net:
     driver: bridge
-  external-nginx-net:
+  nginx-le-network:
       external: true
