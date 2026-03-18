@@ -5,6 +5,8 @@ import by.forward.forward_system.core.dto.ai.AiResponseDto;
 import by.forward.forward_system.core.dto.messenger.MessageDto;
 import by.forward.forward_system.core.dto.messenger.UserDto;
 import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.AiLogEntity;
 import by.forward.forward_system.core.jpa.model.AiViolationEntity;
 import by.forward.forward_system.core.jpa.model.SecurityBlockEntity;
@@ -14,12 +16,12 @@ import by.forward.forward_system.core.jpa.repository.AiViolationRepository;
 import by.forward.forward_system.core.jpa.repository.SecurityBlockRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.BanProjectionDto;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.JsonUtils;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,19 +38,12 @@ public class BanService {
     private final UserService userService;
     private final AiLogRepository aiLogRepository;
     private final AiViolationRepository aiViolationRepository;
-
-    private UserRepository userRepository;
-
-    private BotNotificationService botNotificationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final UserRepository userRepository;
 
     @Transactional
     public boolean ban(Long userId, String reason, List<Long> aiLogId) {
         return ban(userId, reason, false, aiLogId);
-    }
-
-    @Transactional
-    public boolean ban(Long userId, String reason) {
-        return ban(userId, reason, false, Collections.emptyList());
     }
 
     @Transactional
@@ -170,11 +165,11 @@ public class BanService {
         }
 
         return new BanProjectionDto(
-            securityBlockEntity.getId(),
-            user,
-            securityBlockEntity.getReason(),
-            messageDto,
-            messagesFromUser
+                securityBlockEntity.getId(),
+                user,
+                securityBlockEntity.getReason(),
+                messageDto,
+                messagesFromUser
         );
     }
 
@@ -186,50 +181,52 @@ public class BanService {
 
     public List<UserDto> getAllUsersForBan() {
         return userService.getAllUserWithoutRole(Authority.OWNER.getAuthority()).stream()
-            .filter(u -> !u.hasAuthority(Authority.BANNED))
-            .map(userService::convertUserToDto)
-            .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))
-            .toList();
+                .filter(u -> !u.hasAuthority(Authority.BANNED))
+                .map(userService::convertUserToDto)
+                .sorted(Comparator.comparing(a -> a.getUsername().toLowerCase()))
+                .toList();
     }
 
     private void sendViolationNotificationToAdmins(UserEntity userEntity, String message, String explanation, String target) {
-        String text = """
-            Сообщение для %s.
-            Пользователь %s нарушил правила общения в чате "%s".
-            ---
-            Сообщение пользователя: %s
-            ---
-            Описание нарушения: %s
-            """;
         message = StringUtils.abbreviate(message, 512);
         explanation = StringUtils.abbreviate(explanation, 512);
         List<UserEntity> allUserWithoutRole = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allUserWithoutRole) {
-            botNotificationService.sendBotNotification(
-                admin.getId(),
-                text.formatted(admin.getUsername(), userEntity.getUsername(), target, message, explanation)
-            );
+            applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                    .informationLevel(InformationLevel.WARN)
+                    .tittle("Нарушение правил общения")
+                    .targetUserId(admin.getId())
+                    .fromUsername("Система автоматический проверки сообщений")
+                    .description("""
+                            Обнаружено нарушение в "%s".
+                            
+                            Текст:
+                            %s
+                            
+                            Нарушение: %s
+                            """.formatted(target, message, explanation))
+                    .tags(Set.of(userEntity.getUsername(), "Нарушение правил"))
+                    .build());
         }
     }
 
     private void sendNotificationToAdmins(UserEntity userEntity, String reason) {
         String reasonText = StringUtils.abbreviate(Optional.ofNullable(StringUtils.trimToNull(reason)).orElse("<Не указана>"), 512);
-        String text = """
-            СРОЧНО!
-            
-            Срочное сообщение для %s.
-            Система заблокировала пользователя: %s.
-            Проверьте правильность блокировки пользователя.
-            
-            ---
-            Причина блокировки: %s
-            ---
-            
-            СРОЧНО!
-            """;
         List<UserEntity> allUserWithoutRole = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity admin : allUserWithoutRole) {
-            botNotificationService.sendBotNotification(admin.getId(), text.formatted(admin.getUsername(), userEntity.getUsername(), reasonText));
+            applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                    .informationLevel(InformationLevel.DANGER)
+                    .tittle("Блокировка пользователя")
+                    .targetUserId(admin.getId())
+                    .fromUsername("Система автоматический проверки сообщений")
+                    .description("""
+                            Система заблокировала пользователя: %s.
+                            Проверьте правильность блокировки пользователя.
+                            
+                            Нарушение: %s
+                            """.formatted(userEntity.getUsername(), reasonText))
+                    .tags(Set.of(userEntity.getUsername(), "Нарушение правил"))
+                    .build());
         }
     }
 }

@@ -1,40 +1,37 @@
 package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.enums.PaymentStatus;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.PaymentFileRepository;
 import by.forward.forward_system.core.jpa.repository.PaymentRepository;
 import by.forward.forward_system.core.jpa.repository.PaymentStatusRepository;
 import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.PaymentDto;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
 public class PaymentService {
 
     private final PaymentRepository paymentRepository;
-
     private final PaymentStatusRepository paymentStatusRepository;
-
     private final PaymentFileRepository paymentFileRepository;
-
     private final AttachmentService attachmentService;
-
-    private final BotNotificationService botNotificationService;
-
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final UserRepository userRepository;
-
     private final MessageService messageService;
 
     @Transactional
@@ -69,11 +66,10 @@ public class PaymentService {
 
         paymentFileRepository.save(paymentFileEntity);
 
-        botNotificationService.sendBotNotification(userId, """
-            Здравствуйте, %s
+        sendBotNotification(userId, """
             Для вас сформирована выплата: %s
             Проверьте свои выплаты на сайте и следуйте указаниям.
-            """.formatted(user.getUsername(), paymentNumber));
+            """.formatted(paymentNumber), Set.of("Выплата"));
 
         sendMessageToAdminChat(userId, """
             Для автора %s создана выплата: %s
@@ -141,10 +137,10 @@ public class PaymentService {
 
         paymentFileRepository.save(paymentFileEntity);
 
-        botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
+        sendBotNotification(payment.getCreatedByUser().getId(), """
             Изменён статус выплаты: %s.
             Автор прислал подписанный файл.
-            """.formatted(payment.getPaymentNumber()));
+            """.formatted(payment.getPaymentNumber()), Set.of("Выплата"));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
             Изменён статус выплаты: %s.
@@ -171,11 +167,11 @@ public class PaymentService {
 
         payment = paymentRepository.save(payment);
 
-        botNotificationService.sendBotNotification(payment.getUser().getId(), """
+        sendBotNotification(payment.getUser().getId(), """
             Здравствуйте, %s.
-            Выплата %s успешно прозведена.
+            Выплата %s успешно произведена.
             Проверьте карточку выплаты и вышлите чек.
-            """.formatted(payment.getUser().getUsername(), payment.getPaymentNumber()));
+            """.formatted(payment.getUser().getUsername(), payment.getPaymentNumber()), Set.of("Выплата"));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
             Выплата %s для автора %s успешно прозведена.
@@ -212,10 +208,10 @@ public class PaymentService {
 
         paymentFileRepository.save(paymentFileEntity);
 
-        botNotificationService.sendBotNotification(payment.getCreatedByUser().getId(), """
+        sendBotNotification(payment.getCreatedByUser().getId(), """
             Изменён статус выплаты: %s.
             Автор прислал чек.
-            """.formatted(payment.getPaymentNumber()));
+            """.formatted(payment.getPaymentNumber()), Set.of("Выплата"));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
             Изменён статус выплаты: %s.
@@ -256,15 +252,26 @@ public class PaymentService {
 
         payment = paymentRepository.save(payment);
 
-        botNotificationService.sendBotNotification(payment.getUser().getId(), """
+        sendBotNotification(payment.getUser().getId(), """
             Выплата %s аннулирована.
             Проверьте карточку выплаты, чтобы узнать причину.
-            """.formatted(payment.getPaymentNumber()));
+            """.formatted(payment.getPaymentNumber()), Set.of("Выплата"));
 
         sendMessageToAdminChat(payment.getUser().getId(), """
             Выплата %s аннулирована.
             Причина аннулирования в карточе выплаты.
             """.formatted(payment.getPaymentNumber()));
+    }
+
+    private void sendBotNotification(Long userId, String message, Set<String> tags) {
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tags(tags)
+                .tittle("Уведомление о выплате")
+                .description(message)
+                .informationLevel(InformationLevel.INFO)
+                .targetUserId(userId)
+                .fromUsername("Система выплат")
+                .build());
     }
 
     private void sendMessageToAdminChat(Long userId, String message) {

@@ -91,6 +91,15 @@ site:
 topic:
   create-chat-topic: "create-chat"
 
+app:
+  notification:
+    server:
+      url: ${APP_NOTIFICATION_SERVER_URL:http://localhost:8085}
+      login: ${APP_NOTIFICATION_SERVER_LOGIN:admin}
+      password: ${APP_NOTIFICATION_SERVER_PASSWORD:admin}
+      token-refresh-interval-minutes: 30
+      max-parallel-requests: 5
+
 jwt:
   cookie:
     name: JWT_TOKEN

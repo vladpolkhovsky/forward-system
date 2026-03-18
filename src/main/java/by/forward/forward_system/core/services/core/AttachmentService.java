@@ -110,6 +110,15 @@ public class AttachmentService {
         return new AttachmentFileInputStream(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), inputStream);
     }
 
+    @SneakyThrows
+    public AttachmentFileInputStream loadAttachmentAsResourceByKey(String key) {
+        AttachmentEntity attachmentEntity = attachmentRepository.findByObjectKey((key))
+                .orElseThrow(() -> new RuntimeException("Not found attachment with key " + key));
+        S3Object object = amazonS3.getObject(new GetObjectRequest(bucketName, attachmentEntity.getObjectKey()));
+        InputStream inputStream = object.getObjectContent();
+        return new AttachmentFileInputStream(attachmentEntity.getFilename(), attachmentEntity.getFilepath(), inputStream);
+    }
+
     public record AttachmentFile(String filename,
                                  String filepath,
                                  byte[] content) {

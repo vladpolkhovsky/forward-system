@@ -6,15 +6,17 @@ import by.forward.forward_system.core.dto.messenger.v3.V3SearchOrderReviewDto;
 import by.forward.forward_system.core.dto.rest.calendar.CalendarGroupParticipantStatusDto;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.mapper.ReviewMapper;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,10 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,7 +40,7 @@ public class NewReviewService {
     private final MessageService messageService;
     private final ChatRepository chatRepository;
     private final OrderParticipantRepository orderParticipantRepository;
-    private final BotNotificationService botNotificationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional(readOnly = true)
     public Page<V3SearchOrderReviewDto> search(String techNumber, Pageable pageable) {
@@ -129,8 +128,8 @@ public class NewReviewService {
 
         order.setOrderStatus(OrderStatus.REVIEW.toEntity());
 
-        botNotificationService.sendBotNotification(expert.getId(),
-            "У вас новый запрос на проверку работы!");
+        sendBotNotification(expert.getId(),
+            "У вас новый запрос на проверку работы!", Set.of("Проверка", "ТЗ " + order.getTechNumber()));
     }
 
     @Transactional
@@ -149,5 +148,16 @@ public class NewReviewService {
             """.formatted(username);
 
         messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, message, List.of());
+    }
+
+    private void sendBotNotification(Long userId, String message, Set<String> tags) {
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tags(tags)
+                .tittle("Запрос на проверку")
+                .description(message)
+                .informationLevel(InformationLevel.INFO)
+                .targetUserId(userId)
+                .fromUsername("Система проверки работ")
+                .build());
     }
 }

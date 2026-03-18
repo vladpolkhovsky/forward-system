@@ -1,14 +1,15 @@
 package by.forward.forward_system.core.services.core;
 
 import by.forward.forward_system.core.enums.ChatMessageType;
+import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.events.events.CheckMessageByAiEvent;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ForwardOrderProjection;
 import by.forward.forward_system.core.jpa.repository.projections.LastMessageDateByChatIdProjection;
 import by.forward.forward_system.core.jpa.repository.projections.NewMessageCountProjection;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewRequestProjection;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
@@ -41,14 +42,11 @@ public class ForwardOrderService {
     private static DateTimeFormatter outputDateTimeFormat = DateTimeFormatter.ofPattern("dd-MM-yyyy HH-mm");
 
     private final ForwardOrderRepository forwardOrderRepository;
-
     private final AttachmentService attachmentService;
     private final UserRepository userRepository;
     private final ForwardOrderReviewRequestRepository forwardOrderReviewRequestRepository;
-
     private final MessageService messageService;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
-    private final BotNotificationService botNotificationService;
     private final TaskScheduler taskScheduler;
     private final ApplicationEventPublisher applicationEventPublisher;
     private final CustomerTelegramToForwardOrderRepository customerTelegramToForwardOrderRepository;
@@ -222,10 +220,19 @@ public class ForwardOrderService {
             List.of()
         );
 
-        botNotificationService.sendBotNotificationToAdmins("""
-            Пользователь %s создал запрос на проверку. Проверьте "Прямой заказ № %s" и примите запрос.
-            """.formatted(fromUserEntity.getUsername(), forwardOrderEntity.getOrder().getTechNumber())
-        );
+        String notifText = """
+                Пользователь %s создал запрос на проверку. Проверьте "Прямой заказ № %s" и примите запрос.
+                """.formatted(fromUserEntity.getUsername(), forwardOrderEntity.getOrder().getTechNumber());
+
+        userRepository.findUserIdsWithRole(Authority.ADMIN.getAuthority()).forEach(adminId -> {
+            applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                    .tittle("Новый запрос на проверку")
+                    .description(notifText)
+                    .targetUserId(adminId)
+                    .fromUsername("Автоматические уведомления")
+                    .tags(Set.of("Запрос на проверку", "Прямой заказ " + forwardOrderEntity.getOrder().getTechNumber()))
+                    .build());
+        });
     }
 
     public List<ReviewRequestProjection> findReviewRequestsBy(Long forwardOrderId) {

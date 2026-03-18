@@ -7,15 +7,16 @@ import by.forward.forward_system.core.enums.ChatMessageType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.projections.ReviewProjectionDto;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
-import by.forward.forward_system.core.services.messager.ws.WebsocketMassageService;
 import by.forward.forward_system.core.utils.ChatNames;
 import by.forward.forward_system.core.utils.Constants;
 import lombok.AllArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,8 +37,7 @@ public class ReviewService {
     private final MessageService messageService;
     private final ChatRepository chatRepository;
     private final ChatMessageTypeRepository chatMessageTypeRepository;
-    private final BotNotificationService botNotificationService;
-    private final WebsocketMassageService websocketMassageService;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public ReviewEntity saveNewReviewRequest(Long orderId, Long expertId, Long attachmentId, String messageText, AttachmentEntity additionalFile) {
         ReviewEntity reviewEntity = new ReviewEntity();
@@ -55,7 +55,12 @@ public class ReviewService {
 
         ReviewEntity save = reviewRepository.save(reviewEntity);
 
-        botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tittle("Новый запрос на проверку работы")
+                .targetUserId(expertId)
+                .fromUsername("Автоматическое уведомление")
+                .tags(Set.of("ТЗ " + reviewEntity.getOrder().getTechNumber()))
+                .build());
 
         return save;
     }
@@ -74,7 +79,12 @@ public class ReviewService {
 
         ReviewEntity save = reviewRepository.save(reviewEntity);
 
-        botNotificationService.sendBotNotification(expertId, "У вас новый запрос на проверку работы!");
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tittle("Новый запрос на проверку работы")
+                .targetUserId(expertId)
+                .fromUsername("Автоматическое уведомление")
+                .tags(Set.of("ТЗ " + save.getOrder().getTechNumber()))
+                .build());
 
         return save;
     }
@@ -156,20 +166,20 @@ public class ReviewService {
 
     private List<ReviewProjectionDto> getReviewProjectionDtos(List<ReviewEntity> all) {
         return all.stream()
-            .sorted(Comparator.comparing(ReviewEntity::getCreatedAt).reversed())
-            .map(t -> {
-                ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
-                reviewProjectionDto.setReviewId(t.getId());
-                reviewProjectionDto.setCreatedAt(t.getCreatedAt());
-                reviewProjectionDto.setReviewedAt(t.getReviewDate());
-                reviewProjectionDto.setOrderId(t.getOrder().getId());
-                reviewProjectionDto.setOrderTechNumber(new BigDecimal(t.getOrder().getTechNumber()));
-                reviewProjectionDto.setOrderName(t.getOrder().getName());
-                reviewProjectionDto.setIsReviewed(t.getIsReviewed());
-                reviewProjectionDto.setReviewStatusName(getStatusRus(t));
-                return reviewProjectionDto;
-            })
-            .toList();
+                .sorted(Comparator.comparing(ReviewEntity::getCreatedAt).reversed())
+                .map(t -> {
+                    ReviewProjectionDto reviewProjectionDto = new ReviewProjectionDto();
+                    reviewProjectionDto.setReviewId(t.getId());
+                    reviewProjectionDto.setCreatedAt(t.getCreatedAt());
+                    reviewProjectionDto.setReviewedAt(t.getReviewDate());
+                    reviewProjectionDto.setOrderId(t.getOrder().getId());
+                    reviewProjectionDto.setOrderTechNumber(new BigDecimal(t.getOrder().getTechNumber()));
+                    reviewProjectionDto.setOrderName(t.getOrder().getName());
+                    reviewProjectionDto.setIsReviewed(t.getIsReviewed());
+                    reviewProjectionDto.setReviewStatusName(getStatusRus(t));
+                    return reviewProjectionDto;
+                })
+                .toList();
     }
 
     public ReviewDto getReviewById(Long reviewId) {
@@ -198,30 +208,39 @@ public class ReviewService {
             String expertUsername = reviewEntity.getReviewedBy().getUsername();
 
             Map<ParticipantType, List<OrderParticipantEntity>> typeToUser = reviewEntity.getOrder().getOrderParticipants().stream()
-                .collect(Collectors.groupingBy(op -> op.getParticipantsType().getType()));
+                    .collect(Collectors.groupingBy(op -> op.getParticipantsType().getType()));
 
             String authorUsername = Optional.ofNullable(typeToUser.get(ParticipantType.MAIN_AUTHOR)).stream()
-                .flatMap(Collection::stream)
-                .findAny()
-                .map(OrderParticipantEntity::getUser)
-                .map(UserEntity::getUsername)
-                .orElse("Не найден.");
+                    .flatMap(Collection::stream)
+                    .findAny()
+                    .map(OrderParticipantEntity::getUser)
+                    .map(UserEntity::getUsername)
+                    .orElse("Не найден.");
 
             String hostUsername = Optional.ofNullable(typeToUser.get(ParticipantType.HOST)).stream()
-                .flatMap(Collection::stream)
-                .findAny()
-                .map(OrderParticipantEntity::getUser)
-                .map(UserEntity::getUsername)
-                .orElse("Не найден.");
+                    .flatMap(Collection::stream)
+                    .findAny()
+                    .map(OrderParticipantEntity::getUser)
+                    .map(UserEntity::getUsername)
+                    .orElse("Не найден.");
 
             String text = """
-                По заказу №%s поставлена оценка "2" от эксперта %s.
-                
-                Автор, который писал работу -> %s
-                Менеджер, который ведёт заказ -> %s
-                """.formatted(techNumber, expertUsername, authorUsername, hostUsername);
+                    По заказу №%s поставлена оценка "2" от эксперта %s.
+                    
+                    Автор, который писал работу -> %s
+                    Менеджер, который ведёт заказ -> %s
+                    """.formatted(techNumber, expertUsername, authorUsername, hostUsername);
 
-            botNotificationService.sendBotNotificationToAdmins(text);
+            userRepository.findUserIdsWithRole(Authority.ADMIN.getAuthority()).forEach(adminId -> {
+                applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                        .informationLevel(InformationLevel.DANGER)
+                        .tittle("Плохая оценка эксперта")
+                        .description(text)
+                        .targetUserId(adminId)
+                        .fromUsername("Автоматическое уведомление")
+                        .tags(Set.of("ТЗ " + techNumber))
+                        .build());
+            });
         }
     }
 
@@ -229,11 +248,11 @@ public class ReviewService {
         ChatEntity chatEntity = chatRepository.findById(chatId).orElseThrow(() -> new RuntimeException("chat not found: " + chatId));
         ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new RuntimeException("review not found: " + reviewId));
         ChatMessageTypeEntity chatMessageTypeEntity = chatMessageTypeRepository.findById(ChatMessageType.MESSAGE.getName())
-            .orElseThrow(() -> new RuntimeException("CMT not found"));
+                .orElseThrow(() -> new RuntimeException("CMT not found"));
 
         String message = """
-            Эксперт проверил работу и поставил оценку: %s. Внимательно оцените результат, он доступен в карточке проверки, в меню. Также прикреплёна таблица с результатами проверки.
-            """.formatted(reviewEntity.getReviewMark());
+                Эксперт проверил работу и поставил оценку: %s. Внимательно оцените результат, он доступен в карточке проверки, в меню. Также прикреплёна таблица с результатами проверки.
+                """.formatted(reviewEntity.getReviewMark());
 
         ChatMessageAttachmentEntity attachmentEntity = new ChatMessageAttachmentEntity();
         attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
@@ -260,18 +279,16 @@ public class ReviewService {
             attachmentEntity.setAttachment(reviewEntity.getReviewAttachment());
 
             ChatMessageEntity chatMessageEntity = messageService.sendMessage(UserEntity.of(ChatNames.EXPERT_USER_ID),
-                chatEntity,
-                "Получена рецензия от экспертного отдела. Изучите внимательно файл и выполните доработку.",
-                true,
-                chatMessageTypeEntity,
-                Collections.singletonList(attachmentEntity),
-                Collections.emptyList()
+                    chatEntity,
+                    "Получена рецензия от экспертного отдела. Изучите внимательно файл и выполните доработку.",
+                    true,
+                    chatMessageTypeEntity,
+                    Collections.singletonList(attachmentEntity),
+                    Collections.emptyList()
             );
 
             MessageDto messageDto = messageService.convertChatMessage(chatMessageEntity);
             List<Long> users = messageDto.getMessageToUser().stream().map(MessageToUserDto::getUserId).toList();
-
-            websocketMassageService.sendMessageToUsers(users, messageDto);
         }
 
         orderService.changeStatus(orderId, OrderStatus.FINALIZATION);

@@ -5,12 +5,12 @@ import by.forward.forward_system.core.dto.messenger.v3.DistributionLogDto;
 import by.forward.forward_system.core.dto.messenger.v3.DistributionPersonDto;
 import by.forward.forward_system.core.dto.rest.authors.AuthorFullDto;
 import by.forward.forward_system.core.enums.*;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.*;
 import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderSendRequestProjection;
 import by.forward.forward_system.core.mapper.QueueDistributionMapper;
-import by.forward.forward_system.core.services.core.OrderService;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.messager.MessageService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import by.forward.forward_system.core.utils.ChatNames;
@@ -18,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,11 +35,11 @@ public class NewDistributionService {
     private final OrderParticipantRepository participantRepository;
     private final QueueDistributionRepository queueDistributionRepository;
     private final QueueDistributionMapper queueDistributionMapper;
-    private final BotNotificationService botNotificationService;
     private final MessageService messageService;
     private final OrderRepository orderRepository;
     private final ChatRepository chatRepository;
     private final OrderRequestStatisticRepository orderRequestStatisticRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @Transactional
     public List<Long> stopDistribution(Long distributionId) {
@@ -48,33 +49,34 @@ public class NewDistributionService {
             distribution.setStatus(DistributionStatusType.ENDED_BY_MANAGER);
 
             distribution.getItems().stream()
-                .filter(item -> item.getStatus() == DistributionItemStatusType.NO_RESPONSE
-                    || item.getStatus() == DistributionItemStatusType.IN_PROGRESS
-                    || item.getStatus() == DistributionItemStatusType.SKIPPED
-                    || item.getStatus() == DistributionItemStatusType.TALK)
-                .forEach(item -> {
-                    item.setStatus(DistributionItemStatusType.SKIPPED);
-                    messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-                        item.getQueueDistribution().getCreatedBy().getId(),
-                        true,
-                        "Распределение заказа отменено.",
-                        Map.of(),
-                        false
-                    );
-                });
+                    .filter(item -> item.getStatus() == DistributionItemStatusType.NO_RESPONSE
+                            || item.getStatus() == DistributionItemStatusType.IN_PROGRESS
+                            || item.getStatus() == DistributionItemStatusType.SKIPPED
+                            || item.getStatus() == DistributionItemStatusType.TALK)
+                    .forEach(item -> {
+                        item.setStatus(DistributionItemStatusType.SKIPPED);
+                        messageService.sendMessageToNewOrderChat(item.getUser().getId(),
+                                item.getQueueDistribution().getCreatedBy().getId(),
+                                true,
+                                "Распределение заказа отменено.",
+                                Map.of(),
+                                false
+                        );
+                    });
 
             distribution.getItems().stream()
-                .filter((item -> item.getStatus() == DistributionItemStatusType.WAITING))
-                .forEach(item -> {
-                    item.setStatus(DistributionItemStatusType.SKIPPED);
-                    deleteAuthorParticipantOnStop(distribution.getOrder(), item.getUser().getId());
-                    deletedParticipants.add(item.getUser().getId());
-                });
+                    .filter((item -> item.getStatus() == DistributionItemStatusType.WAITING))
+                    .forEach(item -> {
+                        item.setStatus(DistributionItemStatusType.SKIPPED);
+                        deleteAuthorParticipantOnStop(distribution.getOrder(), item.getUser().getId());
+                        deletedParticipants.add(item.getUser().getId());
+                    });
 
-            getUsersThatShouldBeNotified(distribution).forEach(user -> botNotificationService.sendBotNotification(
-                user.getId(), """
-                    Автоматическое распредление по заказу №%s принудительно завершено.
-                    """.formatted(distribution.getOrder().getTechNumber())));
+            getUsersThatShouldBeNotified(distribution).forEach(user -> sendBotNotification(
+                    user.getId(), """
+                            Автоматическое распредление по заказу №%s принудительно завершено.
+                            """.formatted(distribution.getOrder().getTechNumber()),
+                    Set.of("Распределение", "ТЗ " + distribution.getOrder().getTechNumber())));
         });
 
         return deletedParticipants;
@@ -83,22 +85,22 @@ public class NewDistributionService {
     @Transactional
     public Set<Long> stopAllDistributions(Long orderId) {
         List<Long> deletedParticipants1 = queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.IN_PROGRESS).stream().map(this::stopDistribution)
-            .flatMap(Collection::stream)
-            .toList();
+                .flatMap(Collection::stream)
+                .toList();
         List<Long> deletedParticipants2 = queueDistributionRepository.findByOrderIdAndStatus(orderId, DistributionStatusType.PLANNED).stream().map(this::stopDistribution)
-            .flatMap(Collection::stream)
-            .toList();
+                .flatMap(Collection::stream)
+                .toList();
         return Stream.concat(deletedParticipants1.stream(), deletedParticipants2.stream())
-            .collect(Collectors.toSet());
+                .collect(Collectors.toSet());
     }
 
     @Transactional
     public void deleteAuthorParticipant(Long orderId, Long authorId) {
         OrderEntity orderEntity = orderRepository.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("Нет заказа с id = " + orderId));
+                .orElseThrow(() -> new IllegalArgumentException("Нет заказа с id = " + orderId));
 
         if (orderEntity.getOrderStatus().getStatus() != OrderStatus.DISTRIBUTION
-            && orderEntity.getOrderStatus().getStatus() != OrderStatus.CREATED) {
+                && orderEntity.getOrderStatus().getStatus() != OrderStatus.CREATED) {
             throw new IllegalArgumentException("Заказ не в статусе \"Создан; Распределение\". Невозможно удалить участника заказа.");
         }
 
@@ -108,15 +110,15 @@ public class NewDistributionService {
         }
 
         orderEntity.getOrderParticipants().stream()
-            .filter(t -> t.getParticipantsType().getType() == ParticipantType.AUTHOR || t.getParticipantsType().getType() == ParticipantType.DECLINE_AUTHOR)
-            .filter(t -> Objects.equals(t.getUser().getId(), authorId))
-            .forEach(participantRepository::delete);
+                .filter(t -> t.getParticipantsType().getType() == ParticipantType.AUTHOR || t.getParticipantsType().getType() == ParticipantType.DECLINE_AUTHOR)
+                .filter(t -> Objects.equals(t.getUser().getId(), authorId))
+                .forEach(participantRepository::delete);
     }
 
     @Transactional
     public void deleteAuthorParticipantOnStop(OrderEntity orderEntity, Long authorId) {
         orderEntity.getOrderParticipants()
-            .removeIf(op -> Objects.equals(op.getUser().getId(), authorId));
+                .removeIf(op -> Objects.equals(op.getUser().getId(), authorId));
     }
 
     @Transactional
@@ -127,7 +129,7 @@ public class NewDistributionService {
 
         List<OrderParticipantEntity> participants = participantRepository.getOrderParticipantsByOrderId(orderId);
         List<OrderParticipantEntity> toRemove = participants.stream().filter(t -> t.getParticipantsType().getType() == participantType)
-            .toList();
+                .toList();
 
         participantRepository.deleteAll(toRemove);
 
@@ -146,7 +148,7 @@ public class NewDistributionService {
         }
 
         OrderEntity order = orderRepository.findById(orderId)
-            .orElseThrow((() -> new IllegalArgumentException("not found order")));
+                .orElseThrow((() -> new IllegalArgumentException("not found order")));
 
         List<DistributionPersonDto> persons = createDistributionRequestDto.getPersons();
         List<OrderParticipantEntity> participants = createAuthorParticipants(order, persons);
@@ -183,19 +185,20 @@ public class NewDistributionService {
 
     @Transactional
     public void skip(QueueDistributionItemEntity item) {
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s завершилось. Автор пропущен.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s завершилось. Автор пропущен.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.SKIPPED);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            "Превышено время ожидания ответа. Заказ распределён.",
-            Map.of(),
-            false
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                "Превышено время ожидания ответа. Заказ распределён.",
+                Map.of(),
+                false
         );
     }
 
@@ -203,22 +206,23 @@ public class NewDistributionService {
     public void decline(QueueDistributionItemEntity item) {
         if (item.getStatus() != DistributionItemStatusType.IN_PROGRESS && item.getStatus() != DistributionItemStatusType.TALK) {
             throw new IllegalArgumentException("Статус распределения \"%s\". Невозможно отказаться от заказа."
-                .formatted(item.getStatus().getRusName()));
+                    .formatted(item.getStatus().getRusName()));
         }
 
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s завершилось. Автор отказался от заказа.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s завершилось. Автор отказался от заказа.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.DECLINE);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            "Вы отказались от заказа.",
-            Map.of(),
-            false
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                "Вы отказались от заказа.",
+                Map.of(),
+                false
         );
     }
 
@@ -226,22 +230,23 @@ public class NewDistributionService {
     public void talk(QueueDistributionItemEntity item) {
         if (item.getStatus() != DistributionItemStatusType.IN_PROGRESS) {
             throw new IllegalArgumentException("Статус распределения \"%s\". Обсуждение заказа недоступно."
-                .formatted(item.getStatus().getRusName()));
+                    .formatted(item.getStatus().getRusName()));
         }
 
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s. Автор решил обсудить заказ.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s. Автор решил обсудить заказ.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.TALK);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            "Вы хотите обсудить заказ. Ожидайте ответа менеджера.",
-            Map.of(),
-            false
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                "Вы хотите обсудить заказ. Ожидайте ответа менеджера.",
+                Map.of(),
+                false
         );
     }
 
@@ -249,106 +254,112 @@ public class NewDistributionService {
     public void accept(QueueDistributionItemEntity item) {
         if (item.getStatus() != DistributionItemStatusType.IN_PROGRESS) {
             throw new IllegalArgumentException("Статус распределения \"%s\". Невозможно взять заказ в работу."
-                .formatted(item.getStatus().getRusName()));
+                    .formatted(item.getStatus().getRusName()));
         }
 
         item.getQueueDistribution().getItems().stream()
-            .filter(cItem -> cItem.getStatus() == DistributionItemStatusType.WAITING)
-            .forEach(cItem -> {
-                cItem.setStatus(DistributionItemStatusType.SKIPPED);
-                deleteAuthorParticipantOnStop(cItem.getQueueDistribution().getOrder(), cItem.getUser().getId());
-            });
+                .filter(cItem -> cItem.getStatus() == DistributionItemStatusType.WAITING)
+                .forEach(cItem -> {
+                    cItem.setStatus(DistributionItemStatusType.SKIPPED);
+                    deleteAuthorParticipantOnStop(cItem.getQueueDistribution().getOrder(), cItem.getUser().getId());
+                });
 
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s. Автор принял заказ.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s. Автор принял заказ.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
         item.setStatus(DistributionItemStatusType.ACCEPTED);
 
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распределение заказа №%s завершилось. Найден автор, который приянял запрос.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распределение заказа №%s завершилось. Найден автор, который приянял запрос.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.getQueueDistribution().setStatus(DistributionStatusType.ENDED);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            "Вы прияняли заказ. Ожидайте ответа менеджера.",
-            Map.of(),
-            false
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                "Вы прияняли заказ. Ожидайте ответа менеджера.",
+                Map.of(),
+                false
         );
     }
 
     @Transactional
     public void skipBecauseWaitTooLong(QueueDistributionItemEntity item) {
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s завершилось без ответа. Обсуждение с автором длится слишком долго.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s завершилось без ответа. Обсуждение с автором длится слишком долго.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.SKIPPED);
     }
 
     @Transactional
     public void noResponseOnItem(QueueDistributionItemEntity item) {
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s завершилось без ответа. Переход к следующему автору.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s завершилось без ответа. Переход к следующему автору.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.NO_RESPONSE);
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            "Превышено время ожидания ответа. Заказ предложен следующему автору, но ещё актуален. Если вы готовы взять заказ, сообщите об этом в чат.",
-            Map.of()
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                "Превышено время ожидания ответа. Заказ предложен следующему автору, но ещё актуален. Если вы готовы взять заказ, сообщите об этом в чат.",
+                Map.of()
         );
     }
 
     @Transactional
     public void finishDistributionWithoutResult(QueueDistributionEntity distribution) {
-        getUsersThatShouldBeNotified(distribution).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распределение заказа №%s завершилось. Автор не найден.
-                """.formatted(distribution.getOrder().getTechNumber())));
+        getUsersThatShouldBeNotified(distribution).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распределение заказа №%s завершилось. Автор не найден.
+                        """.formatted(distribution.getOrder().getTechNumber()),
+                Set.of("Распределение", "ТЗ " + distribution.getOrder().getTechNumber())));
 
         distribution.setStatus(DistributionStatusType.ENDED);
     }
 
     @Transactional
     public void triggerNewItemToStart(QueueDistributionItemEntity item) {
-        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> botNotificationService.sendBotNotification(
-            user.getId(), """
-                Автоматическое распредление по заказу №%s для автора %s началось. У автора есть %d минут на ответ.
-                """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername(), item.getQueueDistribution().getQueueDistributionWaitMinutes())));
+        getUsersThatShouldBeNotified(item.getQueueDistribution()).forEach(user -> sendBotNotification(
+                user.getId(), """
+                        Автоматическое распредление по заказу №%s для автора %s началось. У автора есть %d минут на ответ.
+                        """.formatted(item.getQueueDistribution().getOrder().getTechNumber(), item.getUser().getUsername(), item.getQueueDistribution().getQueueDistributionWaitMinutes()),
+                Set.of("Распределение", "ТЗ " + item.getQueueDistribution().getOrder().getTechNumber())));
 
         item.setStatus(DistributionItemStatusType.IN_PROGRESS);
         item.setWaitStart(LocalDateTime.now());
         item.setWaitUntil(LocalDateTime.now().plusMinutes(item.getQueueDistribution().getQueueDistributionWaitMinutes()));
 
         Map<String, String> options = Map.of(
-            "Ознакомиться с ТЗ/требованиями", "/request-order/" + item.getQueueDistribution().getOrder().getId(),
-            "Обсудить заказ", "/api/order/distribution/item?itemId=" + item.getId() + "&action=TALK",
-            "Принять заказ", "/api/order/distribution/item?itemId=" + item.getId() + "&action=ACCEPTED",
-            "Отказаться от заказа", "/api/order/distribution/item?itemId=" + item.getId() + "&action=DECLINE"
+                "Ознакомиться с ТЗ/требованиями", "/request-order/" + item.getQueueDistribution().getOrder().getId(),
+                "Обсудить заказ", "/api/order/distribution/item?itemId=" + item.getId() + "&action=TALK",
+                "Принять заказ", "/api/order/distribution/item?itemId=" + item.getId() + "&action=ACCEPTED",
+                "Отказаться от заказа", "/api/order/distribution/item?itemId=" + item.getId() + "&action=DECLINE"
         );
 
         messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-            item.getQueueDistribution().getCreatedBy().getId(),
-            true,
-            getFormattedMessageForQueueDistribution(item.getQueueDistribution().getOrder().getId()),
-            options
+                item.getQueueDistribution().getCreatedBy().getId(),
+                true,
+                getFormattedMessageForQueueDistribution(item.getQueueDistribution().getOrder().getId()),
+                options
         );
 
         if (StringUtils.isNotBlank(item.getQueueDistribution().getCreatedByUserMessage())) {
             messageService.sendMessageToNewOrderChat(item.getUser().getId(),
-                item.getQueueDistribution().getCreatedBy().getId(),
-                false,
-                item.getQueueDistribution().getCreatedByUserMessage(),
-                Map.of()
+                    item.getQueueDistribution().getCreatedBy().getId(),
+                    false,
+                    item.getQueueDistribution().getCreatedByUserMessage(),
+                    Map.of()
             );
         }
 
@@ -363,10 +374,10 @@ public class NewDistributionService {
 
     private void createQueueDistribution(CreateDistributionRequestDto createDistributionRequestDto, OrderEntity order, Long managerId) {
         List<Long> authorIds = createDistributionRequestDto.getPersons().stream()
-            .sorted(Comparator.comparing(DistributionPersonDto::getOrder))
-            .map(DistributionPersonDto::getAuthor)
-            .map(AuthorFullDto::getId)
-            .toList();
+                .sorted(Comparator.comparing(DistributionPersonDto::getOrder))
+                .map(DistributionPersonDto::getAuthor)
+                .map(AuthorFullDto::getId)
+                .toList();
 
         QueueDistributionEntity queueDistributionEntity = new QueueDistributionEntity();
 
@@ -397,13 +408,13 @@ public class NewDistributionService {
     private String getFormattedMessageForQueueDistribution(Long orderId) {
         OrderSendRequestProjection orderProjection = orderRepository.findOrderProjectionToOrderSendRequest(orderId);
         return """
-            Поступил новый заказ №%s.
-            Тип работы "%s".
-            Дисциплина "%s".
-            Тема "%s".
-            У вас ограниченное время для ответа. Нажмите на вариант взаимодействия с заказом ниже.
-            """.formatted(orderProjection.getTechNumber(),
-            orderProjection.getWorkType(), orderProjection.getDiscipline(), orderProjection.getSubject());
+                Поступил новый заказ №%s.
+                Тип работы "%s".
+                Дисциплина "%s".
+                Тема "%s".
+                У вас ограниченное время для ответа. Нажмите на вариант взаимодействия с заказом ниже.
+                """.formatted(orderProjection.getTechNumber(),
+                orderProjection.getWorkType(), orderProjection.getDiscipline(), orderProjection.getSubject());
     }
 
     private void sendRequestToAuthors(List<OrderParticipantEntity> participants, Long managerId, OrderEntity order, String message) {
@@ -413,25 +424,25 @@ public class NewDistributionService {
     }
 
     private static final List<DistributionItemStatusType> SHOULD_BE_NOTIFIED_WHEN_AUTHOR_FOUND =
-        List.of(DistributionItemStatusType.TALK, DistributionItemStatusType.NO_RESPONSE);
+            List.of(DistributionItemStatusType.TALK, DistributionItemStatusType.NO_RESPONSE);
 
     private static List<UserEntity> getUsersThatCanTalkAboutOrder(QueueDistributionEntity distribution) {
         return distribution.getItems().stream()
-            .filter(item -> SHOULD_BE_NOTIFIED_WHEN_AUTHOR_FOUND.contains(item.getStatus()))
-            .map(QueueDistributionItemEntity::getUser)
-            .toList();
+                .filter(item -> SHOULD_BE_NOTIFIED_WHEN_AUTHOR_FOUND.contains(item.getStatus()))
+                .map(QueueDistributionItemEntity::getUser)
+                .toList();
     }
 
     private static List<UserEntity> getUsersThatShouldBeNotified(QueueDistributionEntity distribution) {
         List<OrderParticipantEntity> participants = distribution.getOrder().getOrderParticipants();
 
         Stream<UserEntity> catchers = participants.stream()
-            .filter(p -> p.getParticipantsType().getType() == ParticipantType.CATCHER)
-            .map(OrderParticipantEntity::getUser);
+                .filter(p -> p.getParticipantsType().getType() == ParticipantType.CATCHER)
+                .map(OrderParticipantEntity::getUser);
 
         return Stream.concat(Stream.of(distribution.getOrder().getCreatedBy()), catchers)
-            .distinct()
-            .toList();
+                .distinct()
+                .toList();
     }
 
     @Transactional
@@ -442,13 +453,13 @@ public class NewDistributionService {
     public void sendNewOrderRequest(Long userId, Long managerId, Long orderId, String message) {
         OrderSendRequestProjection orderProjection = orderRepository.findOrderProjectionToOrderSendRequest(orderId);
         sendNewOrderRequest(userId,
-            managerId,
-            orderId,
-            orderProjection.getTechNumber(),
-            orderProjection.getWorkType(),
-            orderProjection.getDiscipline(),
-            orderProjection.getSubject(),
-            message);
+                managerId,
+                orderId,
+                orderProjection.getTechNumber(),
+                orderProjection.getWorkType(),
+                orderProjection.getDiscipline(),
+                orderProjection.getSubject(),
+                message);
     }
 
     private void sendNewOrderRequest(Long authorId, Long managerId, Long orderId, BigDecimal techNumber, String workType, String discipline, String subject, String message) {
@@ -465,13 +476,13 @@ public class NewDistributionService {
 
         if (newOrdersChatByUser.isPresent()) {
             messageService.sendMessage(
-                UserEntity.of(ChatNames.SYSTEM_USER_ID),
-                newOrdersChatByUser.get(),
-                "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
-                true,
-                chatMessageType,
-                Collections.emptyList(),
-                Collections.singletonList(chatMessageOptionEntity)
+                    UserEntity.of(ChatNames.SYSTEM_USER_ID),
+                    newOrdersChatByUser.get(),
+                    "Поступил новый заказ №%s.\nТип работы \"%s\".\nДисциплина \"%s\".\nТема \"%s\".".formatted(techNumber, workType, discipline, subject),
+                    true,
+                    chatMessageType,
+                    Collections.emptyList(),
+                    Collections.singletonList(chatMessageOptionEntity)
             );
 
             OrderRequestStatisticEntity orderRequestStatisticEntity = new OrderRequestStatisticEntity();
@@ -484,17 +495,32 @@ public class NewDistributionService {
 
             if (!StringUtils.isBlank(message)) {
                 messageService.sendMessage(
-                    UserEntity.of(managerId),
-                    newOrdersChatByUser.get(),
-                    message,
-                    false,
-                    chatMessageType,
-                    Collections.emptyList(),
-                    Collections.emptyList(),
-                    true,
-                    false
+                        UserEntity.of(managerId),
+                        newOrdersChatByUser.get(),
+                        message,
+                        false,
+                        chatMessageType,
+                        Collections.emptyList(),
+                        Collections.emptyList(),
+                        true,
+                        false
                 );
             }
         }
+    }
+
+    private void sendBotNotification(Long userId, InformationLevel level, String tittle, String description, Set<String> tags) {
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tags(tags)
+                .tittle(tittle)
+                .description(description)
+                .informationLevel(level)
+                .targetUserId(userId)
+                .fromUsername("Система распределения заказов")
+                .build());
+    }
+
+    public void sendBotNotification(Long userId, String message, Set<String> tags) {
+        sendBotNotification(userId, InformationLevel.INFO, "Уведомление", message, tags);
     }
 }

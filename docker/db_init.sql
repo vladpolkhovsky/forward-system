@@ -854,18 +854,17 @@ alter table forward_system.users
     add last_version_of_user_agreement_signed boolean not null default false;
 
 alter table forward_system.user_plan
-    add target_count bigint    not null default 0;
+    add target_count bigint not null default 0;
 
-CREATE INDEX idx_cmtu_composite ON forward_system.chat_message_to_user(message_id, user_id, is_viewed);
-CREATE INDEX idx_chat_members_composite ON forward_system.chat_members(chat_id, user_id);
-CREATE INDEX idx_chat_messages_chat_id ON forward_system.chat_messages(chat_id);
+CREATE INDEX idx_cmtu_composite ON forward_system.chat_message_to_user (message_id, user_id, is_viewed);
+CREATE INDEX idx_chat_members_composite ON forward_system.chat_members (chat_id, user_id);
+CREATE INDEX idx_chat_messages_chat_id ON forward_system.chat_messages (chat_id);
 
 CREATE OR REPLACE VIEW forward_system.message_view_stats AS
-SELECT
-    cm.id,
-    cm.chat_id as chat_id,
-    COUNT(u.id) AS user_count,
-    array_remove(ARRAY_AGG(u.username), null) AS usernames
+SELECT cm.id,
+       cm.chat_id                                as chat_id,
+       COUNT(u.id)                               AS user_count,
+       array_remove(ARRAY_AGG(u.username), null) AS usernames
 FROM forward_system.chat_messages cm
          JOIN forward_system.chat_members mem ON cm.chat_id = mem.chat_id
          JOIN forward_system.users u ON mem.user_id = u.id
@@ -880,22 +879,27 @@ alter table forward_system.orders
     add expert_calendar_group_id bigint references forward_system.calendar_group (id);
 
 CREATE OR REPLACE VIEW forward_system.attachments_by_message as
-select a.id, cm.id as message_id, cm.chat_id, cm.from_user_id, a.filename, cm.created_at from forward_system.attachments a
-    inner join forward_system.chat_message_attachments cma on cma.attachment_id = a.id
-    inner join forward_system.chat_messages cm on cm.id = cma.message_id
+select a.id, cm.id as message_id, cm.chat_id, cm.from_user_id, a.filename, cm.created_at
+from forward_system.attachments a
+         inner join forward_system.chat_message_attachments cma on cma.attachment_id = a.id
+         inner join forward_system.chat_messages cm on cm.id = cma.message_id
 order by cm.created_at desc;
 
-alter table forward_system.chats drop column tsvector_chat_name;
-alter table forward_system.tags drop column tsvector_tag_name;
+alter table forward_system.chats
+    drop column tsvector_chat_name;
+alter table forward_system.tags
+    drop column tsvector_tag_name;
 
 CREATE AGGREGATE forward_system.tsvector_agg(tsvector) (
-   STYPE = pg_catalog.tsvector,
-   SFUNC = pg_catalog.tsvector_concat,
-   INITCOND = ''
-);
+    STYPE = pg_catalog.tsvector,
+    SFUNC = pg_catalog.tsvector_concat,
+    INITCOND = ''
+    );
 
-alter table forward_system.chats add tsvector_chat_name tsvector default ''::tsvector;
-alter table forward_system.tags add tsvector_tag_name tsvector default ''::tsvector;
+alter table forward_system.chats
+    add tsvector_chat_name tsvector default ''::tsvector;
+alter table forward_system.tags
+    add tsvector_tag_name tsvector default ''::tsvector;
 
 CREATE INDEX idx_tags_tsvector ON forward_system.tags USING gin (tsvector_tag_name);
 CREATE INDEX idx_chat_name_tsvector ON forward_system.chats USING gin (tsvector_chat_name);
@@ -904,10 +908,44 @@ alter table forward_system.queue_distribution
     add start_time_at timestamp;
 
 update forward_system.queue_distribution
-    set start_time_at = queue_distribution.created_at;
+set start_time_at = queue_distribution.created_at;
 
 alter table forward_system.queue_distribution
     alter column start_time_at set not null;
 
 create unique index if not exists forward_system_chat_metadata_uniq_index
     on forward_system.chat_metadata (user_id, manager_id);
+
+create table forward_system.notification_bot
+(
+    user_id     bigint                  not null
+        constraint notification_bot_pk
+            primary key
+        constraint notification_bot_users_id_fk
+            references forward_system.users,
+    tg_chat_id  varchar(50),
+    max_chat_id varchar(50),
+    vk_chat_id  varchar(50),
+    updated_at  timestamp default now() not null,
+    created_at  timestamp default now() not null
+);
+
+create table forward_system.customer_bot
+(
+    id               bigint primary key,
+    tg_chat_id       varchar(50),
+    max_chat_id      varchar(50),
+    vk_chat_id       varchar(50),
+    forward_order_id bigint                  not null references forward_system.forward_order (id),
+    updated_at       timestamp default now() not null,
+    created_at       timestamp default now() not null
+);
+
+create table forward_system.bot_notification_history
+(
+    id             bigint primary key,
+    message        jsonb,
+    target         varchar(30),
+    target_user_id bigint,
+    created_at     timestamp default now() not null
+)

@@ -87,6 +87,21 @@ public class FilesController {
         );
     }
 
+    @GetMapping(value = "/df/{fileKey}")
+    @SneakyThrows
+    public ResponseEntity<Resource> downloadFile(@PathVariable("fileKey") String key) {
+        AttachmentService.AttachmentFileInputStream attachmentFile = attachmentService.loadAttachmentAsResourceByKey(key);
+
+        Optional<MediaType> mediaType = MediaTypeFactory.getMediaType(attachmentFile.filepath());
+        String filename = attachmentFile.filename().substring(attachmentFile.filename().indexOf(' ') + 1);
+
+        return asResponseEntity(
+                new InputStreamResource(attachmentFile.inputStream()),
+                filename,
+                mediaType.orElse(MediaType.APPLICATION_OCTET_STREAM)
+        );
+    }
+
     @GetMapping(value = "/load-server-file/expert-form")
     @SneakyThrows
     public ResponseEntity<Resource> loadExpertForm() {

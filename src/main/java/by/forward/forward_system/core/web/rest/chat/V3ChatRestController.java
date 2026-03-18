@@ -84,7 +84,7 @@ public class V3ChatRestController {
         UserEntity user = userRepository.findById(userId).orElseThrow();
         ChatEntity chat = chatRepository.findById(chatId).orElseThrow();
         chat.getParticipants().add(user);
-        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользовтаель %s добавлен в чат".formatted(user.getUsername()), List.of());
+        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользователь %s добавлен в чат".formatted(user.getUsername()), List.of());
         return ResponseEntity.ok().build();
     }
 
@@ -94,7 +94,7 @@ public class V3ChatRestController {
         UserEntity user = userRepository.findById(userId).orElseThrow();
         ChatEntity chat = chatRepository.findById(chatId).orElseThrow();
         chat.getParticipants().removeIf(p -> p.getId().equals(userId));
-        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользовтаель %s удалён из чата".formatted(user.getUsername()), List.of());
+        messageService.sendMessage(ChatNames.SYSTEM_USER_ID, true, chatId, "Пользователь %s удалён из чата".formatted(user.getUsername()), List.of());
         return ResponseEntity.ok().build();
     }
 }

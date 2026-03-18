@@ -1,6 +1,5 @@
 package by.forward.forward_system.core.bot;
 
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -7,17 +7,19 @@ import by.forward.forward_system.core.enums.OrderSourceType;
 import by.forward.forward_system.core.enums.OrderStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.iternalnotification.dto.InformationLevel;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.UserEntity;
 import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
 import by.forward.forward_system.core.jpa.repository.projections.SimpleOrderProjection;
 import by.forward.forward_system.core.services.NewCalendarService;
 import by.forward.forward_system.core.services.core.*;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import by.forward.forward_system.core.services.ui.OrderUiService;
 import by.forward.forward_system.core.services.ui.UserUiService;
 import by.forward.forward_system.core.utils.ChatNames;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.*;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 @Controller
@@ -34,15 +37,11 @@ import java.util.stream.IntStream;
 public class CreateOrderController {
 
     private final UserUiService userUiService;
-
     private final OrderUiService orderUiService;
-
     private final OrderService orderService;
-
     private final UpdateRequestOrderService updateRequestOrderService;
-
     private final DisciplineService disciplineService;
-    private final BotNotificationService botNotificationService;
+    private final ApplicationEventPublisher applicationEventPublisher;
     private final UserService userService;
     private final OrderChatHandlerService orderChatHandlerService;
     private final NewCalendarService newCalendarService;
@@ -331,7 +330,7 @@ public class CreateOrderController {
 
         List<UserEntity> adminUsers = userService.findUsersWithRole(Authority.ADMIN.getAuthority());
         for (UserEntity userEntity : adminUsers) {
-            botNotificationService.sendBotNotification(userEntity.getId(), "Заказ #%s ожидает подтверждения Администратора".formatted(order.getTechNumber()));
+            sendBotNotification(userEntity.getId(), "Заказ #%s ожидает подтверждения Администратора".formatted(order.getTechNumber()), Set.of("ТЗ " + order.getTechNumber()));
         }
 
         return new RedirectView("/order-to-in-progress");
@@ -525,5 +524,16 @@ public class CreateOrderController {
             return new RedirectView("/order-info/" + orderId);
         }
         return  new RedirectView("/view-order/" + orderId);
+    }
+
+    private void sendBotNotification(Long userId, String message, Set<String> tags) {
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .tags(tags)
+                .tittle("Уведомление")
+                .description(message)
+                .informationLevel(InformationLevel.INFO)
+                .targetUserId(userId)
+                .fromUsername("Система заказов")
+                .build());
     }
 }

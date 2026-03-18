@@ -3,24 +3,23 @@ package by.forward.forward_system.jobs;
 import by.forward.forward_system.core.enums.ChatType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.events.events.NotifyChatEvent;
+import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
 import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
-import by.forward.forward_system.core.services.messager.BotNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -35,11 +34,11 @@ public class BotNotificationJob {
 
     private static final int WAIT_MINS = 5;
 
-    private final BotNotificationService botNotificationService;
     private final NotificationOutboxRepository notificationOutboxRepository;
     private final ChatMetadataRepository chatMetadataRepository;
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     @SneakyThrows
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -49,7 +48,7 @@ public class BotNotificationJob {
         try {
             log.info("Начало отправки уведомлений для чата {}", event.chatId());
             List<NotificationOutboxEntity> allMessagesOlderThen = notificationOutboxRepository
-                .getAllMessagesByChatIdAndOlderThen(event.chatId(), LocalDateTime.now());
+                    .getAllMessagesByChatIdAndOlderThen(event.chatId(), LocalDateTime.now());
             log.info("Для чата {} найдено {} записей о необходимости отправки", event.chatId(), allMessagesOlderThen.size());
             process(allMessagesOlderThen);
         } catch (Exception ex) {
@@ -80,15 +79,15 @@ public class BotNotificationJob {
 
         userToOutbox.forEach((userEntity, ent) -> {
             List<Long> chatIds = ent.stream()
-                .map(NotificationOutboxEntity::getChat)
-                .map(ChatEntity::getId)
-                .distinct()
-                .toList();
+                    .map(NotificationOutboxEntity::getChat)
+                    .map(ChatEntity::getId)
+                    .distinct()
+                    .toList();
             List<Long> messageIds = ent.stream()
-                .map(NotificationOutboxEntity::getMessage)
-                .map(ChatMessageEntity::getId)
-                .distinct()
-                .toList();
+                    .map(NotificationOutboxEntity::getMessage)
+                    .map(ChatMessageEntity::getId)
+                    .distinct()
+                    .toList();
             log.info("Для пользователя {} отпралены сообщения из чатов {}, сообщения {}.", userEntity.getId(), chatIds, messageIds);
         });
 
@@ -102,8 +101,8 @@ public class BotNotificationJob {
         }
 
         List<Long> ids = allMessagesOlderThen.stream()
-            .map(NotificationOutboxEntity::getId)
-            .toList();
+                .map(NotificationOutboxEntity::getId)
+                .toList();
 
         notificationOutboxRepository.deleteAllByIdIn(ids);
 
@@ -127,17 +126,17 @@ public class BotNotificationJob {
                 ChatMessageEntity message = notificationOutboxEntity.getMessage();
                 String username = Optional.ofNullable(message.getFromUser()).map(UserEntity::getUsername).orElse("Система");
                 String content = StringUtils.abbreviate(
-                    Optional.ofNullable(message.getContent()).filter(Predicate.not(StringUtils::isBlank)).orElse("Сообщение без текста."),
-                    200
+                        Optional.ofNullable(message.getContent()).filter(Predicate.not(StringUtils::isBlank)).orElse("Сообщение без текста."),
+                        200
                 );
 
                 chatIdToMessageCount.put(
-                    notificationOutboxEntity.getChat().getId(),
-                    chatIdToMessageCount.get(notificationOutboxEntity.getChat().getId()) + 1
+                        notificationOutboxEntity.getChat().getId(),
+                        chatIdToMessageCount.get(notificationOutboxEntity.getChat().getId()) + 1
                 );
 
                 chatIdToMessage.get(notificationOutboxEntity.getChat().getId())
-                    .add(String.format("«%s : %s»", username, content));
+                        .add(String.format("%s: %s", username, content));
             }
         }
 
@@ -156,11 +155,11 @@ public class BotNotificationJob {
             ChatType chatType = chatEntity.getChatType().getType();
 
             sandedMessageCount += sendIfNeeded(user,
-                chatType,
-                chatName,
-                chatEntity.getId(),
-                chatIdToMessageCountEntry.getValue(),
-                String.join("\n", chatIdToMessage.get(chatIdToMessageCountEntry.getKey()))
+                    chatType,
+                    chatName,
+                    chatEntity.getId(),
+                    chatIdToMessageCountEntry.getValue(),
+                    String.join("\n\n", chatIdToMessage.get(chatIdToMessageCountEntry.getKey()))
             );
         }
 
@@ -189,8 +188,8 @@ public class BotNotificationJob {
                 OrderEntity orderEntity = chatEntity.getOrder();
                 techNumber = orderEntity.getTechNumber();
                 Optional<OrderParticipantEntity> any = orderEntity.getOrderParticipants().stream()
-                    .filter(t -> t.getUser().getId().equals(user.getId()))
-                    .findAny();
+                        .filter(t -> t.getUser().getId().equals(user.getId()))
+                        .findAny();
                 isNeedToSend = any.isPresent();
             }
 
@@ -210,47 +209,19 @@ public class BotNotificationJob {
     }
 
     private void sendAdminTalkNotification(UserEntity userEntity, String chatName, Integer newMessageCount, String messageText) {
-        String text = """
-            Здравствуйте, %s.
-            У вас новые непрочитанное сообщения (%d шт.) в чате:
-            "%s".
-            ---
-            %s
-            """.formatted(userEntity.getUsername(), newMessageCount, chatName, messageText);
-        botNotificationService.sendBotNotification(userEntity.getId(), text);
+        sendNotification(userEntity.getId(), chatName, messageText, Set.of("Новое сообщение", "Администрация"));
     }
 
     private void sendRequestOrderNotification(UserEntity userEntity, String chatName, Integer newMessageCount, String messageText) {
-        String text = """
-            Здравствуйте, %s.
-            У вас новые непрочитанное сообщения (%d шт.) в чате:
-            "%s".
-            ---
-            %s
-            """.formatted(userEntity.getUsername(), newMessageCount, chatName, messageText);
-        botNotificationService.sendBotNotification(userEntity.getId(), text);
+        sendNotification(userEntity.getId(), chatName, messageText, Set.of("Новое сообщение", "Новые заказы"));
     }
 
     private void sendOrderNotification(UserEntity userEntity, String techNumber, String chatName, Integer newMessageCount, String messageText) {
-        String text = """
-            Здравствуйте, %s.
-            У вас новые непрочитанное сообщения (%d шт.) в чате:
-            "%s" по заказу #%s.
-            ---
-            %s
-            """.formatted(userEntity.getUsername(), newMessageCount, chatName, techNumber, messageText);
-        botNotificationService.sendBotNotification(userEntity.getId(), text);
+        sendNotification(userEntity.getId(), chatName, messageText, Set.of("Новое сообщение", "ТЗ " + techNumber));
     }
 
     private void sendSpecialAndOtherNotification(UserEntity userEntity, String chatName, Integer newMessageCount, String messageText) {
-        String text = """
-            Здравствуйте, %s.
-            У вас новые непрочитанное сообщения (%d шт.) в чате:
-            "%s".
-            ---
-            %s
-            """.formatted(userEntity.getUsername(), newMessageCount, chatName, messageText);
-        botNotificationService.sendBotNotification(userEntity.getId(), text);
+        sendNotification(userEntity.getId(), chatName, messageText, Set.of("Новое сообщение"));
     }
 
     private boolean isNoNeedToSendNotification(List<Long> skippedChatIdsByUserId, UserEntity user, Long chatId) {
@@ -262,6 +233,15 @@ public class BotNotificationJob {
         }
         ChatEntity chatEntity = chatRepository.findById(chatId).get();
         return (chatEntity.isChatTypeIs(ChatType.ADMIN_TALK_CHAT) || chatEntity.isChatTypeIs(ChatType.FORWARD_ORDER_ADMIN_CHAT))
-               && user.hasAuthority(Authority.OWNER);
+                && user.hasAuthority(Authority.OWNER);
+    }
+
+    private void sendNotification(Long userId, String chatName, String message, Set<String> tags) {
+        applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
+                .targetUserId(userId)
+                .tittle("Новые сообщения в чате \"%s\"".formatted(chatName))
+                .description(message)
+                .tags(tags)
+                .build());
     }
 }
