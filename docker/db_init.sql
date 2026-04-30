@@ -948,4 +948,7 @@ create table forward_system.bot_notification_history
     target         varchar(30),
     target_user_id bigint,
     created_at     timestamp default now() not null
-)
+);
+
+alter table forward_system.authors
+    add max_order_count bigint not null default 10;

@@ -17,7 +17,7 @@ public interface AuthorMapper {
     @Mapping(target = "activity", ignore = true)
     @Mapping(target = "activeOrders", ignore = true)
     @Mapping(target = "username", source = "user.username")
-    @Mapping(target = "maxOrdersCount", constant = "10L")
+    @Mapping(target = "maxOrdersCount", source = "maxOrdersCount")
     @Mapping(target = "disciplines", source = "author")
     AuthorFullDto mapReach(AuthorEntity author);
 

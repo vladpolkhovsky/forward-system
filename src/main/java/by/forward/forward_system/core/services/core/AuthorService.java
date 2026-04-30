@@ -120,6 +120,7 @@ public class AuthorService {
 
         authorDisciplineRepository.deleteAll(authorEntity.getAuthorDisciplines());
         authorEntity.getAuthorDisciplines().clear();
+        authorEntity.setMaxOrdersCount(authorEntity.getMaxOrdersCount());
 
         if (!StringUtils.isEmpty(author.getUser().getPassword())) {
             authorEntity.getUser().setPassword(passwordEncoder.encode(author.getUser().getPassword()));

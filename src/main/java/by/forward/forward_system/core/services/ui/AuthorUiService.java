@@ -156,6 +156,7 @@ public class AuthorUiService {
         authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getExcellentSubjects(), DisciplineQualityType.EXCELLENT));
         authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getGoodSubjects(), DisciplineQualityType.GOOD));
         authorEntity.getAuthorDisciplines().addAll(createSubjects(authorEntity, authorUiDto.getMaybeSubjects(), DisciplineQualityType.MAYBE));
+        authorEntity.setMaxOrdersCount(10L);
 
         UserEntity userEntity = new UserEntity();
 

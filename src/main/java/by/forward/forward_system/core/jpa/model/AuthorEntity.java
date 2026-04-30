@@ -26,6 +26,9 @@ public class AuthorEntity {
     @JoinColumn(name = "created_by", nullable = false)
     private UserEntity createdByUser;
 
+    @Column(name = "max_order_count", nullable = false)
+    private Long maxOrdersCount;
+
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<AuthorDisciplineEntity> authorDisciplines = new ArrayList<>();
 }
