@@ -413,6 +413,13 @@
         }
 
         loadAdditionalDates();
+
+        //Убираем увеличение коллёсиком мыши
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('wheel', (event) => {
+                event.preventDefault();
+            });
+        });
     </script>
 </div>
 </body>
