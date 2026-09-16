@@ -3,6 +3,7 @@ import type {ChatType} from "@/core/type/ChatType.ts";
 export enum ChatTypeEnum {
     REQUEST_ORDER_CHAT = "REQUEST_ORDER_CHAT",
     ORDER_CHAT = "ORDER_CHAT",
+    ORDER_CHAT_SUB = "ORDER_CHAT_SUB",
     ADMIN_TALK_CHAT = "ADMIN_TALK_CHAT",
     OTHER_CHAT = "OTHER_CHAT",
     SPECIAL_CHAT = "SPECIAL_CHAT",

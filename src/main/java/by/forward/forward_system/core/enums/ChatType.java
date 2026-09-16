@@ -9,6 +9,7 @@ import java.util.List;
 public enum ChatType {
     REQUEST_ORDER_CHAT("REQUEST_ORDER_CHAT", "Чат обсуждение заказ"),
     ORDER_CHAT("ORDER_CHAT", "Чат заказа"),
+    ORDER_CHAT_SUB("ORDER_CHAT_SUB", "Чат заказа (ЗАМЕНА)"),
     ADMIN_TALK_CHAT("ADMIN_TALK_CHAT", "Чат с администратором"),
     OTHER_CHAT("OTHER_CHAT", "Простой чат"),
     SPECIAL_CHAT("SPECIAL_CHAT", "Специальный чат"),

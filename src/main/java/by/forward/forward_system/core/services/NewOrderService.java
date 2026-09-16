@@ -6,26 +6,35 @@ import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
 import by.forward.forward_system.core.dto.rest.payment.OrderPaymentStatusDto;
 import by.forward.forward_system.core.dto.rest.search.OrderSearchCriteria;
+import by.forward.forward_system.core.dto.rest.users.ManagerSubDto;
 import by.forward.forward_system.core.enums.OrderPaymentStatus;
 import by.forward.forward_system.core.enums.ParticipantType;
+import by.forward.forward_system.core.enums.auth.Authority;
+import by.forward.forward_system.core.jpa.model.ManagerSubEntity;
 import by.forward.forward_system.core.jpa.model.OrderEntity;
 import by.forward.forward_system.core.jpa.model.OrderParticipantEntity;
+import by.forward.forward_system.core.jpa.model.UserEntity;
+import by.forward.forward_system.core.jpa.repository.ManagerSubRepository;
 import by.forward.forward_system.core.jpa.repository.OrderParticipantRepository;
 import by.forward.forward_system.core.jpa.repository.OrderRepository;
 import by.forward.forward_system.core.jpa.repository.OrderRepository.OrderIdProjection;
+import by.forward.forward_system.core.jpa.repository.UserRepository;
 import by.forward.forward_system.core.jpa.repository.projections.OrderChatDataProjection;
 import by.forward.forward_system.core.jpa.specs.OrderSpecification;
 import by.forward.forward_system.core.mapper.OrderMapper;
+import by.forward.forward_system.core.mapper.UserMapper;
 import by.forward.forward_system.core.services.core.OrderChatHandlerService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,17 +48,21 @@ public class NewOrderService {
     private final NewOrderPaymentService newOrderPaymentService;
     private final OrderChatHandlerService chatHandlerService;
     private final OrderParticipantRepository orderParticipantRepository;
+    private final ManagerSubRepository managerSubRepository;
+    private final JdbcTemplate jdbcTemplate;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
     @Transactional(readOnly = true)
     public List<AuthorOrderDto> getAuthorOrders(Long userId) {
         var orderWhereAuthorIs = orderRepository.getOrderWhereAuthorIs(userId);
 
         Comparator<OrderEntity> comparator = Comparator.<OrderEntity>comparingInt(oe -> oe.getOrderStatus().getStatus().ordinal())
-            .thenComparing(oe -> new BigDecimal(oe.getTechNumber()));
+                .thenComparing(oe -> new BigDecimal(oe.getTechNumber()));
 
         List<OrderPaymentStatusDto> lastPaymentsStatus = newOrderPaymentService.findLastPaymentsStatus(userId);
         Map<Long, OrderPaymentStatus> orderIdToPaymentStatus = lastPaymentsStatus.stream()
-            .collect(Collectors.toMap(t -> t.getOrder().getOrderId(), OrderPaymentStatusDto::getStatus));
+                .collect(Collectors.toMap(t -> t.getOrder().getOrderId(), OrderPaymentStatusDto::getStatus));
 
         orderWhereAuthorIs.sort(comparator);
 
@@ -64,7 +77,7 @@ public class NewOrderService {
         var orderWhereManagerIs = orderRepository.getOrderWhereManagerIs(userId, showClosed);
 
         Comparator<OrderEntity> comparator = Comparator.<OrderEntity>comparingInt(oe -> oe.getOrderStatus().getStatus().ordinal())
-            .thenComparing(oe -> new BigDecimal(oe.getTechNumber()));
+                .thenComparing(oe -> new BigDecimal(oe.getTechNumber()));
 
         orderWhereManagerIs.sort(comparator);
 
@@ -82,34 +95,104 @@ public class NewOrderService {
         Specification<OrderEntity> specification = OrderSpecification.buildSearchIdsSpecification(criteria);
 
         Page<OrderIdProjection> byCriteria = orderRepository.findBy(specification,
-            q -> q.project("id").as(OrderIdProjection.class).page(pageable));
+                q -> q.project("id").as(OrderIdProjection.class).page(pageable));
 
         List<Long> idsByCriteria = byCriteria.map(OrderIdProjection::getId).toList();
         List<OrderEntity> fetchedByIds = orderRepository.findAllByIds(idsByCriteria);
 
         Map<Long, OrderEntity> orderIdToOrder = fetchedByIds.stream()
-            .collect(Collectors.toMap(OrderEntity::getId, Function.identity()));
+                .collect(Collectors.toMap(OrderEntity::getId, Function.identity()));
 
         Map<Long, OrderChatDataProjection> newMessageCount = chatHandlerService.calcChatData(idsByCriteria,
-            AuthUtils.getCurrentUserId());
+                AuthUtils.getCurrentUserId());
 
         return byCriteria
-            .map(OrderIdProjection::getId)
-            .map(orderIdToOrder::get)
-            .map(orderMapper::mapToFullDto)
-            .map(order -> Optional.ofNullable(newMessageCount.get(order.getId()))
-                .map(data -> order.withOrderChatId(data.getChatId())
-                    .withOrderChatIdNewMessages(data.getNewMessageCount())).orElse(order));
+                .map(OrderIdProjection::getId)
+                .map(orderIdToOrder::get)
+                .map(orderMapper::mapToFullDto)
+                .map(order -> Optional.ofNullable(newMessageCount.get(order.getId()))
+                        .map(data -> order.withOrderChatId(data.getChatId())
+                                .withOrderChatIdNewMessages(data.getNewMessageCount())).orElse(order));
     }
 
     @Transactional
     public void deleteExpertFromOrder(Long orderId) {
         orderRepository.findById(orderId).ifPresent(order -> {
             List<OrderParticipantEntity> experts = order.getOrderParticipants().stream()
-                .filter(t -> t.getParticipantsType().getType() == ParticipantType.EXPERT)
-                .toList();
+                    .filter(t -> t.getParticipantsType().getType() == ParticipantType.EXPERT)
+                    .toList();
             order.getOrderParticipants().removeAll(experts);
             orderParticipantRepository.deleteAll(experts);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public ManagerSubDto getUserSub(Long userId) {
+        return managerSubRepository.findById(userId)
+                .map(ManagerSubEntity::getSubManagerId)
+                .flatMap(userRepository::findById)
+                .map(userMapper::map)
+                .map(dto -> ManagerSubDto.builder()
+                        .hasSubManager(true)
+                        .subManager(dto)
+                        .build())
+                .orElse(ManagerSubDto.builder()
+                        .hasSubManager(false)
+                        .build());
+    }
+
+    @Transactional
+    public ManagerSubDto updateUserSub(Long userId, Long newSubId) {
+        UserEntity subManager = userRepository.findById(newSubId).get();
+
+        if (!userRepository.findById(userId).get().getAuthorities().contains(Authority.MANAGER)) {
+            throw new IllegalArgumentException("Not a manager");
+        }
+
+        if (!subManager.getAuthorities().contains(Authority.MANAGER)) {
+            throw new IllegalArgumentException("Sub not a manager");
+        }
+
+        if (Objects.equals(userId, newSubId)) {
+            throw new IllegalArgumentException("Same id");
+        }
+
+        ManagerSubEntity managerSubEntity = managerSubRepository.findById(userId)
+                .map(t -> {
+                    t.setUpdatedAt(LocalDateTime.now());
+                    return t;
+                })
+                .orElseGet(() -> {
+                    ManagerSubEntity entity = new ManagerSubEntity();
+                    entity.setMangerId(userId);
+                    entity.setSubManagerId(newSubId);
+                    entity.setUpdatedAt(LocalDateTime.now());
+                    entity.setCreatedAt(LocalDateTime.now());
+                    return managerSubRepository.save(entity);
+                });
+
+        managerSubEntity.setSubManagerId(newSubId);
+        managerSubRepository.save(managerSubEntity);
+
+        List<OrderRepository.OrderIdProjection> orderIds = orderRepository.findAllOrdersByUserId(userId);
+        if (!orderIds.isEmpty()) {
+            orderRepository.deleteAllSubsFrom(orderIds.stream().map(OrderIdProjection::getId).toList());
+        }
+
+        jdbcTemplate.batchUpdate(
+                "INSERT INTO forward_system.order_participants(id, order_id, user_id, type) VALUES (nextval('forward_system.id_seq'), ?, ?, ?)",
+                orderIds,
+                orderIds.size(),
+                (ps, orderId) -> {
+                    ps.setLong(1, orderId.getId());
+                    ps.setLong(2, newSubId);
+                    ps.setString(3, ParticipantType.SUB.getName());
+                }
+        );
+
+        return ManagerSubDto.builder()
+                .hasSubManager(true)
+                .subManager(userMapper.map(subManager))
+                .build();
     }
 }

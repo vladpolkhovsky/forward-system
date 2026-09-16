@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -212,7 +213,17 @@ public class MessageService {
         final long messageId = chatMessageId;
 
         List<ChatMessageToUserEntity> chatMessageToUserEntities = new ArrayList<>();
-        for (UserEntity chatMember : chatMessageEntity.getChat().getParticipants()) {
+
+        Stream<Long> orderParticipantIds = chatEntity.getOrder() != null ? chatEntity.getOrder().getOrderParticipants().stream()
+                .map(OrderParticipantEntity::getUser)
+                .map(UserEntity::getId) : Stream.empty();
+
+        final Set<Long> toUsersIds = Stream.concat(
+                orderParticipantIds,
+                chatMessageEntity.getChat().getParticipants().stream().map(UserEntity::getId)
+        ).collect(Collectors.toSet());
+
+        for (UserEntity chatMember : userRepository.findAllById(toUsersIds)) {
             if (fromUserEntity != null && Objects.equals(chatMember.getId(), fromUserEntity.getId())) {
                 continue;
             }

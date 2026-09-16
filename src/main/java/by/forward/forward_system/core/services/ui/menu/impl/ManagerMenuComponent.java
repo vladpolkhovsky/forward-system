@@ -22,7 +22,8 @@ public class ManagerMenuComponent implements MenuComponent {
     public MenuEntry getMenuEntry() {
         List<MenuEntry.MenuItem> list = Arrays.asList(
             new MenuEntry.MenuItem("Просмотр пользователей", "/user-view", false, null),
-            new MenuEntry.MenuItem("Просмотр авторов", "/author-view-all", false, null)
+            new MenuEntry.MenuItem("Просмотр авторов", "/author-view-all", false, null),
+            new MenuEntry.MenuItem("Мои замены", "/sub", false, null)
         );
 
         return new MenuEntry("Менеджер", list, 5);

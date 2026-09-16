@@ -11,7 +11,8 @@ public enum ParticipantType {
     AUTHOR("AUTHOR", "Автор на рассмотрении"),
     DECLINE_AUTHOR("DECLINE_AUTHOR", "Отказавшийся автор"),
     MAIN_AUTHOR("MAIN_AUTHOR", "Взявший в работу автор"),
-    EXPERT("EXPERT", "Эксперт");
+    EXPERT("EXPERT", "Эксперт"),
+    SUB("SUB", "Замена");
 
     private final String name;
 

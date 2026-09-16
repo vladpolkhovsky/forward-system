@@ -20,13 +20,23 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         	ts_rank((forward_system.tsvector_agg(distinct t.tsvector_tag_name) || c.tsvector_chat_name), to_tsquery('simple', :chatNameQuery)) as rank
         from forward_system.chats c
         inner join forward_system.chat_members cm on
-            c.id = cm.chat_id and cm.user_id = :currentUserId
+            c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = cm.user_id
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         left join forward_system.chat_to_tag ctt on
         	c.id = ctt.chat_id
         left join forward_system.tags t on
         	ctt.tag_id = t.id
         where
-            c.type in :chatTypes
+            c.type in :chatTypes and (not :allowSubChat or exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'SUB'
+                    ))
         group by
         	c.id
         having
@@ -37,6 +47,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
     Page<ChatNameProjection> findChatsByChatNameAndTagsQuery(
         @Param("currentUserId") Long currentUserId,
         @Param("chatNameQuery") String chatNameQuery,
+        @Param("allowSubChat") Boolean allowSubChat,
         @Param("chatTypes") List<String> chatTypes,
         Pageable pageable);
 
@@ -47,9 +58,19 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         	ts_rank(c.tsvector_chat_name, to_tsquery('simple', :chatNameQuery)) as rank
         from forward_system.chats c
         inner join forward_system.chat_members cm on
-            c.id = cm.chat_id and cm.user_id = :currentUserId
+            c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = cm.user_id
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         where
-            c.type in :chatTypes
+            c.type in :chatTypes and (not :allowSubChat or exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'SUB'
+                    ))
         group by
         	c.id
         having
@@ -60,6 +81,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
     Page<ChatNameProjection> findChatsByNameQuery(
         @Param("currentUserId") Long currentUserId,
         @Param("chatNameQuery") String chatNameQuery,
+        @Param("allowSubChat") Boolean allowSubChat,
         @Param("chatTypes") List<String> chatTypes,
         Pageable pageable);
 
@@ -70,13 +92,23 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
            0 as rank
         from forward_system.chats c
         inner join forward_system.chat_members cm on
-            c.id = cm.chat_id and cm.user_id = :currentUserId
+            c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = cm.user_id
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         where
-            c.type in :chatTypes
+            c.type in :chatTypes and (not :allowSubChat or exists (
+                    select 1 from forward_system.order_participants op
+                        where op.user_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'SUB'
+                    ))
         order by
            rank desc, c.last_message_date desc
         """)
-    Page<ChatNameProjection> findChats(Long currentUserId, List<String> chatTypes, Pageable pageable);
+    Page<ChatNameProjection> findChats(Long currentUserId, Boolean allowSubChat, List<String> chatTypes, Pageable pageable);
 
     interface ChatNameProjection {
         Long getId();

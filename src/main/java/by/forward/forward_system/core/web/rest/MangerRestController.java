@@ -1,7 +1,7 @@
 package by.forward.forward_system.core.web.rest;
 
-import by.forward.forward_system.core.dto.rest.authors.AuthorOrderDto;
 import by.forward.forward_system.core.dto.rest.manager.ManagerOrderDto;
+import by.forward.forward_system.core.dto.rest.users.ManagerSubDto;
 import by.forward.forward_system.core.services.NewOrderService;
 import by.forward.forward_system.core.utils.AuthUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +28,15 @@ public class MangerRestController {
                                                                      @RequestParam(name = "showClosed", defaultValue = "false") Boolean showClosed) {
         var orders = newOrderService.getManagerOrders(AuthUtils.getCurrentUserId(), showClosed);
         return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping(value = "/sub")
+    public ResponseEntity<ManagerSubDto> getSubManagerInfo() {
+        return ResponseEntity.ok(newOrderService.getUserSub(AuthUtils.getCurrentUserId()));
+    }
+
+    @PostMapping(value = "/sub/{managerSub}")
+    public ResponseEntity<ManagerSubDto> updateSubEntity(@PathVariable Long managerSub) {
+        return ResponseEntity.ok(newOrderService.updateUserSub(AuthUtils.getCurrentUserId(), managerSub));
     }
 }

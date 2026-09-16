@@ -23,4 +23,9 @@ public class UserInfoController {
         return "main/info";
     }
 
+    @GetMapping(value = "/sub")
+    public String sub(Model model) {
+        model.addAttribute("userShort", userUiService.getCurrentUser());
+        return "main/sub/sub";
+    }
 }

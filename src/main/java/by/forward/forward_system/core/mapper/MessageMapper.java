@@ -136,6 +136,9 @@ public interface MessageMapper {
             if (CollectionUtils.containsAny(List.of(ParticipantType.HOST), a, b)) {
                 return ParticipantType.HOST;
             }
+            if (CollectionUtils.containsAny(List.of(ParticipantType.SUB), a, b)) {
+                return ParticipantType.SUB;
+            }
             return null;
         };
     }

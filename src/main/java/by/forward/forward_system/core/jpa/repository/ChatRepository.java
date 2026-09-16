@@ -149,6 +149,15 @@ public interface ChatRepository extends JpaRepository<ChatEntity, Long> {
         """)
     List<ChatTypeToChatsWithNewMessageCount> findChatTypeToChatsWithNewMessageCount(Long userId);
 
+    @Query(value = """
+        select 'ORDER_CHAT_SUB' as type, count(distinct chat.id) as count from ChatEntity chat
+            inner join ChatMessageToUserEntity messageToUser on messageToUser.chat = chat
+            inner join OrderParticipantEntity orderParticipantEntity on orderParticipantEntity.order.id = messageToUser.chat.order.id and orderParticipantEntity.participantsType.name = 'SUB'
+            where messageToUser.isViewed is false and messageToUser.user.id = :userId
+            group by chat.chatType
+        """)
+    List<ChatTypeToChatsWithNewMessageCount> findSubChatTypeToChatsWithNewMessageCount(Long userId);
+
     interface ChatTypeToChatsWithNewMessageCount {
         String getType();
         Integer getCount();

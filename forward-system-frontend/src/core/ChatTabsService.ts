@@ -22,6 +22,11 @@ export class ChatTabsService {
             chatTypes: [ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.ORDER_CHAT]
         },
         {
+            tabName: "Заказы в работе (Замена)",
+            queryParam: "orders-sub",
+            chatTypes: [ChatTypeEnum.ORDER_CHAT_SUB, ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.ORDER_CHAT]
+        },
+        {
             tabName: "Прямые заказы",
             queryParam: "forward",
             chatTypes: [ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT]

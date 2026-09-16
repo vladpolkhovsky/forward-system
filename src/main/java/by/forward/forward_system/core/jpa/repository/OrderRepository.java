@@ -181,6 +181,17 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
             """)
     List<ActiveOrderCountProjection> getActiveOrderCount();
 
+    @Query(value = """
+            select a.id as userId,
+                op.order.id as orderId,
+                op.order.techNumber as orderTechNumber,
+                op.order.orderStatus as status
+            from AuthorEntity a
+                inner join OrderParticipantEntity op on op.user = a.user and op.participantsType.name = 'MAIN_AUTHOR'
+                where op.order.orderStatus.name in ('FINALIZATION', 'REVIEW', 'IN_PROGRESS')
+            """)
+    List<ActiveOrderCountProjection> getAllOrder();
+
     @Modifying
     @Query("UPDATE OrderEntity set orderStatus.name = :statusName where id = :orderId")
     void updateOrderStatus(Long orderId, String statusName);
@@ -204,6 +215,19 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
             and o.orderStatus.name in ('CREATED' , 'DISTRIBUTION', 'ADMIN_REVIEW', 'IN_PROGRESS' , 'REVIEW', 'GUARANTEE', 'FINALIZATION')
         """)
     List<OrderEntity> findByExpertGroupIn(List<Long> groupIds);
+
+    @Query("""
+            select o.id as id from OrderEntity o
+                    join OrderParticipantEntity ope on ope.order.id = o.id
+                            where ope.user.id = :userId and ope.participantsType.name = 'HOST'
+            """)
+    List<OrderIdProjection> findAllOrdersByUserId(Long userId);
+
+    @Modifying
+    @Query("""
+            DELETE FROM OrderParticipantEntity where order.id in :orderIds and participantsType.name = 'SUB'
+            """)
+    void deleteAllSubsFrom(List<Long> orderIds);
 
     interface ActiveOrderCountProjection {
         Long getUserId();

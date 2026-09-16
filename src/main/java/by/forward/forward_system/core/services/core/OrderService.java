@@ -75,6 +75,7 @@ public class OrderService {
     private final QueueDistributionItemRepository queueDistributionItemRepository;
     private final NewDistributionService newDistributionService;
     private final ApplicationEventPublisher applicationEventPublisher;
+    private final ManagerSubRepository managerSubRepository;
 
     public Optional<OrderEntity> getById(Long id) {
         return orderRepository.findById(id);
@@ -402,6 +403,7 @@ public class OrderService {
         OrderParticipantsTypeEntity mainAuthorParticipant = orderParticipantsTypeRepository.findById(ParticipantType.MAIN_AUTHOR.getName()).orElseThrow(() -> new RuntimeException("Main Author not found"));
         OrderParticipantsTypeEntity catcherParticipant = orderParticipantsTypeRepository.findById(ParticipantType.CATCHER.getName()).orElseThrow(() -> new RuntimeException("CATCHER not found"));
         OrderParticipantsTypeEntity hostParticipant = orderParticipantsTypeRepository.findById(ParticipantType.HOST.getName()).orElseThrow(() -> new RuntimeException("HOST not found"));
+        OrderParticipantsTypeEntity subParticipant = orderParticipantsTypeRepository.findById(ParticipantType.SUB.getName()).orElseThrow(() -> new RuntimeException("SUB not found"));
 
         for (UserEntity author : authors) {
             addParticipant(orderEntity, mainAuthorParticipant, author.getId(), orderMainAuthorFee);
@@ -412,7 +414,13 @@ public class OrderService {
         }
 
         for (UserEntity host : hosts) {
-            addParticipant(orderEntity, hostParticipant, host.getId(), null);
+            final OrderEntity order = orderEntity;
+
+            addParticipant(order, hostParticipant, host.getId(), null);
+            managerSubRepository.findById(host.getId()).ifPresent(managerSubEntity -> {
+                addParticipant(order, subParticipant, managerSubEntity.getSubManagerId(), null);
+            });
+
             applicationEventPublisher.publishEvent(SendNotificationMessageDto.builder()
                     .tittle("Подтверждение заказа")
                     .description("""

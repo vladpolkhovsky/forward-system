@@ -264,7 +264,8 @@ values ('CATCHER'),
        ('AUTHOR'),
        ('DECLINE_AUTHOR'),
        ('MAIN_AUTHOR'),
-       ('EXPERT');
+       ('EXPERT'),
+       ('SUB');
 
 insert into forward_system.chat_type
 values ('REQUEST_ORDER_CHAT'),
@@ -866,7 +867,14 @@ SELECT cm.id,
        COUNT(u.id)                               AS user_count,
        array_remove(ARRAY_AGG(u.username), null) AS usernames
 FROM forward_system.chat_messages cm
-         JOIN forward_system.chat_members mem ON cm.chat_id = mem.chat_id
+         JOIN (select distinct ttt.user_id, ttt.chat_id from (
+             select t_cm.user_id as user_id, t_cm.chat_id as chat_id
+             from forward_system.chat_members t_cm
+             union all
+             select t_op.user_id as user_id, t_c.id as chat_id
+             from forward_system.order_participants t_op
+                      inner join forward_system.chats t_c on t_op.order_id = t_c.order_id) as ttt) mem
+              ON cm.chat_id = mem.chat_id
          JOIN forward_system.users u ON mem.user_id = u.id
          LEFT JOIN forward_system.chat_message_to_user cmtu
                    ON cmtu.message_id = cm.id
@@ -952,3 +960,11 @@ create table forward_system.bot_notification_history
 
 alter table forward_system.authors
     add max_order_count bigint not null default 10;
+
+create table forward_system.manager_sub
+(
+    manager_id bigint references forward_system.users (id) primary key,
+    sub_manager_id    bigint references forward_system.users (id),
+    updated_at timestamp default now() not null,
+    created_at timestamp default now() not null
+);

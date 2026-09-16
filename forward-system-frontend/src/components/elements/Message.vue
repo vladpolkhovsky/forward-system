@@ -124,6 +124,8 @@ function getOptionClasses(option: ChatOptionDto): string[] {
             v-if="message.fromUserIsDeleted">Удалён</span>
       <span class="me-2 badge text-bg-primary fs-8"
             v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.HOST">Менеджер</span>
+      <span class="me-2 badge text-bg-primary fs-8"
+            v-if="message.fromUserOrderParticipantType == ParticipantTypeEnum.SUB">Менеджер (Замена)</span>
       <span class="me-2 badge text-bg-danger fs-8" v-if="message.fromUserIsAdmin">Админ</span>
       <span
           :class="[ 'me-2 badge fs-8', { 'text-bg-secondary': !lastSeenAt.online, 'text-bg-success': lastSeenAt.online }]"

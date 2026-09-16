@@ -83,21 +83,23 @@ public class V3ChatLoadService {
             .filter(StringUtils::isNotBlank)
             .collect(Collectors.joining(" | "));
 
+        boolean allowSubChat = criteria.getChatTypes().contains(ChatType.ORDER_CHAT_SUB);
+
         if (StringUtils.isNotBlank(tagNameSearch) || StringUtils.isNotBlank(chatNameSearch)) {
             List<TagNameProjection> tagSearch = tagSearchRepository.search(tagNameSearch);
             if (tagSearch.size() > 0) {
                 Page<ChatNameProjection> chatsByChatNameAndTagsQuery =
                     chatNameSearchRepository.findChatsByChatNameAndTagsQuery(
-                        AuthUtils.getCurrentUserId(), tagNameSearch, types, pageable);
+                        AuthUtils.getCurrentUserId(), tagNameSearch, allowSubChat, types, pageable);
                 return toV3ChatDtoPage(chatsByChatNameAndTagsQuery);
             }
 
             return toV3ChatDtoPage(chatNameSearchRepository.findChatsByNameQuery(
-                AuthUtils.getCurrentUserId(), chatNameSearch, types, pageable));
+                AuthUtils.getCurrentUserId(), chatNameSearch, allowSubChat, types, pageable));
         }
 
         return toV3ChatDtoPage(chatNameSearchRepository.findChats(
-            AuthUtils.getCurrentUserId(), types, pageable));
+            AuthUtils.getCurrentUserId(), allowSubChat, types, pageable));
     }
 
     private V3ChatDto toV3ChatDto(Long chatId) {
@@ -146,7 +148,8 @@ public class V3ChatLoadService {
     @Transactional(readOnly = true)
     public Map<String, Long> getNewMessageCount(Long userId) {
         var typeToCount = chatRepository.findChatTypeToChatsWithNewMessageCount(userId);
-        var typeToCountMap = typeToCount.stream().collect(Collectors.toMap(ChatTypeToChatsWithNewMessageCount::getType, ChatTypeToChatsWithNewMessageCount::getCount));
+        var typeSubToCount = chatRepository.findSubChatTypeToChatsWithNewMessageCount(userId);
+        var typeToCountMap = Stream.concat(typeSubToCount.stream(), typeToCount.stream()).collect(Collectors.toMap(ChatTypeToChatsWithNewMessageCount::getType, ChatTypeToChatsWithNewMessageCount::getCount));
         return Arrays.stream(ChatType.values())
             .collect(Collectors.toMap(ChatType::getName, t -> typeToCountMap.getOrDefault(t.getName(), 0).longValue()));
     }

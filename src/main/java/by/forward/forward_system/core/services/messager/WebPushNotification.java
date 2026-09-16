@@ -35,7 +35,7 @@ public class WebPushNotification {
     @Autowired
     private UserRepository userRepository;
 
-    @PostConstruct
+    //@PostConstruct
     private void inti() throws GeneralSecurityException {
         Security.addProvider(new BouncyCastleProvider());
         pushService = new PushService(publicKey, privateKey);
