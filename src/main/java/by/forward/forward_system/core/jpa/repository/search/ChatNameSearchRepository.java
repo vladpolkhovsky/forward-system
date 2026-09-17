@@ -31,7 +31,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         left join forward_system.tags t on
         	ctt.tag_id = t.id
         where
-            c.type in :chatTypes and (not :allowSubChat or exists (
+            c.type in :chatTypes or (:allowSubChat and exists (
                     select 1 from forward_system.order_participants op
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id
@@ -65,7 +65,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
                           and op.type = 'HOST'
                     )))
         where
-            c.type in :chatTypes and (not :allowSubChat or exists (
+            c.type in :chatTypes or (:allowSubChat and exists (
                     select 1 from forward_system.order_participants op
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id
@@ -99,7 +99,7 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
                           and op.type = 'HOST'
                     )))
         where
-            c.type in :chatTypes and (not :allowSubChat or exists (
+            c.type in :chatTypes or (:allowSubChat and exists (
                     select 1 from forward_system.order_participants op
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id

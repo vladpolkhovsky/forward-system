@@ -9,7 +9,15 @@ export class ChatTabsService {
         {
             tabName: "Все чаты",
             queryParam: "all",
-            chatTypes: [...Object.values(ChatTypeEnum)]
+            chatTypes: [
+                ChatTypeEnum.REQUEST_ORDER_CHAT,
+                ChatTypeEnum.ORDER_CHAT,
+                ChatTypeEnum.ADMIN_TALK_CHAT,
+                ChatTypeEnum.OTHER_CHAT,
+                ChatTypeEnum.SPECIAL_CHAT,
+                ChatTypeEnum.FORWARD_ORDER_CHAT,
+                ChatTypeEnum.FORWARD_ORDER_ADMIN_CHAT
+            ]
         },
         {
             tabName: "Новые заказы",
@@ -24,7 +32,7 @@ export class ChatTabsService {
         {
             tabName: "Заказы в работе (Замена)",
             queryParam: "orders-sub",
-            chatTypes: [ChatTypeEnum.ORDER_CHAT_SUB, ChatTypeEnum.FORWARD_ORDER_CHAT, ChatTypeEnum.ORDER_CHAT]
+            chatTypes: [ChatTypeEnum.ORDER_CHAT_SUB]
         },
         {
             tabName: "Прямые заказы",

@@ -1,6 +1,7 @@
 package by.forward.forward_system.jobs;
 
 import by.forward.forward_system.core.enums.ChatType;
+import by.forward.forward_system.core.enums.ParticipantType;
 import by.forward.forward_system.core.enums.auth.Authority;
 import by.forward.forward_system.core.events.events.NotifyChatEvent;
 import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMessageDto;
@@ -154,7 +155,8 @@ public class BotNotificationJob {
             String chatName = chatEntity.getChatName();
             ChatType chatType = chatEntity.getChatType().getType();
 
-            sandedMessageCount += sendIfNeeded(user,
+            sandedMessageCount += sendIfNeeded(
+                    user,
                     chatType,
                     chatName,
                     chatEntity.getId(),
@@ -189,6 +191,7 @@ public class BotNotificationJob {
                 techNumber = orderEntity.getTechNumber();
                 Optional<OrderParticipantEntity> any = orderEntity.getOrderParticipants().stream()
                         .filter(t -> t.getUser().getId().equals(user.getId()))
+                        .filter(t -> t.getParticipantsType().getType() != ParticipantType.SUB)
                         .findAny();
                 isNeedToSend = any.isPresent();
             }
