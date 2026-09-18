@@ -8,6 +8,7 @@ import by.forward.forward_system.core.iternalnotification.dto.SendNotificationMe
 import by.forward.forward_system.core.jpa.model.*;
 import by.forward.forward_system.core.jpa.repository.ChatMetadataRepository;
 import by.forward.forward_system.core.jpa.repository.ChatRepository;
+import by.forward.forward_system.core.jpa.repository.ManagerSubRepository;
 import by.forward.forward_system.core.jpa.repository.NotificationOutboxRepository;
 import by.forward.forward_system.core.jpa.repository.SkipChatNotificationRepository;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class BotNotificationJob {
     private final ChatMetadataRepository chatMetadataRepository;
     private final ChatRepository chatRepository;
     private final SkipChatNotificationRepository skipChatNotificationRepository;
+    private final ManagerSubRepository managerSubRepository;
     private final ApplicationEventPublisher applicationEventPublisher;
 
     @SneakyThrows
@@ -189,11 +191,12 @@ public class BotNotificationJob {
             if (chatEntity.getOrder() != null) {
                 OrderEntity orderEntity = chatEntity.getOrder();
                 techNumber = orderEntity.getTechNumber();
+                boolean isSubUser = managerSubRepository.findBySubManagerId(user.getId()).isPresent();
                 Optional<OrderParticipantEntity> any = orderEntity.getOrderParticipants().stream()
                         .filter(t -> t.getUser().getId().equals(user.getId()))
                         .filter(t -> t.getParticipantsType().getType() != ParticipantType.SUB)
                         .findAny();
-                isNeedToSend = any.isPresent();
+                isNeedToSend = any.isPresent() && !isSubUser;
             }
 
             if (isNeedToSend) {

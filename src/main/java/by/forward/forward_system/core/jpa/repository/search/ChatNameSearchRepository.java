@@ -21,10 +21,9 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         from forward_system.chats c
         inner join forward_system.chat_members cm on
             c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
-                    select 1 from forward_system.order_participants op
-                        where op.user_id = cm.user_id
-                          and op.order_id = c.order_id
-                          and op.type = 'HOST'
+                    select 1 from forward_system.manager_sub ms
+                        where ms.sub_manager_id = :currentUserId
+                          and ms.manager_id = cm.user_id
                     )))
         left join forward_system.chat_to_tag ctt on
         	c.id = ctt.chat_id
@@ -36,7 +35,13 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id
                           and op.type = 'SUB'
-                    ))
+                    ) or (:allowSubChat and exists (
+                    select 1 from forward_system.manager_sub ms
+                        join forward_system.order_participants op on op.user_id = ms.manager_id
+                        where ms.sub_manager_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         group by
         	c.id
         having
@@ -59,10 +64,9 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         from forward_system.chats c
         inner join forward_system.chat_members cm on
             c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
-                    select 1 from forward_system.order_participants op
-                        where op.user_id = cm.user_id
-                          and op.order_id = c.order_id
-                          and op.type = 'HOST'
+                    select 1 from forward_system.manager_sub ms
+                        where ms.sub_manager_id = :currentUserId
+                          and ms.manager_id = cm.user_id
                     )))
         where
             c.type in :chatTypes or (:allowSubChat and exists (
@@ -70,7 +74,13 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id
                           and op.type = 'SUB'
-                    ))
+                    ) or (:allowSubChat and exists (
+                    select 1 from forward_system.manager_sub ms
+                        join forward_system.order_participants op on op.user_id = ms.manager_id
+                        where ms.sub_manager_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         group by
         	c.id
         having
@@ -93,10 +103,9 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
         from forward_system.chats c
         inner join forward_system.chat_members cm on
             c.id = cm.chat_id and (cm.user_id = :currentUserId or (:allowSubChat and exists (
-                    select 1 from forward_system.order_participants op
-                        where op.user_id = cm.user_id
-                          and op.order_id = c.order_id
-                          and op.type = 'HOST'
+                    select 1 from forward_system.manager_sub ms
+                        where ms.sub_manager_id = :currentUserId
+                          and ms.manager_id = cm.user_id
                     )))
         where
             c.type in :chatTypes or (:allowSubChat and exists (
@@ -104,7 +113,13 @@ public interface ChatNameSearchRepository extends JpaRepository<ChatEntity, Long
                         where op.user_id = :currentUserId
                           and op.order_id = c.order_id
                           and op.type = 'SUB'
-                    ))
+                    ) or (:allowSubChat and exists (
+                    select 1 from forward_system.manager_sub ms
+                        join forward_system.order_participants op on op.user_id = ms.manager_id
+                        where ms.sub_manager_id = :currentUserId
+                          and op.order_id = c.order_id
+                          and op.type = 'HOST'
+                    )))
         order by
            rank desc, c.last_message_date desc
         """)
